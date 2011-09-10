@@ -1,0 +1,22 @@
+":arga util/Makefile*
+":arga util/*.h
+":arga util/*.c
+":arga font/Makefile*
+":arga font/*.h
+":arga font/*.c
+":arga test/Makefile*
+":arga test/*.h
+":arga test/*.c
+:arga font/tfont.h
+:arga font/tfont.c
+:arga edit/*.h
+:arga edit/*.c
+:arga test/Makefile
+:arga test/Makefile.osx
+:arga test/targets.mk
+:arga test/target_rules.mk
+:arga test/common.mk
+:arga test/tf_edit.mk
+:arga test/tf_edit.c
+:arga test/lua/tf_edit.lua
+:b3

@@ -1,0 +1,1670 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="css/style.css"/>
+<script src="js/script.js"></script>
+<title>devlog - wknight - vblend</title>
+</head>
+<body onload="main()">
+<h1>devlog - wknight - vblend</h1>
+
+<h2>2011-07-02</h2>
+
+<p>
+This is a project that aims to provide a vim-like interface to a blender-like 3D graphics editor.
+Since freeglut is borked on my macbook, I'll start out with the glfw library to provide the main
+window. Will also look through my other projects for C code to render text using bitmaps in
+an opengl window - pretty sure the cbots project did that.
+</p>
+
+<p>
+Read through my devlog for cbots project. Will use the font-rendering code in there, but
+will use glfw instead of sdl for window management. glfw looks pretty clean and simple.
+</p>
+
+<p>
+Got the howdy glfw window app to build and run. glfw is VERY clean and good. It has the 
+simplest and most transparent build framework for a Mac OSX OpenGL app that I have ever seen.
+It puts the ludicrously complex XCode framework utterly to shame.
+</p>
+
+<h2>2011-07-06</h2>
+
+<p>
+Up normal time, just a little time to code.
+</p>
+
+<p>
+I spend most of it getting idutils running on cbots and then finding my project scripts to
+remind me how to show osx apps:
+</p>
+<pre>
+mhackslab:find $ find ~/proj -type f -perm +111 | xargs file | grep text | awk -F ':' '{print $1}' | xargs grep -i "osa"
+/Users/williamknight/proj/game/irrlicht/cl_terrain_test/rr.sh:osascript -e 'tell application "terrain_test" to activate'
+/Users/williamknight/proj/mirabai/timer/rr:osascript -e 'tell application "Python" to activate'
+/Users/williamknight/proj/modwest/biochem/barbwright/mfg-1.2/src/mfg/a:osascript -e 'tell application "mfg" to activate'
+/Users/williamknight/proj/modwest/biochem/barbwright/mfg-1.2/src/mfg/d:#osascript -e 'tell application "mfg" to activate'
+/Users/williamknight/proj/modwest/biochem/barbwright/mfg-1.2/src/mfg/r:osascript -e 'tell application "mfg" to activate'
+/Users/williamknight/proj/modwest/biochem/barbwright/src/mfg/a:osascript -e 'tell application "mfg" to activate'
+/Users/williamknight/proj/modwest/biochem/barbwright/src/mfg/d:#osascript -e 'tell application "mfg" to activate'
+/Users/williamknight/proj/modwest/biochem/barbwright/src/mfg/r:osascript -e 'tell application "mfg" to activate'
+/Users/williamknight/proj/test/python/tkinter/sclient/rr:osascript -e 'tell application "Python" to activate'
+/Users/williamknight/proj/test/qt/glterrain/a:osascript -e 'tell application "main" to activate'
+/Users/williamknight/proj/test/qt/glterrain/r:osascript -e 'tell application "main" to activate'
+/Users/williamknight/proj/test/qt/howdy/r:osascript -e 'tell app "howdy" to activate'
+/Users/williamknight/proj/test/qt/linux-crash/r:osascript -e 'tell app "main" to activate'
+/Users/williamknight/proj/test/qt/manual-stretch/r:osascript -e 'tell application "main" to activate'
+/Users/williamknight/proj/test/qt/menu/r:osascript -e 'tell app "menu" to activate'
+/Users/williamknight/proj/test/qt/menu2/r:osascript -e 'tell app "menu" to activate'
+/Users/williamknight/proj/test/qt/mfg-menu-test/bad/r:osascript -e 'tell application "mfg-menu-test" to activate'
+/Users/williamknight/proj/test/qt/mfg-menu-test/r:osascript -e 'tell app "mfg-menu-test" to activate'
+/Users/williamknight/proj/test/qt/mfg2/r:osascript -e 'tell app "fart" to activate'
+</pre>
+
+<h2>2011-07-17</h2>
+
+<p>
+Back from a beautiful vacation to Seattle and the Olympic Peninsula. One more day of vacay left, will
+do a little programming today.
+</p>
+
+<h2>2011-07-18</h2>
+
+<p>
+Created test_font app, adding project to svn.
+</p>
+
+<h2>2011-07-20</h2>
+
+<p>
+Created font_map app, to investigate performance issues from previous font_lines app,
+which really dropped the fps rate down. I note that the plib font code only provides
+96 font chars. For the first time, I take note of how many chars are on the standard
+keyboard layout: 4 rows:
+</p>
+
+<pre>
+row 0: 13 keys * 2 = 26
+row 1: 13 keys * 2 = 26
+row 2: 11 keys * 2 = 22
+row 3: 10 keys * 2 = 20
+                    ___
+                     94
+</pre>
+
+<p>
+Hmm, where are the other 2? Ah, those 2 spots are blank in the 16x6 output image, good.
+</p>
+
+<h2>2011-07-24</h2>
+
+<p>
+Progress very slow these days. Thinking about where to head next to achieve the immediate
+goal, which is high-performance text rendering in an opengl graphics window. In my continual
+drive to understand the fundamentals, combined with tendencies of dilettantism, I re-visited
+tinygl. I was able to build and run it on my mac, but the display of the gears app was
+a little messed up, some kind of double image. So that started me reading a bit about X-Window
+coding. Also been learning more about fonts through reading about fontforge and Tex. Downloaded
+some bitmap fonts. Read a little this morning about font rendering using glBitmap() in
+the OpenGL redbook.
+</p>
+
+<p>
+After all this, my plan is to reproduce the simple rendering of the letter 'F' using the glBitmap()
+example in the OpenGL book. Then I'm going to try to use/adapt the bitmap data from the glut
+GLUT_BITMAP_9_BY_15	font to render text.
+</p>
+
+<p>
+Creating test app 'bitmap_letter'.
+</p>
+
+<p>
+Done, it works. Next up: use the glut bitmap defs.
+</p>
+
+<p>
+Working on that, don't have it yet. Here is the def for the letter 'F' in glut Fixed9x15_Character_70[]:
+</p>
+<pre>
+static const GLubyte Fixed9x15_Character_070[] = {  
+  9,  0,  
+  0,  0,  
+  0,  0,  
+  0,  0,  
+  0, 32,  
+  0, 32,  
+  0, 32,  
+  0, 32,  
+  0, 32,  
+  0, 60,  
+  0, 32,  
+  0, 32,  
+  0, 32,  
+  0,127,  
+  0,  0,  
+  0,  0,  
+  0
+};
+</pre>
+
+<p>
+Need to look at the code I guess... ah, ok, off by 1 at least, first char is bitmap width.
+</p>
+
+<p>
+Yes! It's working. Finally, I'm thinking I have a simple but fast font-drawing solution for 
+OpenGL.
+</p>
+
+<h2>2011-07-25</h2>
+
+<p>
+Little hacking before work, I found that it's necessary to add the glPixelStore2i() call
+in the font code, otherwise, the font chars can be truncated. 
+</p>
+
+<p>
+Sadly, the fps rate of the new font code seems just as slow as the old one ... very strange.
+I'm going to have to do some detailed timings to see where it's slowing down.
+</p>
+
+<p>
+Next: make an easier way to add apps to Makefile, add a 'console fps' app.
+</p>
+
+<h2>2011-07-26</h2>
+
+<p>
+Only a little time before work, I need a better test Makefile solution. Should I create
+a separate subdir for Mac builds? They have some extra steps.
+</p>
+
+<p>
+Re-organized the osx Makefile, looked easy enough, then make started doing some weird
+implicit build command:
+</p>
+<pre>
+mhackslab:test $ m
+"building for mac os Darwin"
+gcc   howdy.o howdy.app/Contents/MacOS/howdy   -o howdy
+ld: in howdy.app/Contents/MacOS/howdy, can't link with a main executable
+collect2: ld returned 1 exit status
+make: *** [howdy] Error 1
+mhackslab:test $ 
+</pre>
+
+<p>
+Fixed it, just needed to add an action for the new howdy target, which is the symlink to
+the mac osx exe.
+</p>
+
+<p>
+Ok, reorganized makefiles work. It's about time I started using includes more.
+</p>
+
+<p>
+Well, time for work already. Next time I'll create the script for adding new targets
+to the Makefiles.
+</p>
+
+<h2>2011-07-27</h2>
+
+<p>
+Ridiculously little time this morning, and my back hurts. Will get started on project
+creation script though.
+</p>
+
+<p>
+Did it, it works.
+</p>
+
+<h2>2011-07-28</h2>
+
+<p>
+A little time to program before work this morning. Back still hurts a little. It's time
+to start cranking out little test apps.
+</p>
+
+<p>
+Created and ran cl_fps app, something looks wacked with current fps calc:
+</p>
+<pre>
+    3.898484 secs: frame: 9006540, fps:  4060143
+    3.898499 secs: frame: 9006600, fps:  4001107
+</pre>
+
+<p>
+That's 60 frames in 16us, 3.75 frames/us = 3,750,000 fps, hmmm... it's in the ballpark,
+but still a sig diff. Perhaps it's because the main-loop timestamp is called after
+the call to fps_calc(). Will try calling it before, and will put the 'cur_time' call
+in fps_calc() at top of loop, so caller and fps will have as close as possible 'cur_time'
+value...
+</p>
+
+<p>
+Interesting, it significantly drops the frame-rate, probably because sys_float_time()
+is called every time now at top of fps_calc(), but that's ok, I'm fine with a more-consistent
+fps_calc even with higher overhead. Let's check the calc though:
+</p>
+<pre>
+    7.495249 secs: frame: 13577760, fps:  2681586
+    7.495270 secs: frame: 13577820, fps:  2798467
+    7.495293 secs: frame: 13577880, fps:  2671478
+    7.495314 secs: frame: 13577940, fps:  2916686
+    7.495336 secs: frame: 13578000, fps:  2779005
+</pre>
+
+<p>
+Gah, gotta get to work...
+60 frames in 23 usecs = 2.608696 frames/usec = 2,608,696 fps compared to 2,671,478.
+A lot closer, cool. I'm thinking that's within the range of function call/return and
+instruction exec times.
+</p>
+
+<h2>2011-07-30</h2>
+
+<p>
+Saturday morning, after a beautiful long night's sleep. My back doesn't hurt anymore.
+Today, I want to develop a flexible method for recording, averaging and displaying
+time intervals for various chunks of code.
+</p>
+
+<p>
+Created perf.c. To implement 'perf_mark()' function, I'll need to use a hash library.
+I've already used one before, what was it called? And where did I put it? My memory
+is like a sieve these days. At some point, I'll need to start working on search projects
+and tools.
+</p>
+
+<p>
+strmap, in ~/swtools/misc. keywords: 'hash library'. Hmm, but that isn't going to
+work, because what I need in this case is a str-to-int map. strmap is a str-to-str
+map.
+</p>
+
+<h2>2011-08-04</h2>
+
+<p>
+Finished initial implementation of StrIntMap for perf module, also added checking
+of keyboard input to cl_fps, something just crushed the previous performance:
+</p>
+<pre>
+    6.256347 secs: frame: 005700, fps:  668
+    6.311799 secs: frame: 005760, fps:  1082
+    6.362357 secs: frame: 005820, fps:  1186
+    6.437873 secs: frame: 005880, fps:  794
+    6.488454 secs: frame: 005940, fps:  1186
+    6.578598 secs: frame: 006000, fps:  665
+    6.629268 secs: frame: 006060, fps:  1184
+</pre>
+
+<p>
+Got rid of the key input, not much better:
+</p>
+<pre>
+    3.229764 secs: frame: 003840, fps:  2187
+    3.258421 secs: frame: 003900, fps:  2093
+    3.279498 secs: frame: 003960, fps:  2846
+    3.302289 secs: frame: 004020, fps:  2632
+    3.344143 secs: frame: 004080, fps:  1433
+</pre>
+
+<p>
+Next: identify the cause of the overhead. It's not perf_mark(), which is good.
+</p>
+
+<p>
+Getting rid of glfwSwapBuffers() makes a big diff:
+</p>
+<pre>
+    4.486396 secs: frame: 015540, fps:  12828
+    4.487845 secs: frame: 015600, fps:  41401
+    4.489283 secs: frame: 015660, fps:  41721
+    4.490756 secs: frame: 015720, fps:  40733
+</pre>
+
+<p>
+And bypassing glClear() accounts for most of the rest:
+</p>
+<pre>
+    4.239728 secs: frame: 6996720, fps:  2381461
+    4.239751 secs: frame: 6996780, fps:  2617545
+    4.239774 secs: frame: 6996840, fps:  2604838
+    4.239797 secs: frame: 6996900, fps:  2592254
+</pre>
+
+<p>
+Here is the overhead with just perf_mark(), which is somewhat significant:
+</p>
+<pre>
+    2.043821 secs: frame: 1365840, fps:  908939
+    2.043893 secs: frame: 1365900, fps:  833691
+    2.043960 secs: frame: 1365960, fps:  895968
+    2.044033 secs: frame: 1366020, fps:  822244
+</pre>
+
+<p>
+Lunch at Butterfly, thinking about how to finish up initial perf implementation,
+lots of potential options. At first, thought I would just accumulate all records
+and write them out to file at the end. But I prefer to have periodic output and
+so now my plan is to just accumulate (sum) and output the average every output
+interval, with a default rate of 1Hz, pretty much like the current fps works.
+</p>
+
+<h2>2011-08-05</h2>
+
+<p>
+Up good and early this morning (3:30 am), I got to sleep at 9:00 am last night,
+so it's not too bad. Last night when I tried to work a little more on the existing
+perf code, I realized there was a problem in calculating the delta time from the
+previous perf mark. This morning, after considering various schemes, I decided to
+try to keep each perf time interval separate from any others, requiring an explicit
+'perf_mark_beg()' and 'perf_mark_end()' call around every desired interval. This little
+extra work is fine because then I can time multiple sections of code that are
+not part of the same loop, as is the current case.
+</p>
+
+<p>
+Got a couple more hours sleep, which was good. Finished initial implementation of
+new perf version. Getting report output, but the times are all 0, don't think
+I can use float for times, may need to use timevals instead.
+</p>
+
+<p>
+I need to find my code that did subtraction of timevals, where was it?
+Ah, it was in gstep. Thank God for find/grep.
+</p>
+
+<h2>2011-08-07</h2>
+
+<p>
+Changing perf record timestamp type to timeval.
+</p>
+
+<p>
+Debugging some time conversion code, timeval t.tv_sec MUST be converted
+to (unsigned long) before doing any conversion to usec:
+</p>
+
+<pre>
+(gdb) p cur_time.tv_sec
+$21 = 1312746228
+(gdb) p ((long)cur_time.tv_sec) * 1000000L
+$18 = -1936087808
+(gdb) p ((unsigned long)cur_time.tv_sec) * 1000000L
+$19 = 2358879488
+(gdb) 
+</pre>
+
+<p>
+I don't quite understand why, as long should hold a max value
+of 0x7fffffffffffffffL which is 9223372036854775807,
+9,223,372,036,854,775,807 = 9e18
+</p>
+
+<p>
+Even with the conversion to unsigned long, the multiplication
+(at least in gdb) still isn't right. The correct answer should be:
+</p>
+
+<pre>
+(gdb) p (float)cur_time.tv_sec * 1e6
+$23 = 1312746240000000
+(gdb) 
+</pre>
+
+<p>
+Well, actually the correct answer should be 1312746228000000. wtf.
+Need to go back to remedial computing I guess.
+</p>
+
+<p>
+Ok, mystery solved, I just wrote a simple c test program and found
+that LONG_MAX is only 2^32:
+</p>
+<pre>
+LONG_MAX: 2147483647
+ULONG_MAX: 4294967295
+ULLONG_MAX: 18446744073709551615
+mhackslab:long $ 
+</pre>
+
+<p>
+Can't believe this whole time I never really realized this.
+</p>
+
+<p>
+Fixed that, next running in to a problem where the 1us resolution isn't small
+enough, I think I need to go to nanosec resolution instead, but there is no
+good function for that in stdlib? Strangely, there is only the nanosleep()
+time, which sleeps, it doesn't return a current timestamp. However, nanosecond
+resolution isn't even guaranteed here, will just stick with usec resolution.
+</p>
+
+<p>
+No, I want high-resolution! That's the whole point of this perf code, to understand
+where the cycles are being consumed. Stackoverflow mentions clock_gettime() as a
+stdlib function, but I don't see it in my libc.txt file. Will search /usr/include/
+</p>
+
+<p>
+Nope, it's not there, so that's out. Searching SO, found: "In effect, it seems not to be implemented for MacOs."
+LAME.
+</p>
+
+<p>
+But also found this:
+</p>
+<pre>
+struct timespec ts;
+
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+clock_serv_t cclock;
+mach_timespec_t mts;
+host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &amp;cclock);
+clock_get_time(cclock, &amp;mts);
+mach_port_deallocate(mach_task_self(), cclock);
+ts.tv_sec = mts.tv_sec;
+ts.tv_nsec = mts.tv_nsec;
+
+#else
+clock_gettime(CLOCK_REALTIME, &amp;ts);
+#endif
+</pre>
+
+<p>
+Added the code, it compiled. Now I need to create a bunch of time functions with timespec
+instead of timeval.
+</p>
+
+<h2>2011-08-09</h2>
+
+<p>
+Up fairly early, have some time to program. Will implement the timespec functions.
+</p>
+
+<p>
+Did it, looks like it's working:
+</p>
+<pre>
+mhackslab:test $ r
+  1.175901: perf report: 1 perf records
+  avg:   0.000011503, min:   0.000011000, max:   0.000578000, total:   0.496011000, num_intervals:  43120, fps_calc
+    1.824177 secs: frame: 078579, fps:  43288
+  2.175918: perf report: 1 perf records
+  avg:   0.000011510, min:   0.000011000, max:   0.000885000, total:   0.495408000, num_intervals:  43039, fps_calc
+    2.824192 secs: frame: 121593, fps:  43764
+  3.175928: perf report: 1 perf records
+  avg:   0.000011513, min:   0.000011000, max:   0.000175000, total:   0.495348000, num_intervals:  43022, fps_calc
+    3.824198 secs: frame: 164595, fps:  43478
+  4.175937: perf report: 1 perf records
+  avg:   0.000011548, min:   0.000011000, max:   0.002065000, total:   0.496490000, num_intervals:  42992, fps_calc
+    4.824204 secs: frame: 207789, fps:  43546
+  5.175955: perf report: 1 perf records
+  avg:   0.000011471, min:   0.000011000, max:   0.000051000, total:   0.495403000, num_intervals:  43185, fps_calc
+    5.824208 secs: frame: 250921, fps:  44015
+</pre>
+
+<p>
+Unfortunately, there seems to be a large overhead for empty sequence perf calcs:
+</p>
+<pre>
+mhackslab:test $ r
+  1.694077: perf report: 1 perf records
+  avg:   0.000011361, min:   0.000011000, max:   0.000201000, total:   0.488736000, num_intervals:  43015, empty1
+
+mhackslab:test $ r
+  1.745358: perf report: 5 perf records
+  avg:   0.000011080, min:   0.000010000, max:   0.000079000, total:   0.098392000, num_intervals:   8880, empty1
+  avg:   0.000011081, min:   0.000010000, max:   0.000050000, total:   0.098408000, num_intervals:   8880, empty2
+  avg:   0.000011077, min:   0.000010000, max:   0.000064000, total:   0.098370000, num_intervals:   8880, empty3
+  avg:   0.000011071, min:   0.000010000, max:   0.000078000, total:   0.098317000, num_intervals:   8880, empty4
+  avg:   0.000011068, min:   0.000010000, max:   0.000064000, total:   0.098285000, num_intervals:   8880, empty5
+</pre>
+
+<p>
+So the current implementation has a granularity of around 11usec, which doesn't sound great but
+will still help for longer ops such as glfwSwapBuffers:
+</p>
+<pre>
+ 2.532043: perf report: 6 perf records
+   avg:   0.000028791, min:   0.000011000, max:   0.000087000, total:   0.048542000, num_intervals:   1686, empty1
+   avg:   0.000028532, min:   0.000011000, max:   0.000085000, total:   0.048106000, num_intervals:   1686, empty2
+   avg:   0.000028048, min:   0.000011000, max:   0.000104000, total:   0.047289000, num_intervals:   1686, empty3
+   avg:   0.000027341, min:   0.000011000, max:   0.000100000, total:   0.046097000, num_intervals:   1686, empty4
+   avg:   0.000016664, min:   0.000011000, max:   0.000050000, total:   0.028096000, num_intervals:   1686, empty5
+   avg:   0.000303794, min:   0.000052000, max:   0.014260000, total:   0.512198000, num_intervals:   1686, glfwSwapBuffers
+</pre>
+
+<p>
+Of course, when you consider that processes are continually interrupted by the OS, this large
+overhead is to be expected.
+</p>
+
+<p>
+Hmm, I'm still seeing a lot of inconsistency though when I look at the average times of
+glfwSwapBuffers computed with various combinations of 'empty' intervals.
+</p>
+
+<p>
+I suspect that time interval aliasing might have something to do with it.
+</p>
+
+<p>
+Ah, wait, I made an important observation: when the graphics window is in the foreground,
+the swapbuf time avg is 300us but when in background, it's only 50us. That explains
+the variation I'm seeing.
+</p>
+
+<p>
+Well, only some of the variation. When there are only 2 empty perf calls, the fg swapbuf
+time increases inexplicably to 370us, and with only 1 empty perf call, it is around 470us.
+That still doesn't make sense to me. Perhaps multiple calls to the perf code result in
+some kind of cacheing in the OS or CPU?
+</p>
+
+<p>
+Well, the bottom line is that I have a workable metric for calculating relative times
+for the operations I'm trying to optimize:
+</p>
+<pre>
+ 42.118797: perf report: 5 perf records
+   avg:   0.000050460, min:   0.000035000, max:   0.000160000, total:   0.052277000, num_intervals:   1036, glClear
+   avg:   0.000015119, min:   0.000012000, max:   0.000040000, total:   0.015664000, num_intervals:   1036, fps_calc
+   avg:   0.000443398, min:   0.000395000, max:   0.000601000, total:   0.459361000, num_intervals:   1036, font_draw
+   avg:   0.000349133, min:   0.000067000, max:   0.016284000, total:   0.361702000, num_intervals:   1036, glfwSwapBuffers
+   avg:   0.000021726, min:   0.000011000, max:   0.000078000, total:   0.022509000, num_intervals:   1036, glfwGetKey
+</pre>
+
+<p>
+So, success so far.
+</p>
+
+<h2>2011-08-11</h2>
+
+<p>
+Next, I'm going to make a new app that does timing of  the current font drawing code, 'font_perf'.
+</p>
+
+<h2>2011-08-12</h2>
+<p>
+It's Friday, yay. A tiny bit more work before work. Currently there are some extranneous pixels 
+being drawn in the font_perf app, must find out why. Ah, I see, was using slightly larger
+dimensions of the font bitmap in font9x15.
+</p>
+
+<p>
+perf for drawing 1 letter:
+</p>
+<pre>
+  3.666303: perf report: 4 perf records
+  avg:   0.000060814, min:   0.000036000, max:   0.000319000, total:   0.073585000, num_intervals:   1210, glClear
+  avg:   0.000015704, min:   0.000011000, max:   0.000051000, total:   0.019003000, num_intervals:   1210, ortho
+  avg:   0.000076574, min:   0.000061000, max:   0.000189000, total:   0.092655000, num_intervals:   1210, draw_letter
+  avg:   0.000607246, min:   0.000202000, max:   0.004581000, total:   0.734768000, num_intervals:   1210, swap
+</pre>
+
+<p>
+perf for drawing 50 letters:
+</p>
+<pre>
+  5.691817: perf report: 4 perf records
+  avg:   0.000037167, min:   0.000035000, max:   0.000075000, total:   0.014867000, num_intervals:    400, glClear
+  avg:   0.000012010, min:   0.000011000, max:   0.000025000, total:   0.004804000, num_intervals:    400, ortho
+  avg:   0.002124922, min:   0.002052000, max:   0.002684000, total:   0.849969000, num_intervals:    400, draw_letter
+  avg:   0.000274527, min:   0.000067000, max:   0.003956000, total:   0.109811000, num_intervals:    400, swap
+</pre>
+
+<p>
+Inside draw_letter:
+</p>
+<pre>
+  4.341854: perf report: 7 perf records
+  avg:   0.000056601, min:   0.000036000, max:   0.000175000, total:   0.068148000, num_intervals:   1204, glClear
+  avg:   0.000012901, min:   0.000011000, max:   0.000045000, total:   0.015534000, num_intervals:   1204, ortho
+  avg:   0.000012081, min:   0.000011000, max:   0.000059000, total:   0.014546000, num_intervals:   1204, raster_def
+  avg:   0.000011761, min:   0.000011000, max:   0.000044000, total:   0.014161000, num_intervals:   1204, pix_store
+  avg:   0.000015555, min:   0.000014000, max:   0.000056000, total:   0.018729000, num_intervals:   1204, raster_pos
+  avg:   0.000062172, min:   0.000057000, max:   0.000430000, total:   0.074856000, num_intervals:   1204, glBitmap
+  avg:   0.000563327, min:   0.000072000, max:   0.005326000, total:   0.678246000, num_intervals:   1204, swap
+</pre>
+
+<p>
+So glBitmap just takes a long time.
+</p>
+
+<p>
+Googled glBitmap performance, found this: http://www.opengl.org/resources/features/KilgardTechniques/oglpitfall/ 
+</p>
+
+<p>
+Then, another search on Stackoverflow, I'm thinking the solution for fast text rendering is a single
+texture-binding call and rendering textured quads:
+</p>
+<blockquote>
+The key is that texture binding is the operation you need to minimize. If you
+can render all of your text with a single texture, it won't matter how much
+text you need to put on the screen. Even if you have to switch textures a
+handful of times (different fonts, different font attributes [bold, underline,
+etc]) performance should still be good. Text performance might be more critical
+for a HUD, but it less important in the GUI.
+</blockquote>
+
+<h2>2011-08-13</h2>
+
+<p>
+Saturday morn after staying up late partying and watching Aztec Wrestling Women vs. The Mummy.
+</p>
+
+<p>
+Will start creating apps to draw multiple polys, eventually textured as text, in various
+ways to measure performance (client-side vs. server-side rendering)
+</p>
+
+<h2>2011-08-14</h2>
+
+<p>
+Good night's sleep, up late, can spend most of today programming! Created first of many
+apps to measure performance drawing a large number of polys, 'perf_poly_glv', which uses glVertex(). It
+draws 2000 polys per frame, current frame rate is:
+</p>
+<pre>
+fps:  472, pps:  946000
+fps:  475, pps:  952000
+fps:  476, pps:  954000
+</pre>
+
+<p>
+That performance is extremely good even using the least-efficient method (perhaps because of
+cacheing the uniform data), so will update this
+to draw textured polys, with a real font bitmap as a better test. To do that, I need to get
+an image of a font set, so next app it 'render_font_set'.
+</p>
+
+<h2>2011-08-16</h2>
+
+<p>
+Been reading up on png format, as that is the image format I will use to store the font set
+image. And it's high time I learned at least one image format in greater detail. Also created
+a little test app, 'read_png_chnunks', to output the chunks in a png file, this was very easy
+to do. Unfortunately, no more time to do anything else this morning.
+</p>
+
+<h2>2011-08-22</h2>
+
+<p>
+Big long funs break. Only a tiny work done, however, I did complete another test app,
+~/proj/test/graphics/png/write_test_image.c. At first I didn't think it was working
+because the png file looked too small. Evenutally, I looked through the libpng code
+and did a little gdb steppin before realizing that it must have been doing compression
+by default. I should have just tried to open the damn thing in an image viewer!! Duh.
+</p>
+
+<p>
+So the next step is to create a font image from the glut 9x15 char set
+</p>
+
+<p>
+Created test app 'write_9x15_font_png'.
+</p>
+
+<p>
+Next, implementing the bits definition, it seems like I must continually forget the format
+of the Fixed9x15_Character_XXX arrays... there are 32 bytes for each character... why??
+Ah, 16 rows of 2 bytes each, duh...
+</p>
+
+<h2>2011-08-23</h2>
+
+<p>
+Up at 6:00 am, time for programmings. Last night I finished initial implementation of
+defining the image data array for the font char set and output it to a file. It wasn't
+right, but a little thought in bed revealed the problem, I was writing out the rows of
+each font char sequentially into the array, when they need to be offset so they line
+up under each other. Starting on the fix now.
+</p>
+
+<p>
+Did the change, but still a problem: the end of the img_data array is reached at the
+beginning of the 16th bit row of the first character of the final character row.
+Not sure why yet.
+</p>
+
+<h2>2011-08-24</h2>
+
+<p>
+Slept in till 7:20, needed the sleep but now time for programming. Last night in
+spare snippets of time, I finished a python program, gen_w9f_map.py, which creates
+a text representation of the image data array, to help me debug the problem. Perhaps
+that in conjunction with a quick gdb sesh and a cup of coffee will help make the
+magic happen.
+</p>
+
+<p>
+More debugging, I see my python output array is too small, that needs a little more
+work.
+</p>
+
+<p>
+Lunch, quick coding, changed python script to output each pixel row, not each char row.
+When finished, will take a another crack at debugging in gdb.
+</p>
+
+<h2>2011-08-25</h2>
+
+<p>
+Up good and early, should get some good debugging done today. Right now, I'm adding some
+docs to my gserver/gclient utility before debugging the write_9x15_font app with it.
+</p>
+
+<p>
+Well, spent the whole time this morning documenting the vim-gclient lxl debugging setup,
+so the actual debugging of the font test program will have to wait for next time.
+</p>
+
+<h2>2011-08-26</h2>
+
+<p>
+Up fairly late, just a bit of debugging time, but it's Friday! Last night, did a little
+more vim-gdb debugging, added some more docs on escaping stuff. This morning, resumed
+debugging, still a bug in the python text generator, the dang chXX label in the pixel
+rows is still a little off, fixing that. Why is it so damn hard to get correct?
+</p>
+
+<p>
+Fixed that, but still not right because the byte offsets of the bottom pixel rows
+is 5 digits, not 4, so need to add an extra digit to everything. But must do that
+later, it's time to go to work.
+</p>
+
+<h2>2011-08-27</h2>
+
+<p>
+It's Saturday morning, but I'm working today! So only a little time this morning.
+I fixed the python program again and am debugging the write_9x15_font_png app
+again in vim/gdb. It's on the final character row (pixel row 240, after the
+first character (chf0) first pixel row data has been written. Maybe I'll finally find this
+bug.
+</p>
+
+<p>
+At the end of the first pixel row of chf0, it was at 0x3c040, in agreement with
+the python output. Then it added num_img_data_row_bytes (0x400), making i == 0x3c440,
+as one would expect. But the start of the next pixel row is instead 0x3c400, so there
+is a 0x40 byte difference....?
+</p>
+
+<p>
+Aha, yes, by adding the 0x400 pixel row value to the index variable when it's at the end
+of the first pixel row, it drops it down 1 row so that the next row is actually starting
+under the second character in the final character row, chf1.
+</p>
+
+<p>
+Instead, the index var should be set to the initial offset of the chf0 + 
+bit_row * num_img_data_row_bytes. I think I've got it.
+</p>
+
+<p>
+Made the change, it's better, now it overruns on the final character 255:
+</p>
+<pre>
+mhackslab:test $ ./write_9x15_font_png
+ch 255: i: 262140, bit_row: 15 bit_col: 01 bit: 7 bit_val: 0
+urk!: Unknown error: 0
+mhackslab:test $ 
+</pre>
+
+<p>
+Cool, that's just an off-by-1 error on my overrun check, should be ok.
+</p>
+
+<p>
+Victory! We have a font set image! The individual characters upside-down, but
+that is easily fixed. Damn I'm slow!
+</p>
+
+<p>
+Back home, a little time before other stuff, will flip them rows so I can start
+thinking about the next part.
+</p>
+
+<p>
+Did that, chars are now drawn right-side up, but still backwards! I have to 
+flip that dir too?? Fine.
+</p>
+
+<p>
+Ok, flipped horizontally, but now it's shifted over too far to the right for some 
+reason.
+</p>
+
+<p>
+I think it's because the original bitmask def had a little padding of the first bitcol
+on the left and excess padding on the right, which is now on the left. bleh..
+</p>
+
+<p>
+This is getting to be a PITA, but ALMOST there...
+</p>
+
+<p>
+Hmm, looking closely in Gimp, there's some other weird artifact, some stray white 
+pixels scattered around in the first 2 character rows... could those be intentional?
+Would have to look more closely at the bitmask defs to be sure.
+</p>
+
+<p>
+So at this point, I could try doing more bit column hacking and flipping or back up,
+output the bit cols in existing order, but instead output the char blocks from 
+right-to-left and then reverse all the rows...that sounds almost as ugly.
+</p>
+
+<p>
+Hmm, on further thought, I don't think those artifacts are intentional, there's 
+still some bug in the code. Yeah, think I need to keep flipping the 2 bit cols individually,
+but keep them in the original sequence.
+</p>
+
+<p>
+Did it, we're there! Finally, I have a precisely-defined font image that I can use for 
+texture-mapping, where I know exactly where every pixel goes.
+</p>
+
+<p>
+Time for programming is done for today, except to name a new test app, 'draw_tex_font'.
+This will draw a font set using texture mapping, in the simplest possible way and 
+provide the baseline for more efficient text rendering.
+</p>
+
+<h2>2011-08-28</h2>
+
+<p>
+Up at 7 am Sunday morning, plenty of free time to program today! Continuing implementation
+of 'draw_text_font' app.
+</p>
+
+<p>
+Later in the day, finished adding code that loads image from png file,
+now I'm trying to specify the absolute minimum number of OpenGL calls
+for texturing a triangle. Spent a little time reading the OpenGL 2.1
+spec. Very dense, but nice reading the ultimate source for OpenGL
+behavior. Currently, texturing isn't working (I'm not using texture
+objects yet). I think it's because there are some glTexParameter()
+calls that are needed, but I don't remember which ones. The OpenGL
+red book gives 4 params (GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_T, GL_TEXTURE_MAG_FILTER,
+GL_TEXTURE_MIN_FILTER). I think I vaguely remember from a previous
+attempt that you have to specify the TEXTURE_MAG/MIN_FILTER params
+but not sure. I'll add and see.
+</p>
+
+<p>
+Aha, confirmed that the GL_TEXTURE_MIN_FILTER is the 'minimum' glTexParameter()
+that is required.
+</p>
+
+<p>
+Currently though, the texture is 'messed up', scrambled lower font set chars
+at bottom, the top ones are blank.
+</p>
+
+<p>
+Ok, ruled out texture issues, I did a glDrawPixels() and it's still messed up.
+Could it be the missing glPixelStorei() call? Nope.
+</p>
+
+<p>
+Duh, it was a bug in the image-loading code I grabbed from my cbots project,
+I hadn't fully converted from rgb to rgba everywhere.
+</p>
+
+<h2>2011-08-29</h2>
+
+<p>
+Monday, tired, didn't have any time this morning, maybe I can do a tiny progress
+tonight before dinner. Just want to re-define the tex coords to display a
+single character instead of the full image, how hard can that be?
+</p>
+
+<h2>2011-08-30</h2>
+
+<p>
+Too hard for me, I guess. Still not done, only a little time this morning. Will
+keep trying...
+</p>
+
+<p>
+Ok, got it. It now draws the whole font set at 312 fps. Next: create a new
+baseline app that draws 'readable' text lines, then start creating optimized
+versions.
+</p>
+
+<p>
+Next app will display 800x600 window with 80x36 text.
+</p>
+
+<p>
+After work, at home, little coding before breakin bad, getting weird error compiling
+tfont:
+</p>
+<pre>
+mhackslab:font $ make
+gcc -o font.o -g -Wall -I/Users/williamknight/swtools/opengl/glfw/include -I..  -c font.c
+gcc -o font-9x15.o -g -Wall -I/Users/williamknight/swtools/opengl/glfw/include -I..  -c font-9x15.c
+gcc -o tfont.o -g -Wall -I/Users/williamknight/swtools/opengl/glfw/include -I..  -c tfont.c
+In file included from tfont.c:4:
+../util/img.h:5: error: syntax error before ‘size_t’
+../util/img.h:5: warning: no semicolon at end of struct or union
+../util/img.h:6: warning: type defaults to ‘int’ in declaration of ‘height’
+../util/img.h:6: warning: data definition has no type or storage class
+../util/img.h:7: error: syntax error before ‘bytes_per_pixel’
+../util/img.h:7: warning: type defaults to ‘int’ in declaration of ‘bytes_per_pixel’
+../util/img.h:7: warning: data definition has no type or storage class
+../util/img.h:9: error: syntax error before ‘}’ token
+../util/img.h:9: warning: type defaults to ‘int’ in declaration of ‘RgbaImage’
+../util/img.h:9: warning: data definition has no type or storage class
+../util/img.h:11: error: syntax error before ‘*’ token
+../util/img.h:11: warning: type defaults to ‘int’ in declaration of ‘img_read_png_rgba’
+../util/img.h:11: warning: data definition has no type or storage class
+tfont.c:8: error: syntax error before ‘*’ token
+</pre>
+
+<p>
+wtf?
+</p>
+
+<p>
+Ah, now I realize the problem with img_h, I did a '#define img_h' in util/img.h. However, that
+doesn't explain the error above.
+</p>
+
+<p>
+Ok, I guess I'm finally realizing that size_t isn't a built-in type in C. Duh.
+</p>
+
+<p>
+Fixed, test image works! At the incredible fps of 24!
+</p>
+
+<h2>2011-08-31</h2>
+
+<p>
+Last day of August...sigh. Up at 7, I can do a little this morning. First will add a check
+of any existing GL errors ot the baseline app, then also investigate why the window isn't
+exactly 800 px wide.
+</p>
+
+<p>
+Ah, well, that 2nd one was easy, there was a '4' left-over from the 640 that later turned
+into an 840! Also making the current base-line app the new template.
+</p>
+
+<p>
+New baseline with 800x600 window, 80x36 cols is 29 fps (5760 tris). Made it the template, added GL error
+check, no errors. Checked in the code. We're ready to optimize.
+</p>
+
+<p>
+Starting reading again about vertex arrays and vertex buffers.
+</p>
+
+<p>
+Creating first optimized app tf8036_va (vertex arrays).
+</p>
+
+<p>
+Read a little about GL arrays, finished create_verts() func, that's all I have time for this morning.
+</p>
+
+<p>
+More thinkings about next steps, I'll be using glDrawElements(), prob with GL_TRIANGLES to start
+and maybe later GL_TRIANGLE_STRIP. The challenge will be to get the verts and tcoords right. I realized
+earlier that my first effort wasn't quite righ, it assumed each char row shared verts with the
+row below it, but actually in the baseline app, there is a 1 pixel border between, so no sharing
+for now.
+</p>
+
+<p>
+What needs to be done for more efficient tex-mapping of the font is to regenerate the tex image
+so that the characters are in 10x16 cells, not 16x16.
+</p>
+
+<p>
+Wait, it doesn't freakin matter, I can get 10x16 portions from the existing map just by re-defining the 
+get_tex_idx() function. Think I'll try changing it to 10x16.
+</p>
+
+<p>
+Did it, baseline works. Now, back to a more efficient version of the va.
+</p>
+
+<p>
+Hmm, after all that, now I'm thinking that I won't be able to 'share' the row verts
+after all, because the 'bottom' vert of a character in the first row will be associated
+with a different tex coord than the same vert for the char in the row below it.
+</p>
+
+<p>
+So I will need to 'double-define' the verts.
+</p>
+
+<p>
+Extracted out some common code. Running tf8036_va w/o drawing, we get a null-draw version
+with 448 fps.
+</p>
+
+<h2>2011-09-01</h2>
+
+<p>
+Up late this morning because I was up late last night, very little time for programming but
+will try at least to get the tcoord generation done.
+</p>
+
+<p>
+Finished initial implementation using glDrawElements(), it runs but displays some weird
+jaggedy white rows at top, no discernable text. Progress though. And an fps of 248!
+</p>
+
+<p>
+Now it's just a matter of debugging the data in the verts, tcoords and tris arrays.
+</p>
+
+<pre>
+(gdb) p _verts[0]
+$21 = 0
+(gdb) p _verts[1]
+$22 = 584
+(gdb) p _verts[2]
+$23 = 10
+(gdb) p _verts[3]
+$24 = 584
+(gdb) p _verts[4]
+$25 = 0
+(gdb) p _verts[5]
+$26 = 600
+(gdb) p _verts[6]
+$27 = 10
+(gdb) p _verts[7]
+$28 = 600
+</pre>
+
+<p>
+Looks correct to me. Ah, I generated tris wrong, I assumed row-sharing. Changed, still not right.
+</p>
+
+<p>
+tcoords don't look right:
+</p>
+<pre>
+(gdb) p _tcoords[0]
+$1 = 0
+(gdb) p _tcoords[1]
+$2 = 0.75
+(gdb) p _tcoords[2]
+$3 = 0.0390625
+(gdb) p _tcoords[3]
+$4 = 0.75
+(gdb) p _tcoords[4]
+$5 = 0
+(gdb) p _tcoords[5]
+$6 = 0.8125
+(gdb) p _tcoords[6]
+$7 = 0.0390625
+(gdb) p _tcoords[7]
+$8 = 0.8125
+(gdb) 
+</pre>
+
+<p>
+Well, not sure of that until I lookup the expected tcoord for the '0' char...
+It's row 3, col 0. Actually, that does look right. So wtf?
+</p>
+
+<p>
+Hah, I don't think I ever enabled the texture map stuff!!
+</p>
+
+<p>
+Ok, added tfont_init() call, it's drawing some semi-recognizable rows at the top now!
+Almost there I think.
+</p>
+
+<p>
+Ok, cranking down to 160 tris, they look squished in x dir...
+</p>
+
+<p>
+Gotta go to work!
+</p>
+
+<p>
+At work still coding, 2 things wrong: nch inc, 2nd tri index seq
+</p>
+
+<p>
+Still not it!
+</p>
+
+<p>
+Lunch at Riverside Cafe, I'm doing explicit glBegin(GL_TRIANGLES) on the
+_verts and then the _tcoords to find out what the heck is going on.
+</p>
+
+<p>
+I did it for the first tri, using previous debug values of the first tri
+verts and tcoords. They appear correct, the lower left half of a '0' is drawn. 
+The next step is to actually reference the values from the _verts and _tcoords
+arrays.
+</p>
+
+<p>
+Did that, they must be correct.
+</p>
+
+<p>
+Did glBegin(GL_TRIANGLES) with glArrayElement() and that works too!!??
+So the only thing left is incorrect _tris???
+</p>
+
+<p>
+wtf?
+</p>
+<pre>
+35		glDrawElements(GL_TRIANGLES, 1, GL_UNSIGNED_INT, _tris);
+(gdb) p _tris[0]
+$1 = 0
+(gdb) p _tris[1]
+$2 = 1
+(gdb) p _tris[2]
+$3 = 2
+(gdb) 
+</pre>
+
+<p>
+fuck:
+</p>
+<pre>
+voidglDrawElements(GLenummode, GLsizei count, GLenum type, 
+const GLvoid *indices); 
+Defines a sequence of geometric primitives using count number of ele- 
+ments, whose indices are stored in the array indices.
+</pre>
+
+<p>
+I was assuming tri count, not vert count!
+</p>
+
+<p>
+That's it. Jesus.
+</p>
+
+<p>
+190 fps.
+</p>
+
+<p>
+When I move the window around, it flickers, fps jumps to 362 and stays there on next
+run. Whatever, must be os/driver cacheing or something.
+</p>
+
+<p>
+Next up: server-side.
+</p>
+
+<p>
+Tonight, probably just sporadic programming. Here are some items to address:
+</p>
+
+<ul>
+<li>Re-work write_9x15_font_png to output 0 alpha for empty parts of char bitmaps
+<li>Start using texture objects
+<li>Find out why the null app is only 448 fps (should be higher)
+</ul>
+
+<p>
+Added alpha to 9x15 font bg, it works.
+</p>
+
+<p>
+Need to enable transparency now in the test app.
+</p>
+
+<h2>2011-09-02</h2>
+
+<p>
+Friday, yeah. Up pretty early, reading the OpenGL book chapter on blending. Before,
+I never really understood what the hell I was doing beyond learning you had to
+enable blending and pick a blend function with some random blend factors until it
+it worked. Now I will try to understand.
+</p>
+
+<pre>
+Result red pixel = R<sub>s</sub>S<sub>r</sub> + R<sub>d</sub>D<sub>r</sub>
+R<sub>s</sub>: Source red pixel
+R<sub>d</sub>: Dest red pixel
+
+S<sub>r</sub>: Source blending factor
+D<sub>r</sub>: Dest blending factor
+</pre>
+
+<p>
+Here is what I want:
+</p>
+<table>
+<tr><th>Source red pixel</th><th>Source alpha</th><th>Dest red pixel</th><th>Result red pixel</th></tr>
+<tr><td>0										 <td>0           </td><td>0.5           </td><td>0.5             </td></tr>
+<tr><td>1										 <td>1           </td><td>0.5           </td><td>1               </td></tr>
+</table>
+
+<p>
+In other words, if the src alpha (A<sub>s</sub>) is 1, the result should be the source pixel. If the src alpha
+is 0, the result should be the dest pixel.
+</p>
+
+<p>
+So what values of S<sub>r</sub> and D<sub>r</sub> will give me that?
+</p>
+
+<p>
+Well, one solution seems to be S<sub>r</sub> = A<sub>s</sub>, D<sub>r</sub> = 1 - A<sub>s</sub>:
+</p>
+<pre>
+0 * 0 + 1 * 0.5 = 0.5
+1 * 1 + 0 * 0.5 = 1
+</pre>
+
+<p>
+So I did this, as before, and it works:
+</p>
+<pre>
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+</pre>
+
+<p>
+But now I understand a little better how and why. for tf8036_va, fps this morning on my macbook
+is 355.
+</p>
+
+<p>
+Friday afternoon, done with work! What's next? Texture objects and new tfont functions
+for drawing using glDrawElements().
+</p>
+
+<p>
+Another consideration: how is selective coloring of text to be done? Changing all the
+text color uniformly could be done by changing the underlying texture image data, but
+to selective modify individual characters seems to require something like either 
+multi-texturing or some kind of overlaid image and a blending function. I'll worry about 
+that later, first need to start defining the new tfont functions. And should actually
+start out by defining a new tf8036 app to test it, such as tf8036_xt (external texture).
+</p>
+
+<p>
+Created app and 2 new tfont funcs: tfont_set_text_buf() and tfont_draw_text_buf().
+</p>
+
+<p>
+Last night I thought a little about the vim commands for 3D graphical movement and
+which keys to use for the z axis. At that time, I was going to go with '-' and '='
+because that's what I use for 'pg-up' and 'pg-down' and I couldn't visualize what
+other home row keys might be applicable that were comparable to h-l and j-k. But
+now, looking at the keys, the choice is obvious: i-o (in-out). The only potential
+conflict is with the existing use of 'i' to go into insert mode (as well as 'o'),
+but I'm not sure yet if such a parallel exists for 3D graphical editing. The
+closest thing that I can think of in that case is 'tab' which in Blender toggles
+between object and edit mode, and that could simply be retained instead. There
+isn't really a close corollary in 3D graphical editing for inputting a sequence of 
+characters, I think.
+</p>
+
+<p>
+Finished initial implementation of tfont text buf code and tf8036_xt. It was 
+pretty easy because I just copied stuff from tf8036_va. It crashes on first
+run though.
+</p>
+
+<h2>2011-09-03</h2>
+<p>
+Saturday morning, up early, not much sleep. And I'm working half-day today,
+so we'll see what gets done. Right now, debugging the new tfont routines.
+</p>
+
+<p>
+It crashes on the initial 'blank space' array, so that rules out the tfont_set_text_buf()
+function. Here is the stack crash at the crash:
+</p>
+<pre>
+0x1437c14a in gleRunVertexSubmitImmediate ()
+(gdb) bt
+#0  0x1437c14a in gleRunVertexSubmitImmediate ()
+#1  0x1437954a in gleLLVMArrayFunc ()
+#2  0x1437954a in gleLLVMArrayFunc ()
+#3  0x143794d7 in gleSetVertexArrayFunc ()
+#4  0x1435479a in gleDrawArraysOrElements_ExecCore ()
+#5  0x143556f8 in gleDrawArraysOrElements_IMM_Exec ()
+#6  0x955c6aa4 in glDrawElements ()
+#7  0x00003480 in tfont_draw_text_buf () at tfont.c:312
+#8  0x000027fb in main (argc=1, argv=0xbffff7b0) at tf8036_xt.c:38
+(gdb) 
+</pre>
+
+<p>
+No source code to debug, that sucks. Ah, first thing to try is to reduce
+the number of tris drawn in glDrawElements().
+</p>
+
+<p>
+Hmm, still crashing drawing just one tri.
+</p>
+
+<p>
+Probably some bounds error, maybe time for valgrind? First maybe I'll just add
+my own bounds checks.
+</p>
+
+<p>
+Fixed, I had just forgotten to add the glVertextPointer() and glTexCoordPointer()
+calls before glDrawElements() in tfont.c. Duh.
+</p>
+
+<p>
+Next: start on some editing functions.
+</p>
+
+<p>
+New app: tf_edit. First new thing: add a cursor overlay. I'll do it like vim, which
+is a simple semi-transparent blinking block cursor.
+</p>
+
+<p>
+Home after a long day's work, along with bike repair that made it a lot more than 
+half-day. While biking to work I worked out some more plans. First up: get the
+cursor working and then define an array of line buffers to hold text that
+gets selectively written to the screen buffer depending on current row and col
+scroll position.
+</p>
+
+<p>
+Then soon, to implement most of the vim functionality, I think I'll add
+a Lua interpreter to handle most of the keyboard input. It's something I've
+already done before on other projects. With this C-based project it should
+be even easier (one C++/swig project bogged things down with too much complexity,
+so I'll probably write my own interface functions).
+</p>
+
+<h2>2011-09-04</h2>
+
+<p>
+Sunday morning, up early with sufficient sleep. Time to make the cursor happen.
+</p>
+
+<p>
+Added display of fps in win title.
+Added dependency generation to makefiles.
+</p>
+
+<p>
+Created edit lib.
+</p>
+
+<p>
+Cursor draws without texture drawing, but not with. Probably need to save/restore
+some draw state in the tex drawing calls.
+</p>
+
+<p>
+Cursor drawing is working. It really is time to start using texture objects.
+</p>
+
+<p>
+Added the texture object, not really seeing the advantages of it yet thought.
+Anyhow, continuing with adding cursor movement. But should I add the lua interface
+to do that first? Why not.
+</p>
+
+<p>
+Cracking open the lua book, doing a quick re-read. Creating first test prog,
+lua_sinterp (simple interpreter).
+</p>
+
+<h2>2011-09-05</h2>
+
+<p>
+Spent most of the morning reading the Lua book. Now, I'm ready to do the first lua
+program, which will be a simple one that defines a single lua function, 'keydown()',
+which will be the key input handler. I'll call the function from C code using
+lua_pcall(), along the lines of the sample code in 25.3. Unfortunately, right now,
+I have to get ready and go to work.
+</p>
+
+<p>
+Lunch, only time for a very little programming. I want to start the next progrm
+that both displays graphics and runs a lua interpreter. Well, just modify the 
+tf_edit program to do that.
+</p>
+
+<p>
+Grr, first must fix a bug in the makesfiles, the lua_sinterp is stepping
+on the includes var, messing up subsequent ones.
+</p>
+
+<p>
+I think I need to change the Makefile strategy to must call make on
+each individual makefile.
+</p>
+
+<p>
+I will be late for work, but I did it.
+</p>
+
+<p>
+Home late, just a little time before dinner. Will try to add something to
+the tf_edit program.
+</p>
+
+<p>
+Ah, a new problem: new makefile scheme doesn't rebuild on src file changes.
+By moving the build commands for each app into a separate makefile, the
+dependency chain is broken in the main makefile. Easiest fix is to just
+call all the proj makefiles unconditionally.
+</p>
+
+<p>
+Fixed by adding $(targets) to phony.
+</p>
+
+<p>
+key input callback is working. Time for lua!
+</p>
+
+<h2>2011-09-06</h2>
+
+<p>
+Up at 7, getting to it. Lua.
+</p>
+
+<p>
+Did luaL_dofile() and lua_pcall(), it works! Lua rocks. Simplicity rocks.
+</p>
+
+<p>
+Next: make lua move the cursor.
+</p>
+
+<p>
+Registering C functions in lua.
+</p>
+
+<p>
+Added l_edit_set_cursor(), it freakin works! We are ready to rock and roll.
+</p>
+
+<p>
+I've got a program with lua-controlled cursor movement! It's just too easy!
+</p>
+
+<p>
+After work. Next up: key autorepeat. Will need to add a timer event. The easiest
+is to drive it from the main loop.
+</p>
+
+<p>
+Adding a tick function to handle key autorepeat.
+</p>
+
+<p>
+I don't see a lua function for getting millisecond time, so will write a
+wrapper func.
+</p>
+
+<p>
+Autorepeat is working! Sweetness.
+</p>
+
+<p>
+TODO: figure out how to detect undeclared lua vars (biting me already)
+</p>
+
+<h2>2011-09-07</h2>
+
+<p>
+Up pretty early (5:30 am) and got enough sleep. I have some precious time for
+coding, will get to it. What to do next? The command-line I think.
+</p>
+
+<p>
+So, first thing, I need a way to get key codes defined in lua. Thought a
+little about this yesterday, will write a lua script to generate the
+definitions. Could either be in lua or C, why not just be in lua.
+</p>
+
+<p>
+While I'm at it, might as well consider key-mapping, so I also need
+to consider key-sequence mappings. Hmm, don't want to bite off too much
+at first though. Will just keep it in mind for now. Think it's time
+to start looking at vim source code however.
+</p>
+
+<p>
+Looking at the vim source code, I see that it references literal 'c'
+values. If it's good enough for vim, it's good enough for me.
+</p>
+
+<p>
+We have the beginnings of a command-line. Next: apply 'shift' to produced
+shifted key values (currently 'shift-;' produces only ';' instead of ':')
+</p>
+
+<h2>2011-09-08</h2>
+
+<p>
+Great night's sleep but only a little time left for programming. Possible
+turbulence ahead. Can I get the 'shift' op to at least work?
+</p>
+
+<p>
+Still need those key code defs from glfw.h.
+</p>
+
+<p>
+At Modwest, but not working yet. Caught the bus, got in early, now
+time for a little more vblend coding on the couch upstairs. I'm
+implementing the 'shifted_keycode' table. Not sure if it's the right
+way to do it, but it will do what I need for now.
+</p>
+
+<p>
+After work, debugging glfw keycode mappings:
+</p>
+<pre>
+  k: [A], v: [A], ch: [A]
+	k!=ch: type(k): string, type(ch): string
+	k!=ch: #(k): 1, #(ch): 2
+	ch[1]: [A], ch[2]: []
+</pre>
+
+<p>
+Finally zeroing in on it.  This is the culprit conversion:
+</p>
+<pre>
+	ch = string.char(k,1)
+</pre>
+
+<p>
+Reading the freakin docs on string.char() again...
+</p>
+<blockquote>
+### `string.char (***)`
+
+Receives zero or more integers. Returns a string with length equal to the
+number of arguments, in which each character has the internal numerical code
+equal to its corresponding argument.
+
+Note that numerical codes are not necessarily portable across platforms.
+</blockquote>
+
+<p>
+Well, amazing what reading the freakin docs can do.
+</p>
+
+<p>
+Ok, key code conversion is finally working.
+</p>
+
+<h2>2011-09-09</h2>
+
+<p>
+Up good and early, got enough sleep, and it's Friday!! First thing: finish the
+keycodes.lua table, then get started on the command-line.
+</p>
+
+<p>
+Now that I've added key code to ascii code translation, the naming of the
+char-pressed and char-input functions becomes more clear.
+</p>
+
+<p>
+We've got text display on the command-line!
+</p>
+
+<p>
+Checking in code, wtf happened to my ssh key for my mmmmhack acct, it's not
+being recognized. I'm guessing the mmmmhack shell acct is busted. Will
+find out soon enough.
+</p>
+
+<p>
+On the bus to work, nice to have the extra programming time. Next: implement
+bs and ret for cmd-line.
+</p>
+
+<p>
+bs is working.
+</p>
+
+<p>
+Friday after work, on the bus! Will read more about how to do inter-module
+refs in the lua book at some point, but I think right now I can just specify
+the global module name. I'd really like to check in the existing code first
+though, but my freakin mmmmhack acct on modwest has a really weird mounting
+problem that not even jneff could fix. Maybe that means it's finally time to
+go git.
+</p>
+
+<p>
+Built and installed version 1.7.5.2 from source no probs. Reading OReilly
+git book.
+</p>
+
+<h2>2011-09-10</h2>
+
+<p>
+Saturday, up very early, but not enough sleep and too much beer last night.
+But will forge on.  Copied existing project dir over to a new one where I'll
+create a git repository.
+</p>
+
+</body>
+</html>
+

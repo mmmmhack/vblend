@@ -1,0 +1,33 @@
+font_lib = ../font/libfont.a
+edit_lib = ../edit/libedit.a
+util_lib = ../util/libutil.a
+
+proj_libs = \
+ $(font_lib) \
+ $(edit_lib) \
+ $(util_lib) 
+
+include targets.mk
+
+.PHONY: $(proj_libs) $(targets)
+
+all: $(proj_libs) $(targets)
+
+include target_rules.mk
+
+$(font_lib):
+	make -C ../font
+
+$(edit_lib):
+	make -C ../edit
+
+$(util_lib):
+	make -C ../util
+
+clean:
+	-rm $(targets)
+	-rm -rf *.app
+	-rm *.o
+	make -C ../util $@
+	make -C ../font $@
+
