@@ -1,9 +1,9 @@
 require "tflua"
 
---package.path = package.path .. ';./lua/?.lua'
-require "lua.keycodes"
-require "lua.cmd_line"
-require "lua.cursor"
+package.path = package.path .. ';./lua/?.lua'
+require "keycodes"
+require "cmd_line"
+require "cursor"
 
 keydown_time = nil
 keydown_key = nil

@@ -18,5 +18,5 @@
 :arga test/common.mk
 :arga test/tf_edit.mk
 :arga test/tf_edit.c
-:arga test/lua/tf_edit.lua
+:arga test/lua/*.lua
 :b3

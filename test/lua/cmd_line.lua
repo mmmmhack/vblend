@@ -30,8 +30,14 @@ function char_pressed_command(ch)
 		cmd = cmd_line
 		cmd_line = ""
 		cmd_line_update_scr()
-		cursor.set_pos(cursor.saved_pos)
 		-- move cursor back to prev pos
+		-- TODO: save cursor pos in mode-switch
+		cursor.set_pos(cursor.saved_pos)
+		-- TODO: erase cmd-line
+		-- TODO: process command
+		
+		-- TODO: call set-new-mode function
+		mode = "normal"
 	else
 		-- append ch to cmd-line
 		cmd_line_buf = cmd_line_buf .. ch
