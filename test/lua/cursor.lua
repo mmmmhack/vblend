@@ -1,7 +1,10 @@
 -- cursor.lua
-local modname = ...
 local M = {}
-M.saved_pos = {[0] = 0, [1] = 0}
+local modname = ...
+_G[modname] = M
+package.loaded[modname] = M
+
+M.saved_pos = {0, 0}
 
 M.inc = function (ncols)
 	row, col = tflua.get_cursor()
@@ -9,14 +12,17 @@ M.inc = function (ncols)
 end
 
 M.save_pos = function (pos)
-	M.saved_pos[0] = pos[0]			
-	M.saved_pos[1] = pos[1]			
+	M.saved_pos[1] = pos[1]
+	M.saved_pos[2] = pos[2]
+end
+
+M.get_pos = function()
+	row, col = tflua.get_cursor()
+	return {row, col}
 end
 
 M.set_pos = function(pos)
-	tflua.set_cursor(pos[0], pos[1])
+	tflua.set_cursor(pos[1], pos[2])
 end
 
-_G[modname] = M
-package.loaded[modname] = M
---return M
+

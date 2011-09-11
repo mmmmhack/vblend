@@ -1,8 +1,11 @@
 require "tflua"
 
 package.path = package.path .. ';./lua/?.lua'
+require "util"
 require "keycodes"
-require "cmd_line"
+require "line_buf"
+require "normal_mode"
+require "cmd_mode"
 require "cursor"
 
 keydown_time = nil
@@ -16,6 +19,15 @@ mode = 'normal'
 
 lshift_key_down = false
 rshift_key_down = false
+
+function set_mode(m)
+	mode = m
+end
+
+-- called at module load
+function init()
+	line_buf.set("howdy!")
+end
 
 -- called periodically by the app
 -- maps the glfw keycode in shift state to the ascii code
@@ -119,38 +131,9 @@ function key_event(k, state)
 	char_pressed(ch)
 end
 
---function kc(s)
---	return string.byte(s,1)
---end
-
 -- char code: just returns param ch for now
 function cc(ch)
 	return ch
-end
-
-function char_pressed_normal(ch)
-	-- movement
-	if ch == cc('h') then
-		dir = -1
-	elseif ch == cc('l') then
-		dir = 1
-	-- command mode
-	elseif ch == cc(':') then
-		mode = 'command'
-		-- show command prompt
---		bot_row = tflua.num_screen_rows() - 1
-		row = cmd_line_row()
-		tflua.set_screen_buf(row, 0, ': ')
-		tflua.set_cursor(row, 1)
-		return
-	-- undefined
-	else
-		print("normal mode: undefined ch: " .. ch)
-		return
-	end
---	row, col = tflua.get_cursor();
---	tflua.set_cursor(row, col + dir);
-	cursor.inc(dir)
 end
 
 function char_pressed_insert(ch)
@@ -159,9 +142,9 @@ end
 function char_pressed(ch)
 	-- ch = keymap(ch)
 	if 		 mode == 'normal' then
-		char_pressed_normal(ch)
+		normal_mode.char_pressed(ch)
 	elseif mode == 'command' then
-		char_pressed_command(ch)
+		cmd_mode.char_pressed(ch)
 	elseif mode == 'insert' then
 		char_pressed_insert(ch)
 	else
@@ -169,3 +152,4 @@ function char_pressed(ch)
 	end
 end
 
+init()

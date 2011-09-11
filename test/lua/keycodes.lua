@@ -1,4 +1,8 @@
 -- keycodes.lua
+local M = {}
+local modname = ...
+_G[modname] = M
+package.loaded[modname] = M
 
 -- TODO: replace these manual glfw key defs with an automated implementation
 GLFW_RELEASE = 0
