@@ -4,9 +4,11 @@ package.path = package.path .. ';./lua/?.lua'
 require "util"
 require "keycodes"
 require "line_buf"
-require "normal_mode"
-require "cmd_mode"
 require "cursor"
+require "win"
+require "normal_mode"
+require "insert_mode"
+require "cmd_mode"
 
 keydown_time = nil
 keydown_key = nil
@@ -136,9 +138,6 @@ function cc(ch)
 	return ch
 end
 
-function char_pressed_insert(ch)
-end
-
 function char_pressed(ch)
 	-- ch = keymap(ch)
 	if 		 mode == 'normal' then
@@ -146,9 +145,9 @@ function char_pressed(ch)
 	elseif mode == 'command' then
 		cmd_mode.char_pressed(ch)
 	elseif mode == 'insert' then
-		char_pressed_insert(ch)
+		insert_mode.char_pressed(ch)
 	else
-	  print("unknown mode")	
+	  print("unknown mode: " .. tostring(mode))	
 	end
 end
 

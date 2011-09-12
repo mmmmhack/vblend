@@ -45,6 +45,12 @@ M.not_a_cmd = function(cmd)
 	M.update_scr()
 end
 
+M.set_text = function(s)
+	M.erase_cmd_line()
+	M.cmd_line_buf = s
+	M.update_scr()
+end
+
 -- handles cmd entered from cmd-line
 M.do_cmd = function(cmd)
 	if #cmd == 0 then

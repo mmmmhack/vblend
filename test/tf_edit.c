@@ -148,7 +148,9 @@ int main(int argc, char* argv[]) {
 		error_check();
 
 		// exit check
-		exit_check(&run);
+//		exit_check(&run);
+		if(!glfwGetWindowParam(GLFW_OPENED))
+			run = 0;
  
     fps_inc_frames_drawn();
   }

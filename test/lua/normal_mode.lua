@@ -1,6 +1,6 @@
 -- normal_mode.lua	:	normal mode editing routines
 local M = {}
-modname = ...
+local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
@@ -62,8 +62,12 @@ M.char_pressed = function (ch)
 	elseif ch == cc('l') then
 		M.move_horiz(1)
 	-- count
-	elseif isdigit(ch) then
+	elseif util.isdigit(ch) then
 		M.update_op_count(ch)
+	-- inset mode
+	elseif ch == cc('i') or ch == cc('a') then
+		set_mode('insert')
+		insert_mode.begin(ch)
 	-- command mode
 	elseif ch == cc(':') then
 		set_mode('command')
