@@ -16,10 +16,12 @@
 #include "edit/edit.h"
 
 #include "tf8036_common.h"
+#include "tf_edit.h"
 
 static const char* APP_TITLE = "tf_edit: text display, cursor and scrolling";
 static lua_State *L = NULL;
 static const char* LUA_FILE = "lua/tf_edit.lua";
+static int _run = 1;
 
 static int l_edit_set_cursor(lua_State* L) {
 	int row = luaL_checknumber(L, 1);
@@ -62,6 +64,24 @@ static int l_tfont_set_text_buf(lua_State* L) {
 	return 0;
 }
 
+static int l_quit(lua_State* L) {
+	quit();
+	return 0;
+}
+
+static int l_traceback(lua_State* L) {
+	const char* err = lua_tostring(L, -1);
+	if(!err)
+		return;
+	printf("---l_traceback\n");
+	fprintf(stderr, "err: %s\n", err);
+	lua_getglobal(L, "traceback");
+	int rc = lua_pcall(L, 0, 0, 1);
+	printf("lua_pcall returned: %d\n", rc);
+	exit(0);
+	return 0;
+}
+
 static const struct luaL_Reg _tflua_lib [] = {
 	{"set_cursor", l_edit_set_cursor},
 	{"get_cursor", l_edit_get_cursor},
@@ -69,6 +89,8 @@ static const struct luaL_Reg _tflua_lib [] = {
 	{"num_screen_rows", l_tfont_num_rows},
 	{"num_screen_cols", l_tfont_num_cols},
 	{"set_screen_buf", l_tfont_set_text_buf},
+	{"traceback", l_traceback},
+	{"quit", l_quit},
 	{NULL, NULL}
 };
 
@@ -88,13 +110,38 @@ static void init_lua() {
 	}
 }
 
+/*
+static void lua_traceback() {
+	fprintf(stderr, "--- BEG traceback\n");
+	lua_getglobal(L, "traceback");
+	int rc = lua_pcall(L, 0, 0, 0);
+	if(rc)
+		fprintf(stderr, "lua traceback() function failed\n");
+	fprintf(stderr, "--- END traceback\n");
+}
+*/
+
 static void tick() {
 	lua_getglobal(L, "tick");
-	int rc = lua_pcall(L, 0, 0, 0);
+	lua_pushcfunction(L, l_traceback);
+	int rc = lua_pcall(L, 0, 0, 1);
 	if(rc) {
 		const char* err = lua_tostring(L, -1);
 		fprintf(stderr, "failed calling lua tick handler: %s\n", err);
+//		lua_traceback();
 		sys_err("tick()");
+	}
+}
+
+static void lua_draw() {
+	lua_getglobal(L, "draw");
+	lua_pushcfunction(L, l_traceback);
+	int rc = lua_pcall(L, 0, 0, 1);
+	if(rc) {
+		const char* err = lua_tostring(L, -1);
+		fprintf(stderr, "failed calling lua draw handler: %s\n", err);
+//		lua_traceback();
+		sys_err("lua_draw()");
 	}
 }
 
@@ -110,12 +157,18 @@ void cb_glfw_key(int key, int state) {
 	lua_getglobal(L, "key_event");
 	lua_pushnumber(L, key);
 	lua_pushnumber(L, state);
-	int rc = lua_pcall(L, 2, 0, 0);
+	lua_pushcfunction(L, l_traceback);
+	int rc = lua_pcall(L, 2, 0, 3);
 	if(rc) {
 		const char* err = lua_tostring(L, -1);
 		fprintf(stderr, "failed calling lua keydown handler: %s\n", err);
+//		lua_traceback();
 		sys_err("cb_glfw_key");
 	}
+}
+
+void quit() {
+	_run = 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -131,12 +184,13 @@ int main(int argc, char* argv[]) {
 	init_lua();
 
   // main loop
-	int run = 1;
-  while(run) {
+  while(_run) {
 		// do lua timer tick
 		tick();
 
     glClear(GL_COLOR_BUFFER_BIT);
+
+		lua_draw();
 
 		draw_text();
 
@@ -150,7 +204,7 @@ int main(int argc, char* argv[]) {
 		// exit check
 //		exit_check(&run);
 		if(!glfwGetWindowParam(GLFW_OPENED))
-			run = 0;
+			quit();
  
     fps_inc_frames_drawn();
   }

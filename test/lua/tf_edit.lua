@@ -3,32 +3,56 @@ require "tflua"
 package.path = package.path .. ';./lua/?.lua'
 require "util"
 require "keycodes"
-require "line_buf"
+--require "line_buf"
 require "cursor"
 require "win"
+require "buffer"
 require "normal_mode"
 require "insert_mode"
 require "cmd_mode"
 
-keydown_time = nil
-keydown_key = nil
-key_autorepeat_first_delay = 1 / 2
-key_autorepeat_rate = 1 / 10
-key_autorepeat_interval = key_autorepeat_first_delay
+local keydown_time = nil
+local keydown_key = nil
+local key_autorepeat_first_delay = 1 / 2
+local key_autorepeat_rate = 1 / 10
+local key_autorepeat_interval = key_autorepeat_first_delay
 
-modes = {'normal', 'insert', 'command'}
-mode = 'normal'
+local modes = {'normal', 'insert', 'command'}
+local mode = 'normal'
 
-lshift_key_down = false
-rshift_key_down = false
+local lshift_key_down = false
+local rshift_key_down = false
+
+local _active_buf = nil
+local _cmd_buf = nil
 
 function set_mode(m)
 	mode = m
 end
 
+function set_active_buf(b)
+	_active_buf = b
+end
+
+function active_buf()
+	return _active_buf
+end
+
 -- called at module load
 function init()
-	line_buf.set("howdy!")
+	local w = tflua.num_screen_cols()
+	local h = tflua.num_screen_rows()
+
+	-- create first buffer
+	_active_buf = buffer.new({[0]=0, [1]=0}, {[0]=w, [1]=h-1})
+	
+	local ln = string.rep("0123456789", 7) .. "012345"
+	buffer.set(_active_buf, ln)
+--	line_buf.set(ln)
+
+	-- create cmd-line buffer
+	_cmd_buf = buffer.new({[0]=0, [1]=h-1}, {[0]=w, [1]=1})
+	cmd_mode.buf = _cmd_buf
 end
 
 -- called periodically by the app
@@ -39,19 +63,19 @@ function tick()
 		return
 	end
 	-- do key autorepeat
-	cur_time = tflua.get_time()
-	diff_time = cur_time - keydown_time
+	local cur_time = tflua.get_time()
+	local diff_time = cur_time - keydown_time
 	if diff_time > key_autorepeat_interval then
 	  key_autorepeat_interval = key_autorepeat_rate
 		keydown_time = cur_time
 
-		ch = glfw_key_toascii(keydown_key)
+		local ch = glfw_key_toascii(keydown_key)
 		char_pressed(ch)
 	end
 end
 
 function shift_key_event(k, state)
-	b = state == GLFW_PRESS  and true or false
+	local b = state == GLFW_PRESS and true or false
 	if k == GLFW_KEY_LSHIFT then
 		lshift_key_down = b
 	elseif k == GLFW_KEY_RSHIFT then
@@ -72,15 +96,15 @@ function glfw_key_toascii(k)
 --print("k: " .. k)
 	-- 'printable' keycodes are mapped with string keys
 	if k < 256 then
-		kc = string.char(k)
+		local kc = string.char(k)
 	-- the rest are mapped with numeric keys
 	else
-		kc = k
+		local kc = k
 	end
 
 	-- get ascii char from keycode and shift state
 	if is_shift_key_down() then
-		ascii_ch = shifted_keycode[kc]
+		local ascii_ch = shifted_keycode[kc]
 		-- some ascii chars (bs, tab, ret, etc.) only have unshifted mapping
 		if ascii_ch == nil then
 			ascii_ch = unshifted_keycode[kc]
@@ -112,7 +136,7 @@ function key_event(k, state)
 		return
 	end
 
-	ch = glfw_key_toascii(k)
+	local ch = glfw_key_toascii(k)
 
 	if state == GLFW_RELEASE then
 		-- if current keydown key was released, clear keydown key
@@ -151,4 +175,14 @@ function char_pressed(ch)
 	end
 end
 
+function draw()
+	if _active_buf.redraw then
+		buffer.draw(_active_buf)
+	end
+	if _cmd_buf.redraw then
+		buffer.draw(_cmd_buf)
+	end
+end
+
 init()
+

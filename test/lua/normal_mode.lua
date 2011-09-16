@@ -6,13 +6,16 @@ package.loaded[modname] = M
 
 M.op_count_buf = ""
 M.op_count_max = 10
-M.op_count_col = tflua.num_screen_cols() - M.op_count_max
+--M.op_count_col = tflua.num_screen_cols() - M.op_count_max
+M.buf = line_buf -- TODO: replace with better init
 
+--[[
 M.update_scr = function()
 	row = cmd_mode.cmd_line_row()
 	col = M.op_count_col
 	tflua.set_screen_buf(row, col, M.op_count_buf)
 end
+--]]
 
 M.clear_op_count = function()
 	M.op_count_buf = string.rep(" ", #M.op_count_buf)
@@ -41,9 +44,9 @@ end
 M.move_horiz = function(dir)
 	n = dir * M.op_count()
 	-- clamp to line
-	ln = line_buf.get()
+	ln = M.buf.line()
 	final_col = math.max(0, #ln - 1)
-	cur_pos = cursor.get_pos()
+	cur_pos = M.buf.cursor_pos()
 	cur_row = cur_pos[1]
 	cur_col = cur_pos[2]
 	new_col = cur_col + n
@@ -61,6 +64,9 @@ M.char_pressed = function (ch)
 		M.move_horiz(-1)
 	elseif ch == cc('l') then
 		M.move_horiz(1)
+	elseif ch == cc('$') then
+		ln = line_buf.get()
+		M.move_horiz(#ln)
 	-- count
 	elseif util.isdigit(ch) then
 		M.update_op_count(ch)

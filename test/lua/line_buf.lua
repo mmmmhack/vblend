@@ -1,4 +1,4 @@
--- line_buf.lua	:	manages lines of text in a text buffer
+-- line_buf.lua	:	manages lines of text in a text buffer (obsolete) TODO: remove
 local M = {}
 local modname = ...
 _G[modname] = M

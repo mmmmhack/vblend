@@ -1724,7 +1724,112 @@ Next: insert mode. This requires scroll pos data, which I will initially put in 
 <h2>2011-09-12</h2>
 
 <p>
-Up with little time, but got append working. Next: insert.
+Up with little time, but got append working. Next: insert. It works too.
+</p>
+
+<p>
+Next: line scrolling.
+</p>
+
+<p>
+After work. Will implement '$' before line scrolling, for easy move-to-end-of-line.
+Done. Will also add 'q' cmd now that ESC no longer works to exit the app.
+</p>
+
+<p>
+quit cmd works.
+</p>
+
+<h2>2011-09-13</h2>
+
+<p>
+Up early, time to code. Get the scrolling working.
+</p>
+
+<p>
+I thought it would be a fairly simple thing to get started on, but I see that I need
+to think more deeply about the problem. There are a few pieces involved:
+</p>
+<ul>
+<li>the screen cursor
+<li>an array of text lines, collectively the text buffer
+<li>a window that is a subset of the screen area
+</ul>
+
+<p>
+These pieces must somehow be combined to map a subset of the text lines into
+a 'view' on the screen.
+</p>
+
+<p>
+Previously, I had the notion of using the cursor module to manage scrolling, but
+currently the cursor position only refers to the location on the screen. There
+needs to be some representation of cursor position in the line buffers as well.
+I'll probably think about this on a bike ride in to work.
+</p>
+
+<p>
+After work, taking a break from biking home to work a little more to get my
+mind in the groove. This morning, I decided I needed something like 'scr_to_buf()'
+and 'buf_to_scr()' to determine scroll offsets on cursor move. Also, I'll
+change existing cursor.get_pos() function to cursor.get_scr_pos(), and also add
+cursor.get_buf_pos(). The cursor must somehow be associated with a row,col position
+in the buffer, not just with the screen. The movement actions will cause
+the cursor.set_buf_pos() to be called, which in turn will update the screen pos.
+</p>
+
+<p>
+A little more biking, a little more thought. I will create the buffer module
+with functions that operate on buf tables.
+</p>
+
+<h2>2011-09-14</h2>
+
+<p>
+Up early, get coding. Must finish buffer code and get the program working again.
+</p>
+
+<h2>2011-09-15</h2>
+
+<p>
+Another day, up early, must finish buffer code and get the program working again.
+</p>
+
+<p>
+Ok, finished the initial implemention of the buffer code, let the debugging begin!
+</p>
+
+<p>
+Got an initial display, then error in util.isdigit(). I'm tempted to add stack trace
+output in the error handler.
+</p>
+
+<p>
+On the bus to work, will read a little about lua debug, maybe implement stack trace if
+time.
+</p>
+
+<p>
+Added call to debug.traceback() after lua pcall() in tf_edit.c, but it didn't
+print anything on error.
+</p>
+
+<p>
+After work on the bus, read a little more of the lua book and realized that I need
+to use xpcall() instead with debug.traceback as the error function.
+</p>
+
+<h2>2011-09-16</h2>
+
+<p>
+Friday, Hallelujah. Up real early, gonna figure out that debug deal. Amazingly, last
+night, I couldn't find any examples of lua_pcall() that use an error handler on
+Google. Will try for a bit to just figure it out.
+</p>
+
+<p>
+Tried one more thing, then started to debug the C code in gdb, realized I was on
+a Mac, time to push this baby via git to Linux.
 </p>
 
 </body>
