@@ -95,16 +95,18 @@ function glfw_key_toascii(k)
 
 --print("k: " .. k)
 	-- 'printable' keycodes are mapped with string keys
+	local kc
 	if k < 256 then
-		local kc = string.char(k)
+		kc = string.char(k)
 	-- the rest are mapped with numeric keys
 	else
-		local kc = k
+		kc = k
 	end
 
 	-- get ascii char from keycode and shift state
+	local ascii_ch
 	if is_shift_key_down() then
-		local ascii_ch = shifted_keycode[kc]
+		ascii_ch = shifted_keycode[kc]
 		-- some ascii chars (bs, tab, ret, etc.) only have unshifted mapping
 		if ascii_ch == nil then
 			ascii_ch = unshifted_keycode[kc]
@@ -129,7 +131,7 @@ end
 
 -- called from the app on key input event
 function key_event(k, state)
---print("k: " .. k .. ", state: " .. state)
+--print(string.format("key_event(): k: [%s], state: [%s]", tostring(k), tostring(state)))
 	
 	-- record shift key state
 	if shift_key_event(k, state) then
@@ -154,7 +156,9 @@ function key_event(k, state)
   key_autorepeat_interval = key_autorepeat_first_delay
 
 	-- handle keydown action
-	char_pressed(ch)
+	if ch ~= nil then
+		char_pressed(ch)
+	end
 end
 
 -- char code: just returns param ch for now

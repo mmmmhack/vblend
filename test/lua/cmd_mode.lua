@@ -5,8 +5,8 @@ _G[modname] = M
 package.loaded[modname] = M
 
 --M.cmd_line_buf = ''
-M.buf = nil 	-- TODO: replace with better init
-M.saved_buf = nil
+M.buf = nil 	-- TODO: replace with better init (current set in tf_edit.lua init())
+--M.saved_buf = nil
 
 -- cmd handlers
 M.quit = function()
@@ -14,7 +14,7 @@ M.quit = function()
 end
 
 M.cmd_handler = {
-	['quit'] = M.quit,
+	['q'] = M.quit,
 }
 
 --[[
@@ -60,14 +60,14 @@ end
 
 -- shows err msg for invalid cmd
 M.not_a_cmd = function(cmd)
-	M.buf.set("Error: not a command: " .. cmd)
+	buffer.set(M.buf, "Error: not a command: " .. cmd)
 --	M.update_scr()
 end
 
 -- public function to set cmd-line text, for when it's used as a status line
 M.set_text = function(s)
 --	M.erase_cmd_line()
-	M.buf.set(s, 0)
+	buffer.set(M.buf, s)
 --	M.update_scr()
 end
 
@@ -79,6 +79,7 @@ M.do_cmd = function(cmd)
 	local h = M.cmd_handler[cmd]
 	if h == nil then
 		M.not_a_cmd(cmd)	
+		do return end
 	end
 	h(cmd)
 end
@@ -93,21 +94,24 @@ M.char_pressed = function (ch)
 			do return end
 		end
 		M.cmd_line_buf = string.sub(M.cmd_line_buf, 1, #M.cmd_line_buf - 1) .. " "
-		M.update_scr()
+--		M.update_scr()
 		M.cmd_line_buf = string.sub(M.cmd_line_buf, 1, #M.cmd_line_buf - 1)
-		M.update_scr()
-		M.buf.inc_cursor(-1)
+--		M.update_scr()
+		buffer.inc_cursor(M.buf, -1)
 
 	-- enter
 	elseif ch == cc(ASC_RET) then
 		-- get cmd
-		local cmd = string.sub(M.cmd_line_buf, 2) 
+		local ln = buffer.get(M.buf)
+		local cmd = string.sub(ln, 2) 
 
 		-- erase cmd-line
 --		M.erase_cmd_line()
 
 		-- move cursor back to prev pos
-		M.buf.set_cursor(cursor.saved_pos)
+--		buffer.set_cursor(M.buf, cursor.saved_pos)
+		local b = active_buf()
+		buffer.set_cursor(b, b.cursor_pos)
 
 		-- process command
 		M.do_cmd(cmd) 
@@ -115,12 +119,11 @@ M.char_pressed = function (ch)
 		set_mode("normal")
 	else
 		-- append ch to cmd-line
-		M.buf.set(M.buf.get() .. ch)
+		buffer.set(M.buf, buffer.get(M.buf) .. ch)
 
 		-- update cursor
-		M.buf.inc_cursor(1)
+		buffer.inc_cursor(M.buf, 1)
 	end
 
 end -- char_pressed
-
 

@@ -72,7 +72,7 @@ static int l_quit(lua_State* L) {
 static int l_traceback(lua_State* L) {
 	const char* err = lua_tostring(L, -1);
 	if(!err)
-		return;
+		return 0;
 	printf("---l_traceback\n");
 	fprintf(stderr, "err: %s\n", err);
 	lua_getglobal(L, "traceback");
@@ -122,8 +122,8 @@ static void lua_traceback() {
 */
 
 static void tick() {
-	lua_getglobal(L, "tick");
 	lua_pushcfunction(L, l_traceback);
+	lua_getglobal(L, "tick");
 	int rc = lua_pcall(L, 0, 0, 1);
 	if(rc) {
 		const char* err = lua_tostring(L, -1);
@@ -134,8 +134,8 @@ static void tick() {
 }
 
 static void lua_draw() {
-	lua_getglobal(L, "draw");
 	lua_pushcfunction(L, l_traceback);
+	lua_getglobal(L, "draw");
 	int rc = lua_pcall(L, 0, 0, 1);
 	if(rc) {
 		const char* err = lua_tostring(L, -1);
@@ -154,10 +154,10 @@ void cb_glfw_key(int key, int state) {
 //	printf("key: %d, state: %d\n", key, state);
 
 	// give it to lua
+	lua_pushcfunction(L, l_traceback);
 	lua_getglobal(L, "key_event");
 	lua_pushnumber(L, key);
 	lua_pushnumber(L, state);
-	lua_pushcfunction(L, l_traceback);
 	int rc = lua_pcall(L, 2, 0, 3);
 	if(rc) {
 		const char* err = lua_tostring(L, -1);

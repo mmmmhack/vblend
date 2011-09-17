@@ -16,3 +16,4 @@ targets = \
  tf8036_xt \
  tf_edit \
  lua_sinterp \
+ test_lua_pcall \

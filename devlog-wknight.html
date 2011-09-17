@@ -1846,11 +1846,69 @@ just some fix-ups to get the project to build in linux, hopefully not too much w
 
 <p>
 First though, I will just commit this devlog text and make sure I can pull it back from
-my mack.
+my mac.
 </p>
 
+<p>
+Ok, I did it. Just did a pull from my mac specifying the path via ssh to my linux box.
+Easy. I'll leave this comment on mac side while continuing edits on linux side just
+for some merging practice.
+</p>
 
+<p>
+Home, Friday! Yeah! A little progress hopefully before relaxing tonight. Will write
+a stub lua program to test lua_pcall(), which I realized that I can debug on the mac
+with gdb.
+</p>
 
+<p>
+Got the test app running. The deal now is that the error function is being called
+regardless of whether an error occurs and there is no error message.  Ah, it's
+not calling the freakin test func.
+</p>
+
+<p>
+Sweet, got the traceback working. Just had to push the error handler func before
+the pcall() func and specify a stack pos arg of '1' for the handler arg.
+</p>
+
+<p>
+So now here is the stack trace of the current keydown error:
+</p>
+<pre>
+mhackslab:test $ r
+---l_traceback
+err: ./lua/util.lua:8: bad argument #1 to 'byte' (string expected, got nil)
+[./lua/util.lua]:29
+2	C function
+3	C function
+[./lua/util.lua]:8
+[./lua/normal_mode.lua]:71
+[lua/tf_edit.lua]:168
+[lua/tf_edit.lua]:157
+lua_pcall returned: 0
+mhackslab:test $ 
+</pre>
+
+<h2>2011-09-17</h2>
+
+<p>
+Up early Saturday morn, didn't drink too much beer, let's go.
+</p>
+
+<p>
+I fixed the proximate problem (I had added 'local' declarations to all function local vars,
+but did it mindlessely and some were not in the right scope). Stack traces helps
+the fixes, but a real debugger would be nice. Will have to create it at some point.
+</p>
+
+<p>
+Cursor movement is working again!
+</p>
+
+<p>
+Command mode is working again!
+</p>
 
 </body>
 </html>

@@ -31,7 +31,7 @@ end
 
 M.buf2scr = function (b, buf_pos)
 	local win_pos = M.buf2win(b, buf_pos)
-	return M.win2scr(win_pos)
+	return M.win2scr(b, win_pos)
 end
 
 -- adjusts cursor position on current cursor row
@@ -46,7 +46,7 @@ M.set_cursor = function (b, pos)
 	b.cursor_pos[1] = pos[1]
 
 	-- get pos in window
-	local win_pos = M.buf2win(b.cursor_pos)
+	local win_pos = M.buf2win(b, b.cursor_pos)
 
 	-- calc scroll to ensure cursor visible in window
 	local dx = 0
@@ -67,7 +67,7 @@ M.set_cursor = function (b, pos)
 	-- y: TODO: implement by making above a loop
 
 	-- set the actual cursor position on the screen
-	local scr_pos = M.win2scr(win_pos)
+	local scr_pos = M.win2scr(b, win_pos)
 	tflua.set_cursor(scr_pos[1], scr_pos[0])
 end
 

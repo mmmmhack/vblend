@@ -49,3 +49,6 @@ tf_edit:
 lua_sinterp:
 	make -f lua_sinterp.mk
 
+test_lua_pcall:
+	make -f test_lua_pcall.mk
+
