@@ -34,7 +34,7 @@ M.insert_pos = function()
 	return col
 --]]
 	local pos = active_buf().cursor_pos
-	return pos
+	return {[0]=pos[0], [1]=pos[1]}
 end
 
 M.inc_cursor = function(n)
@@ -51,6 +51,7 @@ M.set_line = function(ln)
 end
 
 M.char_pressed = function(ch)
+tflua.set_debug()
 	-- exit mode
 	if ch == ASC_ESC then
 		-- cmd-line 'insert' status
@@ -64,9 +65,10 @@ M.char_pressed = function(ch)
 	elseif util.isprintable(ch) then
 		-- insert char into line buf at cursor pos
 		local ins_pos = M.insert_pos()
+		local ins_col = ins_pos[0]
 		local ln = M.get_line()
-		local ln_pre = string.sub(ln, 1, ins_pos)
-		local ln_pst = string.sub(ln, ins_pos+1)
+		local ln_pre = string.sub(ln, 1, ins_col)
+		local ln_pst = string.sub(ln, ins_col + 1)
 --print(string.format("cusor_pos: %s, ins_pos: %d, ln: [%s], ln_pre: [%s], ch: [%s], ln_pst: [%s]", cursor_pos, ins_pos, lni, ln_pre, ch, ln_pst)
 		local new_ln = ln_pre .. ch .. ln_pst
 		M.set_line(new_ln)

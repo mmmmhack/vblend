@@ -25,3 +25,4 @@ test/tf8036_va
 test/tf8036_xt
 test/tf_edit
 test/write_9x15_font_png
+test/test_lua_pcall

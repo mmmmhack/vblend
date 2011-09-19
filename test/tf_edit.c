@@ -16,12 +16,19 @@
 #include "edit/edit.h"
 
 #include "tf8036_common.h"
+#include "lua_util.h"
 #include "tf_edit.h"
 
 static const char* APP_TITLE = "tf_edit: text display, cursor and scrolling";
 static lua_State *L = NULL;
 static const char* LUA_FILE = "lua/tf_edit.lua";
 static int _run = 1;
+static int _debug = 0;
+
+static int l_set_debug(lua_State* L) {
+	_debug  = 1;
+	return 0;
+}
 
 static int l_edit_set_cursor(lua_State* L) {
 	int row = luaL_checknumber(L, 1);
@@ -70,10 +77,10 @@ static int l_quit(lua_State* L) {
 }
 
 static int l_traceback(lua_State* L) {
+	printf("--- BEG l_traceback\n");
 	const char* err = lua_tostring(L, -1);
 	if(!err)
 		return 0;
-	printf("---l_traceback\n");
 	fprintf(stderr, "err: %s\n", err);
 	lua_getglobal(L, "traceback");
 	int rc = lua_pcall(L, 0, 0, 1);
@@ -83,6 +90,7 @@ static int l_traceback(lua_State* L) {
 }
 
 static const struct luaL_Reg _tflua_lib [] = {
+	{"set_debug", l_set_debug},
 	{"set_cursor", l_edit_set_cursor},
 	{"get_cursor", l_edit_get_cursor},
 	{"get_time", l_sys_double_time},
@@ -136,6 +144,10 @@ static void tick() {
 static void lua_draw() {
 	lua_pushcfunction(L, l_traceback);
 	lua_getglobal(L, "draw");
+if(_debug) {
+	printf("_debug flag set\n");
+	dump_lua_stack(L);
+}
 	int rc = lua_pcall(L, 0, 0, 1);
 	if(rc) {
 		const char* err = lua_tostring(L, -1);

@@ -8,6 +8,8 @@
 #include "lauxlib.h" 
 #include "lualib.h" 
 
+#include "lua_util.h"
+
 static lua_State *L = NULL;
 
 static int l_traceback(lua_State* L) {
@@ -22,6 +24,9 @@ static int l_traceback(lua_State* L) {
 	fprintf(stderr, "err: %s\n", err);
 	printf("calling traceback() function\n");
 	lua_getglobal(L, "traceback");
+
+dump_lua_stack(L);
+
 	int rc = lua_pcall(L, 0, 0, 1);
 	printf("lua_pcall returned: %d\n", rc);
 //exit(0);

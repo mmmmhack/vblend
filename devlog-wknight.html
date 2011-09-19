@@ -1910,6 +1910,183 @@ Cursor movement is working again!
 Command mode is working again!
 </p>
 
+<h2>2011-09-18</h2>
+
+<p>
+Sunday afternoon, after staying up ridiculously late. Working on insert code.
+</p>
+
+<p>
+Stack trace still not working right, debugging again in gdb:
+</p>
+<pre>
+mhackslab:test $ r
+_debug flag set
+failed calling lua draw handler: error in error handling
+lua_draw(): No such file or directory
+mhackslab:test $ 
+</pre>
+
+</p>
+. Rebuilt lua lib with -O0 -g.
+</p>
+
+<p>
+Tracing in to the lua code, I can't see how the error handler is called. Next, 
+will trace in for a case where the error handler _is_ called to see how.
+</p>
+
+<p>
+Here (from running test_lua_pcall):
+</p>
+<pre>
+breakpoint 1, l_traceback (L=0x100120) at test_lua_pcall.c:14
+14		printf("BEG l_traceback()\n");
+(gdb) bt
+#0  l_traceback (L=0x100120) at test_lua_pcall.c:14
+#1  0x00009191 in luaD_precall (L=0x100120, func=0x801054, nresults=1) at ldo.c:319
+#2  0x000093f0 in luaD_call (L=0x100120, func=0x801054, nResults=1) at ldo.c:376
+#3  0x00008390 in luaG_errormsg (L=0x100120) at ldebug.c:625
+#4  0x000083e4 in luaG_runerror (L=0x100120, fmt=0x254ac "attempt to %s %s '%s' (a %s value)") at ldebug.c:636
+#5  0x00008097 in luaG_typeerror (L=0x100120, o=0x80103c, op=0x25587 "call") at ldebug.c:574
+#6  0x00008d5c in tryfuncTM (L=0x100120, func=0x80103c) at ldo.c:248
+#7  0x00008e40 in luaD_precall (L=0x100120, func=0x80103c, nresults=0) at ldo.c:268
+#8  0x000180e3 in luaV_execute (L=0x100120, nexeccalls=3) at lvm.c:587
+#9  0x00009407 in luaD_call (L=0x100120, func=0x801018, nResults=0) at ldo.c:377
+#10 0x00003ac7 in f_call (L=0x100120, ud=0xbffff70c) at lapi.c:800
+#11 0x0000865e in luaD_rawrunprotected (L=0x100120, f=0x3a9d &lt;f_call&gt;, ud=0xbffff70c) at ldo.c:116
+#12 0x0000979a in luaD_pcall (L=0x100120, func=0x3a9d &lt;f_call&gt;, u=0xbffff70c, old_top=24, ef=12) at ldo.c:463
+#13 0x00003b64 in lua_pcall (L=0x100120, nargs=0, nresults=0, errfunc=1) at lapi.c:821
+#14 0x00001f31 in main (argc=1, argv=0xbffff78c) at test_lua_pcall.c:50
+(gdb) 
+</pre>
+
+<p>
+Here is where I want to look:
+</p>
+<pre>
+void luaG_errormsg (lua_State *L) {
+  if (L-&gt;errfunc != 0) {  /* is there an error handling function? */
+    StkId errfunc = restorestack(L, L-&gt;errfunc);
+    if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);
+    setobjs2s(L, L-&gt;top, L-&gt;top - 1);  /* move argument */
+    setobjs2s(L, L-&gt;top - 1, errfunc);  /* push function */
+    incr_top(L);
+    luaD_call(L, L-&gt;top - 2, 1);  /* call it */
+  }
+  luaD_throw(L, LUA_ERRRUN);
+}
+</pre>
+
+<p>
+The ttisfunction macro is where the failure is occurring for tf_edit. Here is
+the definition:
+</p>
+<pre>
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttisfunction(o)	(ttype(o) == LUA_TFUNCTION)
+</pre>
+<pre>
+Breakpoint 1, luaG_errormsg (L=0x1b4e20) at ldebug.c:620
+620	    StkId errfunc = restorestack(L, L-&gt;errfunc);
+(gdb) p L-&gt;errfunc
+$2 = 12
+(gdb) n
+621	    if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);
+(gdb) p errfunc
+$3 = (StkId) 0x1668300c
+(gdb) 
+</pre>
+
+<p>
+Definition of ttisfunction:
+</p>
+<pre>
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttisfunction(o)	(ttype(o) == LUA_TFUNCTION)
+</pre>
+
+
+<p>
+Definition of ttype:
+</p>
+<pre>
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttype(o)	((o)-&gt;tt)
+</pre>
+
+<p>
+Definition of LUA_TFUNCTION:
+</p>
+<pre>
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lua.h:#define LUA_TFUNCTION		6
+</pre>
+
+<pre>
+(gdb) p *errfunc
+$4 = {
+  value = {
+    gc = 0x1b8ea0, 
+    p = 0x1b8ea0, 
+    n = 8.922746513389578e-318, 
+    b = 1805984
+  }, 
+  tt = 5
+}
+(gdb) 
+</pre>
+
+<p>
+type 5 is a table. Next: find out why.
+</p>
+
+<p>
+Re-run test_lua_pcall, b at lapi.c:815:
+</p>
+<pre>
+Breakpoint 1, lua_pcall (L=0x100120, nargs=0, nresults=0, errfunc=1) at lapi.c:815
+815	    StkId o = index2adr(L, errfunc);
+(gdb) p errfunc
+$1 = 1
+(gdb) n
+817	    func = savestack(L, o);
+(gdb) p o
+$2 = (StkId) 0x80100c
+(gdb) p o-&gt;tt
+$3 = 6
+(gdb) 
+</pre>
+
+<p>
+Re-run tf_edit, b at lapi.c:815:
+</p>
+<pre>
+Breakpoint 2, lua_pcall (L=0x1b4e40, nargs=0, nresults=0, errfunc=1) at lapi.c:815
+815	    StkId o = index2adr(L, errfunc);
+(gdb) n
+817	    func = savestack(L, o);
+(gdb) p o-&gt;tt
+$1 = 5
+(gdb) 
+</pre>
+
+<p>
+Next: I need to start creating some stack dump/inspection functions.
+</p>
+
+<p>
+Added the one from the lua book, here is the problem:
+</p>
+<pre>
+--- BEG dump_lua_stack
+top: 1205
+failed calling lua draw handler: error in error handling
+lua_draw(): No such file or directory
+mhackslab:test $ 
+</pre>
+
+<p>
+I'm think lack of recursion checks and stack overflow are the cause of this problem. Will
+find out soon.
+</p>
+
 </body>
 </html>
 
