@@ -18,14 +18,14 @@ static int l_traceback(lua_State* L) {
 	if(!err) {
 		printf("err is NULL\n");
 //exit(0);
-		return;
+		return 0;
 	}
 	printf("---l_traceback\n");
 	fprintf(stderr, "err: %s\n", err);
 	printf("calling traceback() function\n");
 	lua_getglobal(L, "traceback");
 
-dump_lua_stack(L);
+lu_dump_stack(L, "l_traceback(): BEF lua_pcall()");
 
 	int rc = lua_pcall(L, 0, 0, 1);
 	printf("lua_pcall returned: %d\n", rc);
@@ -38,9 +38,13 @@ int main(int argc, char* argv[]) {
 	printf("BEG main()\n");
 
 	L = luaL_newstate(); /* opens Lua */ 
+	int top = lua_gettop(L);
+	printf("BEF lua_openlibs(): top: %d\n", top);
 	luaL_openlibs(L); /* opens the standard libraries */ 
 
 	// load lua test func
+	top = lua_gettop(L);
+	printf("BEF lua_dofile(): top: %d\n", top);
 	const char* lua_file = "test_pcall.lua";
 	int rc = luaL_dofile(L, lua_file);
 	if(rc) {
@@ -50,6 +54,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	// call lua func
+	top = lua_gettop(L);
+	printf("BEF lua_pushcfunction(): top: %d\n", top);
 	lua_pushcfunction(L, l_traceback);
 	lua_getglobal(L, "test_pcall");
 	rc = lua_pcall(L, 0, 0, 1);

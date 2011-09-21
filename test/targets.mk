@@ -17,3 +17,4 @@ targets = \
  tf_edit \
  lua_sinterp \
  test_lua_pcall \
+ tlua_reg \

@@ -104,10 +104,14 @@ static const struct luaL_Reg _tflua_lib [] = {
 
 static void init_lua() {
 	L = luaL_newstate(); /* opens Lua */ 
+lu_dump_stack(L, "AFT lua_newstate()");
+
 	luaL_openlibs(L); /* opens the standard libraries */ 
+lu_dump_stack(L, "AFT lua_openlibs()");
 
 	// reg tfedit lua lib
 	luaL_register(L, "tflua", _tflua_lib);
+lu_dump_stack(L, "AFT lua_register()");
 
 	// load lua keydown func
 	int rc = luaL_dofile(L, LUA_FILE);
@@ -116,6 +120,7 @@ static void init_lua() {
 		fprintf(stderr, "failed loading lua file %s: %s\n", LUA_FILE, err);
 		sys_err("init_lua failed");
 	}
+lu_dump_stack(L, "AFT lua_dofile()");
 }
 
 /*
@@ -130,6 +135,9 @@ static void lua_traceback() {
 */
 
 static void tick() {
+//	printf("BEG tick()\n");
+	lu_checkstack(L);
+
 	lua_pushcfunction(L, l_traceback);
 	lua_getglobal(L, "tick");
 	int rc = lua_pcall(L, 0, 0, 1);
@@ -139,22 +147,35 @@ static void tick() {
 //		lua_traceback();
 		sys_err("tick()");
 	}
+	lua_pop(L, 1);
+
+	lu_checkstack(L);
+//	printf("END tick()\n");
 }
 
 static void lua_draw() {
+//	printf("BEG draw()\n");
+	lu_checkstack(L);
+lu_dump_stack(L, "lua_draw(): BEF push traceback");
 	lua_pushcfunction(L, l_traceback);
+//printf("lua_draw(): AFT push traceback: top: %d\n", lua_gettop(L));
 	lua_getglobal(L, "draw");
 if(_debug) {
 	printf("_debug flag set\n");
-	dump_lua_stack(L);
 }
 	int rc = lua_pcall(L, 0, 0, 1);
+lu_dump_stack(L, "lua_draw(): AFT pcall");
 	if(rc) {
 		const char* err = lua_tostring(L, -1);
 		fprintf(stderr, "failed calling lua draw handler: %s\n", err);
 //		lua_traceback();
 		sys_err("lua_draw()");
 	}
+	lua_pop(L, 1);
+
+	lu_checkstack(L);
+//	printf("END draw()\n");
+exit(0);
 }
 
 void draw_text() {
@@ -163,6 +184,8 @@ void draw_text() {
 }
 
 void cb_glfw_key(int key, int state) {
+//	printf("BEG cb_glfw_key()\n");
+	lu_checkstack(L);
 //	printf("key: %d, state: %d\n", key, state);
 
 	// give it to lua
@@ -177,6 +200,10 @@ void cb_glfw_key(int key, int state) {
 //		lua_traceback();
 		sys_err("cb_glfw_key");
 	}
+	lua_pop(L, 1);
+
+	lu_checkstack(L);
+//	printf("END cb_glfw_key()\n");
 }
 
 void quit() {

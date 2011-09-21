@@ -52,3 +52,4 @@ lua_sinterp:
 test_lua_pcall:
 	make -f test_lua_pcall.mk
 
+include tlua_reg.mk

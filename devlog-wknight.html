@@ -2087,6 +2087,138 @@ I'm think lack of recursion checks and stack overflow are the cause of this prob
 find out soon.
 </p>
 
+<h2>2011-09-19</h2>
+
+<p>
+Monday, a little time before I have to go. Will add lua stack space checks now.
+</p>
+
+<p>
+Added printout of lua stack top in all functions that call lua, looks like something 
+is not getting popped:
+</p>
+<pre>
+...
+END draw()
+BEG tick()
+top: 17
+top: 18
+END tick()
+BEG draw()
+top: 18
+top: 19
+END draw()
+BEG tick()
+top: 19
+top: 20
+END tick()
+BEG draw()
+top: 20
+top: 21
+Error: lua checkstack: top: 21
+</pre>
+
+<p>
+So my first thought is that I need to pop the error handler function that I've been pushing.
+</p>
+
+<p>
+That fixes the stack overflow problem, now I can see the args on the stack at the failed
+error-handler call:
+</p>
+<pre>
+mhackslab:test $ r
+_debug flag set
+--- BEG lu_dump_stack
+top: 3
+{t: [table], t: [function], t: [function], }
+--- END dump_lua_stack
+failed calling lua draw handler: error in error handling
+lua_draw(): No such file or directory
+mhackslab:test $ 
+</pre>
+
+<p>
+That's all for this morning.
+</p>
+
+<h2>2011-09-20</h2>
+
+<p>
+Tuesday morn, not a whole lot of time. Will try to make some progress on this error handler
+problem.
+</p>
+
+<p>
+By calling lu_dump_stack(), I've determined that the stack starts out empty and then goes
+to 1 with a table pushed, after the first call to luaL_register(L, "tflua", _tflua_lib):
+</p>
+<pre>
+AFT lua_openlibs()
+--- BEG lu_dump_stack
+top: 0
+{}
+--- END lu_dump_stack
+AFT luaL_register()
+--- BEG lu_dump_stack
+top: 1
+{t: [table], }
+--- END lu_dump_stack
+</pre>
+
+<p>
+I think the problem here may be that I'm using the luaL_register() incorrectly somehow.
+It might be intended to be used only in conjunction with a shared library that is
+loaded by the require statement in lua code, whereas currently I'm keeping the code
+in the main application...? Not sure if this is the problem, will need to think about
+it.
+</p>
+
+<p>
+Next, I will make a test app with a shared lib file to register in the way described
+in the PIL book and check the state of the stack there.
+</p>
+
+<h2>2011-09-21</h2>
+
+<p>
+Tuesday morning, I know what to do.
+</p>
+
+<p>
+Finished coding, trying to create shared lib on mac, it can't make .so, must make
+.dylib, but how to tell lua to load it? 
+SO answer here: http://stackoverflow.com/questions/5900816/osx-loading-dylib-lua-module
+</p>
+
+<p>
+Even simpler, I can just specify a '-o tlr.so'. The trick was to specify the '-dynamic'
+flag with gcc:
+</p>
+<pre>
+tlr.so: tlr.o
+	$(CC) -dynamiclib -o tlr.so $&lt; $(lua_libs)
+</pre>
+
+<p>
+Well, doesn't exactly work, after building, when I do "require('tlr')" in lua, it
+doesn't cause an error but it defines a function, not a table. And then when I call
+the function it segfaults. Freakin macs.
+</p>
+
+<p>
+google.
+</p>
+
+<p>
+After downloading some code from lhf and more compiling, I noticed a compiler warning
+compiling tlr.c and realized I was calling lua_register() instead of luaL_register()!
+</p>
+
+<p>
+It's working now.
+</p>
+
 </body>
 </html>
 
