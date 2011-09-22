@@ -2219,6 +2219,58 @@ compiling tlr.c and realized I was calling lua_register() instead of luaL_regist
 It's working now.
 </p>
 
+<p>
+After work, maybe I can get a little work started on the move of the existing 
+registered lua funcs in tf_edit.c over to a separate C shared lib module.
+</p>
+
+<p>
+Ok, finally have a function on the stack, hopefully it is the traceback func:
+</p>
+<pre>
+mhackslab:test $ r
+AFT lua_newstate()
+top: 0
+{}
+AFT lua_openlibs()
+top: 0
+{}
+AFT lua_register()
+top: 0
+{}
+AFT lua_dofile()
+top: 0
+{}
+lua_draw(): BEF push traceback
+top: 0
+{}
+lua_draw(): AFT pcall
+top: 1
+{t: [function], }
+rc: 0
+mhackslab:test $ 
+</pre>
+
+<p>
+Yes! Finally got the damn traceback during the original error:
+</p>
+<pre>
+--- BEG tf_traceback
+err: ./lua/buffer.lua:106: attempt to get length of local 'ln' (a nil value)
+[./lua/util.lua]:29
+2	C function
+[./lua/buffer.lua]:106
+[lua/tf_edit.lua]:184
+lua_pcall returned: 0
+mhackslab:test $ 
+</pre>
+
+<p>
+I can see where the error is in the lua code, but now instead of continuing with
+printf-style debugging, I am seriously considering biting the bullet and seeing
+if I can implement a lua debugger with breakpoints and all that!
+</p>
+
 </body>
 </html>
 
