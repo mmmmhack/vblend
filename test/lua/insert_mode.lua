@@ -51,7 +51,7 @@ M.set_line = function(ln)
 end
 
 M.char_pressed = function(ch)
-tflua.set_debug()
+--tflua.set_debug()
 	-- exit mode
 	if ch == ASC_ESC then
 		-- cmd-line 'insert' status

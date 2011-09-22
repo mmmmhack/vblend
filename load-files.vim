@@ -17,6 +17,8 @@
 :arga test/target_rules.mk
 :arga test/common.mk
 :arga test/tf_edit.mk
+:arga test/lua_util.c
 :arga test/tf_edit.c
+:arga test/tflua.c
 :arga test/lua/*.lua
 :b3

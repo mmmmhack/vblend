@@ -12,12 +12,14 @@
 
 #include "tf_edit.h"
 
+/*
 static int _debug = 0;
 
 static int l_set_debug(lua_State* L) {
 	_debug  = 1;
 	return 0;
 }
+*/
 
 static int l_edit_set_cursor(lua_State* L) {
 	int row = luaL_checknumber(L, 1);
@@ -81,7 +83,7 @@ static int l_traceback(lua_State* L) {
 */
 
 static const struct luaL_Reg _funcs [] = {
-	{"set_debug", l_set_debug},
+//	{"set_debug", l_set_debug},
 	{"set_cursor", l_edit_set_cursor},
 	{"get_cursor", l_edit_get_cursor},
 	{"get_time", l_sys_double_time},

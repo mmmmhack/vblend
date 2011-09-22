@@ -2271,6 +2271,41 @@ printf-style debugging, I am seriously considering biting the bullet and seeing
 if I can implement a lua debugger with breakpoints and all that!
 </p>
 
+<p>
+Checking out remdebug, I see that I already downloaded it once!
+</p>
+
+<h2>2011-09-22</h2>
+
+<p>
+Thursday, up at the usual time, some time for programming. I read a chunk of the debug
+library chapter in PIL and think I have an idea on how to implement a simple
+debugger. Previously, I thought I would have to do it in C, but now I'm thinking
+I should be able to do a lot of it in lua, which will make the parsing much easier.
+</p>
+
+<p>
+Wow, think I might actually have the freakin debugger working already!
+</p>
+<pre>
+mhackslab:test $ d
+&gt; b buffer.lua:104
+breaking at buffer.lua:104
+breakpoint set
+&gt; c
+continuing program execution
+breakpoint hit!
+[./lua/util.lua]:29
+[./lua/util.lua]:47
+[./lua/buffer.lua]:104
+[lua/tf_edit.lua]:184
+trace&gt; 
+</pre>
+
+<p>
+Nice progress this morning.
+</p>
+
 </body>
 </html>
 

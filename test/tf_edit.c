@@ -17,23 +17,25 @@
 
 #include "tf8036_common.h"
 #include "lua_util.h"
+#include "tf_debug.h"
 #include "tf_edit.h"
 
 static const char* APP_TITLE = "tf_edit: text display, cursor and scrolling";
 static lua_State *L = NULL;
 static const char* LUA_FILE = "lua/tf_edit.lua";
 static int _run = 1;
+static int _debug = 0;
 
 static void init_lua() {
 	L = luaL_newstate(); /* opens Lua */ 
-lu_dump_stack(L, "AFT lua_newstate()");
+//lu_dump_stack(L, "AFT lua_newstate()");
 
 	luaL_openlibs(L); /* opens the standard libraries */ 
-lu_dump_stack(L, "AFT lua_openlibs()");
+//lu_dump_stack(L, "AFT lua_openlibs()");
 
 	// reg tfedit lua lib
 //	luaL_register(L, "tflua", _tflua_lib);
-lu_dump_stack(L, "AFT lua_register()");
+//lu_dump_stack(L, "AFT lua_register()");
 
 	// load lua keydown func
 	int rc = luaL_dofile(L, LUA_FILE);
@@ -42,19 +44,8 @@ lu_dump_stack(L, "AFT lua_register()");
 		fprintf(stderr, "failed loading lua file %s: %s\n", LUA_FILE, err);
 		sys_err("init_lua failed");
 	}
-lu_dump_stack(L, "AFT lua_dofile()");
+//lu_dump_stack(L, "AFT lua_dofile()");
 }
-
-/*
-static void lua_traceback() {
-	fprintf(stderr, "--- BEG traceback\n");
-	lua_getglobal(L, "traceback");
-	int rc = lua_pcall(L, 0, 0, 0);
-	if(rc)
-		fprintf(stderr, "lua traceback() function failed\n");
-	fprintf(stderr, "--- END traceback\n");
-}
-*/
 
 static int tf_traceback(lua_State* L) {
 	printf("--- BEG tf_traceback\n");
@@ -132,11 +123,12 @@ void cb_glfw_key(int key, int state) {
 	lua_getglobal(L, "key_event");
 	lua_pushnumber(L, key);
 	lua_pushnumber(L, state);
-	int rc = lua_pcall(L, 2, 0, 3);
+	int rc = lua_pcall(L, 2, 0, 1);
 	if(rc) {
 		const char* err = lua_tostring(L, -1);
 		fprintf(stderr, "failed calling lua keydown handler: %s\n", err);
 //		lua_traceback();
+		lu_dump_stack(L, "cb_glfw_key(): AFT pcall");
 		sys_err("cb_glfw_key");
 	}
 	lua_pop(L, 1);
@@ -150,6 +142,10 @@ void tf_edit_quit() {
 }
 
 int main(int argc, char* argv[]) {
+	// check for lua debugger mode
+	if(argc > 1 && strcmp(argv[1], "-d") == 0)
+		_debug = 1;
+
 	init(APP_TITLE);
 
 	const char* ln = test_line(0);
@@ -163,6 +159,12 @@ int main(int argc, char* argv[]) {
 
   // main loop
   while(_run) {
+
+		if(_debug) {
+			_debug = 0;
+			debug_enter(L);
+		}
+		
 		// do lua timer tick
 		tick();
 
