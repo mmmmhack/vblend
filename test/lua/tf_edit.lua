@@ -3,13 +3,13 @@ require "tflua"
 package.path = package.path .. ';./lua/?.lua'
 require "util"
 require "keycodes"
---require "line_buf"
 require "cursor"
 require "win"
 require "buffer"
 require "normal_mode"
 require "insert_mode"
 require "cmd_mode"
+require "tf_debug"
 
 local keydown_time = nil
 local keydown_key = nil

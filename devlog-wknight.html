@@ -2311,6 +2311,43 @@ After work, still at work! I think I will do a little more coding, and maybe pus
 repos to my modwest account! In fact, I should probabl do that first.
 </p>
 
+<p>
+Later, at Wardens. A little more work before dancing. I did the git push, it was pretty
+easy. Here is all that was required on the local end:
+</p>
+<pre>
+ 2237  git remote add origin mmmmhack@shell.modwest.com:git/vblend
+ 2238  git push origin master
+</pre>
+
+<p>
+On the remote end, it was a little tricker. I did:
+</p>
+<pre>
+/git/vblend $ git --bare init
+/git/vblend $ cd ../..
+/ $ mkdir -p proj/vblend
+/ $ cd proj/vblend
+/proj/vblend $ git remote add origin /git/vblend
+/proj/vblend $ ???
+</pre>
+
+<p>
+Don't remember that last part, will look it up later.
+</p>
+
+<p>
+So biking in, I figured I can just do nearly all the debugger code in lua.
+Starting on a new lua module, test/lua/tf_debug.lua, and function debug_console().
+</p>
+
+<h2>2011-09-23</h2>
+
+<p>
+Sweet Friday, up good and early. Finished conversion of debugger code from C to lua,
+it works!
+</p>
+
 </body>
 </html>
 

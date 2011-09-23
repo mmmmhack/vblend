@@ -1,4 +1,4 @@
-// debug.c	:	simple lua debugger
+// debug.c	:	simple lua debugger	(obsolete, replace by tf_debug.lua)
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,7 +79,7 @@ void debug_enter(lua_State* L) {
 
 //		printf("you entered: [%s]\n", ln);
 		int n = strlen(ln);
-		if(n== 0)
+		if(n == 0)
 			continue;
 		char c = ln[0];
 		switch(c) {

@@ -17,7 +17,7 @@
 
 #include "tf8036_common.h"
 #include "lua_util.h"
-#include "tf_debug.h"
+//#include "tf_debug.h"
 #include "tf_edit.h"
 
 static const char* APP_TITLE = "tf_edit: text display, cursor and scrolling";
@@ -48,16 +48,16 @@ static void init_lua() {
 }
 
 static int tf_traceback(lua_State* L) {
-	printf("--- BEG tf_traceback\n");
 	const char* err = lua_tostring(L, -1);
-	if(!err)
-		return 0;
-	fprintf(stderr, "err: %s\n", err);
+	if(err)
+		fprintf(stderr, "Error: %s\n", err);
+	printf("traceback:\n");
 	lua_getglobal(L, "traceback");
 	int rc = lua_pcall(L, 0, 0, 1);
-	printf("lua_pcall returned: %d\n", rc);
+	if(rc)
+		printf("Error calling traceback(): lua_pcall returned: %d\n", rc);
 exit(0);
-	printf("--- END tf_traceback\n");
+//	printf("--- END tf_traceback\n");
 	return 0;
 }
 
@@ -141,6 +141,19 @@ void tf_edit_quit() {
 	_run = 0;
 }
 
+static void debug_enter(lua_State* L) {
+	lua_pushcfunction(L, tf_traceback);
+	lua_getglobal(L, "debug_console");
+	int rc = lua_pcall(L, 0, 0, 1);
+	if(rc) {
+		const char* err = lua_tostring(L, -1);
+		fprintf(stderr, "failed calling lua keydown handler: %s\n", err);
+		lu_dump_stack(L, "debug_enter(): AFT pcall");
+		sys_err("debug_enter");
+	}
+	lua_pop(L, 1);
+}
+
 int main(int argc, char* argv[]) {
 	// check for lua debugger mode
 	if(argc > 1 && strcmp(argv[1], "-d") == 0)
@@ -163,6 +176,8 @@ int main(int argc, char* argv[]) {
 		if(_debug) {
 			_debug = 0;
 			debug_enter(L);
+			if(!_run)
+				break;
 		}
 		
 		// do lua timer tick
