@@ -101,8 +101,12 @@ M.draw = function (b)
 		beg_row = b.scroll_pos[1]
 		end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
 	end
+	local blank_ln = string.rep(" ", b.win_size[1])
 	for i = beg_row, end_row do
-		local ln = b.lines[i]
+		local ln = blank_ln
+		if i <= #b.lines then
+			ln = b.lines[i]
+		end				
 		local end_col = math.min(#ln, beg_col + b.win_size[0])
 		-- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
 		local pad = b.win_size[0] - (end_col - beg_col)

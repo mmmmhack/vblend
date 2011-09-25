@@ -2365,6 +2365,52 @@ independent of how many levels of debug functions there are. It took me more wor
 I thought.
 </p>
 
+<h2>2011-09-25</h2>
+
+<p>
+Sunday morning, back at it. Working on the recursive printing of expressions.
+</p>
+
+<p>
+It's working.
+</p>
+
+<p>
+The debugger helped me find the buffer-drawing bug. The bug is that all lines in a window needed
+to be drawn on vscroll, but the code assumed that the array of lines in the buffer was at
+least the size of the number of lines in the window, which is not true and caused an array bounds error:
+</p>
+<pre>
+	-- redraw all lines in window if scrolled
+	if b.scrolled then
+		beg_row = b.scroll_pos[1]
+		end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
+	end
+	for i = beg_row, end_row do
+=&gt;		local ln = b.lines[i]
+		local end_col = math.min(#ln, beg_col + b.win_size[0])
+		-- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
+		local pad = b.win_size[0] - (end_col - beg_col)
+		local s = string.sub(ln, beg_col, end_col) .. string.rep(" ", pad)
+		tflua.set_screen_buf(scr_row, scr_col, s)
+		scr_row = scr_row + 1
+	end
+</pre>
+
+<p>
+(end_row is 34, b.lines = {[0] = "012345..."})
+</p>
+
+<p>
+Probably the fix for this is to test for end of buffer lines and draw blank lines past the end.
+In any case, the built-in debugger is a success!
+</p>
+
+<p>
+Now I've got plenty of buffer-scrolling logic to work out. Since my head is fuzzy and I'm
+lazy, I will try to create a bunch of unit tests to get it worked out.
+</p>
+
 </body>
 </html>
 

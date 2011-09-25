@@ -173,6 +173,7 @@ int main(int argc, char* argv[]) {
   // main loop
   while(_run) {
 
+		// enter lua debugger mode
 		if(_debug) {
 			_debug = 0;
 			debug_enter(L);
