@@ -2411,6 +2411,129 @@ Now I've got plenty of buffer-scrolling logic to work out. Since my head is fuzz
 lazy, I will try to create a bunch of unit tests to get it worked out.
 </p>
 
+<p>
+Starting on unit tests for buffer, first up, will add an intermediate step of creating
+the display buffer, which can then be checked by unit tests, before copy to actual
+screen buffer.
+</p>
+
+<p>
+Started writing unit tests, they are so easy to do in lua. But now I'm wanting to use the
+debugger for the unit tests!
+</p>
+
+<p>
+Damn, it's pretty easy to do, just needed a couple of requires and a call to 'debug_console()'
+in the main() function of the unit test. But need to tweak checking of the src lines
+to break at in check_breakpoints().
+</p>
+
+<p>
+Did that, but still need more tweaks for detecting correct target function level, it's apparently
+different from case where debugger runs in tf_edit.
+</p>
+
+<p>
+Debugging the debugger:
+</p>
+<pre>
+&gt; c
+continuing program execution
+breakpoint hit!
+--- BEG debug_console(): bot_level: 9, cur_level: 1, M.target_level: 6
+[../tf_debug.lua]:63 (traceback)
+[../tf_debug.lua]:249 (debug_console)
+[../tf_debug.lua]:56 (nil)
+[../buffer.lua]:20 (new)
+[test_buffer.lua]:61 (nil)
+6	C function
+[test_buffer.lua]:74 (main)
+[test_buffer.lua]:84 (nil)
+9	C function
+&gt; 
+</pre>
+
+<pre>
+--- BEG debug_console(): bot_level: 9, cur_level: 1, M.target_level: 6
+1 [../tf_debug.lua]:63 (traceback)
+2 [../tf_debug.lua]:249 (debug_console)
+3 [../tf_debug.lua]:56 (nil)
+4 [../buffer.lua]:20 (new)
+5 [test_buffer.lua]:61 (nil)
+6 C function
+7 [test_buffer.lua]:74 (main)
+8 [test_buffer.lua]:84 (nil)
+9	C function
+<pre>
+
+<p>
+Target is 2 levels above debug_console level of 2, so target abs level 
+is 2+2 = 4, which is correct, but debug_console level is wrong.
+</p>
+
+<p>
+Fixed that, but stack level still off by one.
+</p>
+
+<h2>2011-09-26</h2>
+
+<p>
+Must get the debugger working again. Here's the current problem: the current
+stack bottom is 12, it's dumping from stack level 8.
+</p>
+
+<p>
+Part of the problem is that I keep getting fooled by the stack levels, as reported by
+traceback(), which are all incremented by 1 relative to the caller, in this case,
+eval_local_var_expr().
+</p>
+
+<p>
+Here is the traceback output in eval_local_var_expr():
+</p>
+<pre>
+eval_local_var_expr(): looking for local var at stack level 7
+ 1 [../tf_debug.lua]:63 (traceback)
+ 2 [../tf_debug.lua]:146 (eval_local_var_expr)
+ 3 [../tf_debug.lua]:190 (print_local_var_expr)
+ 4 [../tf_debug.lua]:220 (print_expr)
+ 5 [../tf_debug.lua]:288 (debug_console)
+ 6 [../tf_debug.lua]:56 (nil)
+ 7 [../buffer.lua]:20 (new)
+ 8 [test_buffer.lua]:61 (nil)
+ 9	C function
+10 [test_buffer.lua]:74 (main)
+11 [test_buffer.lua]:84 (nil)
+12	C function
+</pre>
+
+<p>
+Executing eval_local_var_expr(), it would be:
+</p>
+<pre>
+eval_local_var_expr(): looking for local var at stack level 7
+ 1 [../tf_debug.lua]:146 (eval_local_var_expr)
+ 2 [../tf_debug.lua]:190 (print_local_var_expr)
+ 3 [../tf_debug.lua]:220 (print_expr)
+ 4 [../tf_debug.lua]:288 (debug_console)
+ 5 [../tf_debug.lua]:56 (nil)
+ 6 [../buffer.lua]:20 (new)
+ 7 [test_buffer.lua]:61 (nil)
+ 8 9	C function
+ 9 [test_buffer.lua]:74 (main)
+10 [test_buffer.lua]:84 (nil)
+11 12	C function
+</pre>
+
+<p>
+So I think I will change the return values of getinfo_bottom() and getinfo_level(). Did it,
+and the debugger is working again. And helping me find bugs.
+</p>
+
+<p>
+First 2 unit tests are passing.
+</p>
+
 </body>
 </html>
 

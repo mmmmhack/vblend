@@ -26,3 +26,11 @@ M.trim = function(s)
 	local r = string.match(s, "^%s*(.-)%s*$")
 	return r
 end
+
+M.dump_debug_info = function (info, label)
+	print(string.format("---%s: debug info:", label))
+	for k,v in pairs(info) do
+		print("  ", k, v)
+	end
+end
+
