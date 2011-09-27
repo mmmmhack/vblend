@@ -81,7 +81,7 @@ static void tick() {
 }
 
 static void lua_draw() {
-//	printf("BEG draw()\n");
+//printf("BEG lua_draw()\n");
 	lu_checkstack(L);
 //lu_dump_stack(L, "lua_draw(): BEF push traceback");
 	lua_pushcfunction(L, tf_traceback);
@@ -104,7 +104,7 @@ if(_debug) {
 	lua_pop(L, 1);
 
 	lu_checkstack(L);
-//	printf("END draw()\n");
+//printf("END lua_draw()\n");
 //exit(0);
 }
 
@@ -114,6 +114,10 @@ void draw_text() {
 }
 
 void cb_glfw_key(int key, int state) {
+	// stop callbacks if exit flag set
+	if(!_run)
+		return;
+
 //	printf("BEG cb_glfw_key()\n");
 	lu_checkstack(L);
 //	printf("key: %d, state: %d\n", key, state);
@@ -138,6 +142,7 @@ void cb_glfw_key(int key, int state) {
 }
 
 void tf_edit_quit() {
+//printf("tf_edit_quit(): setting _run = 0\n");
 	_run = 0;
 }
 
@@ -172,7 +177,7 @@ int main(int argc, char* argv[]) {
 
   // main loop
   while(_run) {
-
+//printf("top of main loop: _run: %d\n", _run);
 		// enter lua debugger mode
 		if(_debug) {
 			_debug = 0;

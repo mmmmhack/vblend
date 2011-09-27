@@ -2534,6 +2534,60 @@ and the debugger is working again. And helping me find bugs.
 First 2 unit tests are passing.
 </p>
 
+<p>
+After, more unit tests!
+</p>
+
+<p>
+Added new unit test to set content of new line, now I need to think of the appropriate 
+function name to update display lines, separate from draw(). Hmmm, maybe I'll call
+it 'update_display_lines()'... :)
+</p>
+
+<p>
+Added it, and another unit test which passes, but no display! More debugging,
+need to add bracket indexing to debug print command, it's not working correctly.
+</p>
+
+<p>
+Fixed.
+</p>
+
+<h2>2011-09-27</h2>
+
+<p>
+Up in the middle of the night, back to coding. The debugger is helping me find the bugs.
+</p>
+
+<p>
+More debugger fun. While debugging a line in the middle of a loop, I found that
+the 'q' command in the debugger didn't work. At first I tried to understand why
+the code wasn't returning to the calling C code to detect the exit state and quit
+and then I finally realized that it isn't going to return to the caller C code
+until the debugged lua code returns, which won't happen until I turn off the debug 
+hook in the 'q' handler. Duh.
+</p>
+
+<p>
+Fixed.
+</p>
+
+<p>
+Fixed a bug in the cmd_mode code, but cursor still not working. Need to create
+lots more unit tests. I'm going to start the next one and go to bed.
+</p>
+
+<p>
+Got the buffer incCursor() test in place, but need more code re-org, because it's
+trying to call the actual tflua.set_cursor function. Need a mock or something.
+But now, back to bed!
+</p>
+
+<p>
+Up late, gotta go to work, will only do a tiny bit more work, the required stub
+function is trivial.
+</p>
+
 </body>
 </html>
 

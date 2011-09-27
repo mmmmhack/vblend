@@ -4,6 +4,8 @@ local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
+M._version = "0.1"
+M._first_time = true
 M._break_src = nil
 M._break_line = nil
 M._target_offset = nil -- level of debuggee function when breakpoint hit, relative to bottom of stack
@@ -76,21 +78,37 @@ function traceback()
   end 
 end
 
--- expr =    '.' identifier 
---        |  '.' identifier expr
---        |  '[' identifier ']'
---        |  '[' identifier ']' expr
+-- expr =    . identifier 
+--        |  . identifier expr
+--        |  [ identifier ]
+--        |  [ identifier ] expr
+--        |  [ number ]
+--        |  [ number ] expr
+--        |  [ ' string ' ]
+--        |  [ ' string ' ] expr
 M.split_index_expr = function (expr)
   if not expr or #expr == 0 then
     return nil
   end
-  local dotpat = "^%.([_%a][_%w]*)(.*)"
-  local key, rest = string.match(expr, dotpat)
+  local dot_pat = "^%.([_%a][_%w]*)(.*)"
+  local key, rest = string.match(expr, dot_pat)
   if key then
     return key, rest
   end
-  local brkpat = "^%[([_%a][_%w]*)(.*)"
-  key, rest = string.match(expr, brkpat)
+--[[
+  local bri_pat = "^%[([_%a][_%w]*)(.*)"
+  key, rest = string.match(expr, bri_pat)
+  if key then
+    return key, rest
+  end
+  local brn_pat = "^%[(%d+)%](.*)"
+  key, rest = string.match(expr, brn_pat)
+  if key then
+    return key, rest
+  end
+--]]
+  local brk_pat = "^%[(.-)%](.*)"
+  key, rest = string.match(expr, brk_pat)
   if key then
     return key, rest
   end
@@ -101,7 +119,9 @@ end
 -- recursively accesses the value of table indices in param expression.
 -- the index_expr starts with either a '.' or '['
 M.get_table_expr = function(val, index_expr)
+--print(string.format("get_table_expr(): val: %s, index_expr: %s", tostring(val), tostring(index_expr)))
   local key, rest = M.split_index_expr(index_expr)
+--print(string.format("get_table_expr(): key: %s, rest: %s", tostring(key), tostring(rest)))
   if not key then
     if rest ~= nil then
       local err = rest
@@ -109,7 +129,19 @@ M.get_table_expr = function(val, index_expr)
     end
     return val
   end
-  local sub_val = val[key]
+  local sub_val = nil
+  local first_char = string.sub(key, 1, 1)
+  if util.isdigit(first_char) then
+    local nkey = tonumber(key)
+    if nkey == nil then
+      err = "invalid key"
+      return nil, err
+    end
+    sub_val = val[nkey]
+  else
+    sub_val = val[key]
+  end
+--print(string.format("get_table_expr(): sub_val: %s", tostring(sub_val)))
   return M.get_table_expr(sub_val, rest)
 end
 
@@ -262,6 +294,10 @@ M.getinfo_bottom = function()
 end
 
 function debug_console(print_traceback)
+  if M._first_time then
+    print("--- lua debug console version " .. M._version)
+    M._first_time = false
+  end
   local print_traceback = false
   local bot_level = M.getinfo_bottom()
   local cur_level = M.getinfo_level('debug_console')
@@ -298,6 +334,7 @@ function debug_console(print_traceback)
       elseif c == 'h' then
         M.print_help()
       elseif c == 'q' then
+        debug.sethook() -- clear debug hook or we might not ever return to the C code
         tflua.quit()    -- TODO: replace with tfedit.quit()
         do return end
       else

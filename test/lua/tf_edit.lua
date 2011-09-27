@@ -180,12 +180,15 @@ function char_pressed(ch)
 end
 
 function draw()
+--print("BEG tf_edit.lua draw()")
+--traceback()
 	if _active_buf.redraw then
 		buffer.draw(_active_buf)
 	end
 	if _cmd_buf.redraw then
 		buffer.draw(_cmd_buf)
 	end
+--print("END tf_edit.lua draw()")
 end
 
 init()

@@ -91,17 +91,51 @@ M.set = function(b, content, row)
   b.redraw = true
 end
 
--- updates screen buffer with current contents of param buffer
+-- builds display buffer from content of lines buffer and scroll offset
+M.update_display_lines = function(b)
+--  error("not implemented")
+  local dis_col = b.win_pos[0]
+  local dis_row = b.win_pos[1]
+  local beg_col = b.scroll_pos[0]
+
+  -- default: only draw cursor line
+  local beg_row = --[[ b.scroll_pos[1] + --]] b.cursor_pos[1]
+  local end_row = beg_row
+  -- redraw all lines in window if scrolled
+  if b.scrolled then
+    beg_row = b.scroll_pos[1]
+    end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
+  end
+  local blank_ln = string.rep(" ", b.win_size[1])
+  local j = 0
+  for i = beg_row, end_row do
+    local ln = blank_ln
+    if i <= #b.lines then
+      ln = b.lines[i]
+    end       
+    local end_col = math.min(#ln, beg_col + b.win_size[0])
+    -- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
+    local pad = b.win_size[0] - (end_col - beg_col)
+    local s = string.sub(ln, beg_col+1, end_col+1) .. string.rep(" ", pad)
+--    tflua.set_screen_buf(scr_row, scr_col, s)
+    b.display_lines[j] = s
+    j = j + 1
+    dis_row = dis_row + 1
+  end
+end
+
+-- updates screen buffer with current contents of b.display_lines buffer
 M.draw = function (b)
   if not b.redraw then
     do return end
   end
+--[[
   local scr_col = b.win_pos[0]
   local scr_row = b.win_pos[1]
   local beg_col = b.scroll_pos[0]
 
   -- default: only draw cursor line
-  local beg_row = --[[ b.scroll_pos[1] + --]] b.cursor_pos[1]
+  local beg_row = b.cursor_pos[1]
   local end_row = beg_row
   -- redraw all lines in window if scrolled
   if b.scrolled then
@@ -120,6 +154,15 @@ M.draw = function (b)
     local s = string.sub(ln, beg_col, end_col) .. string.rep(" ", pad)
     tflua.set_screen_buf(scr_row, scr_col, s)
     scr_row = scr_row + 1
+  end
+--]]
+  M.update_display_lines(b)
+  -- copy display_lines buffer to screen buffer
+  local scr_col = b.win_pos[0]
+  local scr_row = b.win_pos[1]
+  for i = 0, #b.display_lines do
+    local ln = b.display_lines[i]
+    tflua.set_screen_buf(scr_row + i, scr_col, ln)
   end
   b.redraw = false
   b.scrolled = false
