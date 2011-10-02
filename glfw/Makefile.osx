@@ -1,0 +1,36 @@
+# Makefile for glfw lua wrapper
+
+lua_dir = $(HOME)/swtools/lua
+glfw_dir = $(HOME)/swtools/opengl/glfw
+
+CC=gcc
+CFLAGS += -O0 -g -Wall
+
+includes= \
+ -I$(glfw_dir)/include \
+ -I$(lua_dir)/include
+ 
+glfw.so: glfw.o
+	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< $(glfw_dir)/lib/libglfw.a -framework Cocoa -framework OpenGL
+
+glfw.o: constant_defs.c wrapper_funcs.c reg_list.c glfw.c 
+	$(CC) $(CFLAGS) -c $(includes) -o $@ glfw.c
+
+test: test.app/Contents/MacOS/test
+	-ln -s $< $@
+
+# glfw.so 
+#-bundle -bundle_loader
+#test: test.o
+test.app/Contents/MacOS/test: test.o
+	/bin/sh ../test/bundle.sh test
+	$(CC) $(CFLAGS) -o $@ $< glfw.a $(lua_dir)/lib/liblua.a $(glfw_dir)/lib/libglfw.a -framework Cocoa -framework OpenGL
+
+test.o: test.c
+	$(CC) $(CFLAGS) -c $(includes) -o $@ $<
+
+clean:
+	-rm test
+	-rm *.so
+	-rm *.o
+	-rm *.a

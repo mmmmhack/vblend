@@ -24,6 +24,30 @@ local num_lines = b.win_size[1]
   return b
 end
 
+M.dump = function(b, outfile)
+  local fh = io.open(outfile, 'w')
+  fh:write(string.format("b.lines: len: %d\n", #b.lines))
+  for i = 0, #b.lines do
+    fh:write(string.format("  [%2d]: '%s'\n", i, b.lines[i]))
+  end
+  fh:write(string.format("b.cursor_pos: (%d, %d)\n", b.cursor_pos[0], b.cursor_pos[1]))
+  fh:write(string.format("b.scroll_pos: (%d, %d)\n", b.scroll_pos[0], b.scroll_pos[1]))
+  fh:write(string.format("b.win_pos: (%d, %d)\n", b.win_pos[0], b.win_pos[1]))
+  fh:write(string.format("b.win_size: (%d, %d)\n", b.win_size[0], b.win_size[1]))
+  fh:write(string.format("b.redraw: %s\n", tostring(b.redraw)))
+  fh:write(string.format("b.scrolled: %s\n", tostring(b.scrolled)))
+  fh:write(string.format("b.display_lines: len: %d\n", #b.display_lines))
+  for i = 0, #b.display_lines do
+    fh:write(string.format("  [%2d]: '%s'\n", i, b.display_lines[i]))
+  end
+end
+
+-- converts buffer position to the position it occupies in the display window, after scrol offsets are applied
+-- scroll offsets are always positive and should cause the buffer text to display more to the left and up,
+-- compared to a scroll offset of 0
+-- example: buffer pos (10, 0) + scroll pos (1, 0) causes the 10th character of the first buffer line to
+--          appear at window pos (9, 0)
+--
 M.buf2win = function(b, buf_pos)
   local wx = buf_pos[0] - b.scroll_pos[0]
   local wy = buf_pos[1] - b.scroll_pos[1]
@@ -63,18 +87,23 @@ M.set_cursor = function (b, pos)
     dx = 0 - win_pos[0]
   -- beyond max bound
   elseif win_pos[0] > b.win_size[0] - 1 then
-    dx = win_pos[0] - b.win_size[0] - 1
+    dx = win_pos[0] - (b.win_size[0] - 1)     --TODO: fix no! if beyond max bound, we need _positive_ scroll value to shift into bound! (cursor pos: 80, win size: 80, 80 - 80 - 1 = -1, need +1
+    -- TODO: fix: if buf cursor_pos[0] is 80 and scroll_pos[0] is 1 then win cursor_pos[0] should be 79
   end
   b.scroll_pos[0] = b.scroll_pos[0] + dx
   -- set scroll flag
   if dx then
     b.scrolled = true
   end
-
+--]]
   -- y: TODO: implement by making above a loop
+
+  -- now, re-apply scroll pos to cursor pos
+  win_pos = M.buf2win(b, b.cursor_pos)
 
   -- set the actual cursor position on the screen
   local scr_pos = M.win2scr(b, win_pos)
+--print(string.format("buffer.set_cursor(): calling tflua.set_cursor(%d, %d)", scr_pos[1], scr_pos[0]))
   tflua.set_cursor(scr_pos[1], scr_pos[0])
 end
 

@@ -4,6 +4,8 @@ local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
+local debug_count = 0
+
 -- position in line buf where insertion started (limit of backspacing)
 M.insert_beg_pos = nil
 
@@ -52,6 +54,10 @@ end
 
 M.char_pressed = function(ch)
 --tflua.set_debug()
+local fname = string.format("insert_mode.char_pressed-beg-%s-%d.buffer-dump.txt", ch, debug_count)
+--debug_count = debug_count + 1
+--buffer.dump(active_buf(), fname)
+
 	-- exit mode
 	if ch == ASC_ESC then
 		-- cmd-line 'insert' status
@@ -77,6 +83,11 @@ M.char_pressed = function(ch)
 	-- unknown input
 	else
 	end
+--buffer.draw(active_buf())
+--local fname = string.format("insert_mode.char_pressed-end-%s-%d.buffer-dump.txt", ch, debug_count)
+--debug_count = debug_count + 1
+--buffer.dump(active_buf(), fname)
+
 end
 
 

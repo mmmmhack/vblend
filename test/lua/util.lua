@@ -34,3 +34,41 @@ M.dump_debug_info = function (info, label)
 	end
 end
 
+M.split = function (str, delim, maxSplit)
+		-- Eliminate bad cases...
+		if string.find(str, delim) == nil then
+				return { str }
+		end
+		if maxSplit == nil or maxSplit < 1 then
+				maxSplit = 0    -- No limit
+		end
+		local result = {}
+		local pat = "(.-)" .. delim .. "()"
+		local ntok = 0
+		local lastPos
+		for part, pos in string.gfind(str, pat) do
+				ntok = ntok + 1
+				result[ntok] = part
+				lastPos = pos
+				if ntok == maxSplit then break end
+		end
+		-- Handle the last field
+		if ntok ~= maxSplit then
+				result[ntok + 1] = string.sub(str, lastPos)
+		end
+		return result
+end
+
+M.tolower = function(c)
+  local nA = string.byte('A')
+  local nZ = string.byte('Z')
+  local na = string.byte('a')
+  local nL = na - nA
+  local n = string.byte(c)
+  local cr = c
+  if n >= nA and n<= nZ then
+    cr = string.char(n + nL)
+  end
+  return cr
+end
+

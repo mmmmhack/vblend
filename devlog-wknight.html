@@ -2588,6 +2588,143 @@ Up late, gotta go to work, will only do a tiny bit more work, the required stub
 function is trivial.
 </p>
 
+<p>
+Lunch, a tinuy bit of proggin time, finished the setScroll unit test, next:
+incCursor one.
+</p>
+
+<p>
+Got it working (hscroll at right insert, but cursor display still not right,
+so next: cursor pos unit tests)
+</p>
+
+<h2>2011-09-28</h2>
+
+<p>
+Up early today, but spent most of it researching x3d. I don't think it's gonna
+happen. Will start looking in to WebGL tomorrow. In the mean time, will do
+a few more unit tests before work.
+</p>
+
+<p>
+buffer tests are passing, next to fix the current cursor-pos bug in insert_mode,
+I need to create insert unit tests.
+</p>
+
+<p>
+First insert_mode unit test is running (but failing).
+</p>
+
+<p>
+Adding buffer.dump() method, will call it in insert_mode() for comparison of state
+agains unit tests.
+</p>
+
+<p>
+Ok, that helps. I think the current problem is that b.cursor pos is relative to
+buffer pos and in set_cursor() it gets converted to window pos, so a cursor pos
+of 79 + scroll pos of 1 translates to a cursor window pos of 80, I think.
+</p>
+
+<p>
+Confirmed, and that will be off-screen. pos needs to be 79.
+</p>
+<pre>
+buffer.set_cursor(): calling tflua.set_cursor(0, 78)
+buffer.set_cursor(): calling tflua.set_cursor(0, 79)
+buffer.set_cursor(): calling tflua.set_cursor(0, 80)
+</pre>
+
+<p>
+On the drive in to work, I thought for a bit about stuff and came to the conclusion
+that the needed fix is to just subtract the scroll_pos from the cursor_pos to
+get the correct cursor position in the window. I'll try it. 
+</p>
+
+<p>
+Did this, although the situation is a little more complex than I realized because
+the scroll position is adjusted _in_ the set_cursr() function to ensure the
+cursor position is in the window.
+</p>
+
+<p>
+Kool, that fixed it!
+</p>
+
+<p>
+Still lots of other cursor probs though, first one is moving to the beginning of the row,
+_after_ doing an insert w/ scroll (it's fine in normal mode before doing insert).  But that's 
+all for now.
+</p>
+
+<h2>2011-09-30</h2>
+<p>
+It's Friday! The last couple of days I started making a separate lua app that
+does simple graphics using a C module for glfw code. The program is run by
+the lua interpreter. I'm thinking of extending this approach by creating 
+C modules for both opengl and glfw. Think I'll call the project either 'glua'
+(which is prabably already taken) or possibly 'gluah'. Hmm, there is already
+glllua, and created by Waldemar Celes to boot. But his link is down.
+Maybe gluyah.
+</p>
+
+<h2>2011-10-01</h2>
+
+<p>
+Saturday morning, up early, little too much beer but I can still program. 'gluyah'
+is a stupid name. Just start making the wrappers.
+</p>
+
+<p>
+pws. todo: write or get a pretty-printer to reformat indenting to 4 spaces.
+add return val.
+camera, image recog, security, bones, 3d transform from python 3d edit app.
+</p>
+
+<h2>2011-10-01</h2>
+
+<p>
+uh huh.
+</p>
+<p>
+Sunday morning, continuing work on lua code to generate C wrapper code for glfw.
+Code for wrapping most of the functions is working, but to test it I also need
+to generate code for the GLFW_XXX constants.
+</p>
+
+<p>
+Started doing that, going well, but now I need an efficient way to strip out
+C block comments. With lua's nice balanced-delimiter matching capabilities,
+I think that will be pretty easy.
+</p>
+
+<p>
+Hmmm, no, reading the docs, looks like the '%bxy' pattern only works with
+single-character delimiters. No bigs, I can write a quick pre-processing function
+to do it.
+</p>
+
+<p>
+Finished lua scripts to generate C code for glfw module, it works! Next: gl lib
+wrappers.
+</p>
+
+<p>
+I spoke too soon, glfw.getWindowParam(GLFW_OPENED) isn't working correctly.
+</p>
+
+<p>
+I'll need to create a simple C caller app to call the 'test.lua' program,
+allowing me to step through with gdb.
+</p>
+
+<p>
+Got the test app built, did some stepping and figured out the bug: I was pushing
+positive index values instead of negative ones. Fixed that, now all else I
+need is to reverse the order of the negative indexes in 'gen_wrappers.lua'
+</p>
+
 </body>
+
 </html>
 

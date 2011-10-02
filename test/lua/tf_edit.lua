@@ -26,6 +26,10 @@ local rshift_key_down = false
 local _active_buf = nil
 local _cmd_buf = nil
 
+-- TODO: modularize this file
+--	M.init_line = string.rep("0123456789", 7) .. "012345"
+local _init_line = string.rep("0123456789", 7) .. "012345678"
+
 function set_mode(m)
 	mode = m
 end
@@ -46,8 +50,7 @@ function init()
 	-- create first buffer
 	_active_buf = buffer.new({[0]=0, [1]=0}, {[0]=w, [1]=h-1})
 	
-	local ln = string.rep("0123456789", 7) .. "012345"
-	buffer.set(_active_buf, ln)
+	buffer.set(_active_buf, _init_line)
 --	line_buf.set(ln)
 
 	-- create cmd-line buffer
