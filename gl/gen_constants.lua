@@ -1,12 +1,31 @@
--- gen_constants.lua  : generates constant definition code from glfw.h
+-- gen_constants.lua  : generates constant definition code from gl.h
 
 package.path=package.path .. ';../test/lua/?.lua'
 require('util')
 
-local glfw_dir = os.getenv('glfw_dir')
-local glfw_h_fname = string.format("%s/include/GL/glfw.h", glfw_dir)
+--local glfw_dir = os.getenv('glfw_dir')
+--local glfw_h_fname = string.format("%s/include/GL/glfw.h", glfw_dir)
+local preproc_fname = "preproc_gl.h"
 local const_defs_fname = "constant_defs.c"
 
+local selected_defines = {
+	["GL_COLOR_BUFFER_BIT"] = true,
+	["GL_DEPTH_BUFFER_BIT"] = true,
+	["GL_FALSE"] = true,
+	["GL_LINES"] = true,
+	["GL_LINE_LOOP"] = true,
+	["GL_MODELVIEW"] = true,
+	["GL_POINTS"] = true,
+	["GL_POLYGON"] = true,
+	["GL_PROJECTION"] = true,
+	["GL_QUADS"] = true,
+	["GL_QUAD_STRIP"] = true,
+	["GL_TEXTURE"] = true,
+	["GL_TRIANGLES"] = true,
+	["GL_TRIANGLE_FAN"] = true,
+	["GL_TRIANGLE_STRIP"] = true,
+	["GL_TRUE"] = true,
+}
 local defines = {}
 
 -- evaluates a #define expression and returns the result
@@ -63,50 +82,13 @@ function gen_const_def(ln)
 	return def_ret
 end
 
--- returns fname of new header file with comments stripped
--- TODO: support quote mode
-function preproc_header_file(fname)
-	io.input(fname)
-	local buf = io.read(math.huge)
-	io.close()
-
-	local bufout = ""
-	local in_comment = false
-	local cp = nil
-	for i = 1, #buf do
-		local c = string.sub(buf, i, i)		
-		-- non-comment mode
-		if not in_comment then
-			if cp == '/' and c == '*' then
-				in_comment = true
-				bufout = string.sub(bufout, 1, #bufout - 1)	-- remove '/'
-			else
-				bufout = bufout .. c
-			end
-		-- comment mode
-		else
-			if cp == '*' and c == '/' then
-				in_comment = false
-			end
-		end
-		cp = c
-	end
-
-	local preproc_fname = "preproc_glfw.h"
-	io.output(preproc_fname)
-	io.write(bufout)
-	return preproc_fname
-end
-
 function main()
 	local const_defs = [[static void define_constants(lua_State* L) {
 	// push table
-  lua_getglobal(L, "glfw");
+  lua_getglobal(L, "gl");
 
 ]]
-	-- read header file, produce new one without C comments
-	local preproc_fname = preproc_header_file(glfw_h_fname)
-
+	-- read header file
   local fin = io.open(preproc_fname, "r")
   if not fin then
     error(string.format("failed opening file: %s", preproc_fname))
@@ -117,8 +99,8 @@ function main()
     ln = util.trim(ln)
     local skip = false
 
-    -- only process GLFW_XXX defines
-    if string.match(ln, "^%s*#define GLFW_") then 
+    -- only process GL_XXX defines
+    if string.match(ln, "^%s*#define GL_") then 
       -- print(ln)
       local const_def = gen_const_def(ln)
 			if const_def == nil then
@@ -142,3 +124,4 @@ function main()
 	io.close()
 end
 main()
+

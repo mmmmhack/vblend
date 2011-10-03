@@ -2681,7 +2681,7 @@ add return val.
 camera, image recog, security, bones, 3d transform from python 3d edit app.
 </p>
 
-<h2>2011-10-01</h2>
+<h2>2011-10-02</h2>
 
 <p>
 uh huh.
@@ -2722,6 +2722,36 @@ allowing me to step through with gdb.
 Got the test app built, did some stepping and figured out the bug: I was pushing
 positive index values instead of negative ones. Fixed that, now all else I
 need is to reverse the order of the negative indexes in 'gen_wrappers.lua'
+</p>
+
+<p>
+On the gl wrapper, think I will only wrap a selected subset for now. Still
+would be nice to do it by parsing header file though. I'll just define
+the subset as a list and scan and parse the gl.h header file to do them.
+Main thing will be to parse each function declaration, which can be
+be either single or multiline:
+</p>
+<pre>
+...
+GLAPI void GLAPIENTRY glColor3ui( GLuint red, GLuint green, GLuint blue );
+GLAPI void GLAPIENTRY glColor3us( GLushort red, GLushort green, GLushort blue );
+
+GLAPI void GLAPIENTRY glColor4b( GLbyte red, GLbyte green,
+                                   GLbyte blue, GLbyte alpha );
+GLAPI void GLAPIENTRY glColor4d( GLdouble red, GLdouble green,
+                                   GLdouble blue, GLdouble alpha );
+...
+</pre>
+
+<h2>2011-10-03</h2>
+
+<p>
+Monday, up early, continuing work on gen wrapper lua scripts for gl lib. The
+existing scripts for glfw make it easier.
+</p>
+
+<p>
+Finished initial implementation, added to glfw/test.lua, we have a green triangle!
 </p>
 
 </body>

@@ -3,6 +3,9 @@
 package.path=package.path .. ';../test/lua/?.lua'
 require('util')
 
+local glfw_dir = os.getenv('glfw_dir')
+local glfw_h_fname = string.format("%s/include/GL/glfw.h", glfw_dir)
+
 local wrapper_fname = "wrapper_funcs.c"
 local reg_fname = "reg_list.c"
 
@@ -108,8 +111,6 @@ end
 function main()
 	local wrappers = ""
 	local reg_list = ""
-  local glfw_dir = os.getenv('glfw_dir')
-  local glfw_h_fname = string.format("%s/include/GL/glfw.h", glfw_dir)
   local fin = io.open(glfw_h_fname, "r")
   if not fin then
     error("failed opening file: " .. glfw_h_fname)

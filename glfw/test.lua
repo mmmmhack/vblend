@@ -1,3 +1,5 @@
+--package.path=package.path .. ";../gl/?.so"
+require('gl')
 require('glfw')
 
 function dbg(m)
@@ -27,7 +29,23 @@ print(string.format("bef openWindow: is_open: [%s]", tostring(is_open)))
 	print(string.format("aft openWindow(): rc: %d", rc))
 	dbg("aft openWindow")
 
+	gl.clearColor(0.2, 0.2, 0.2, 0)
+	gl.matrixMode(gl.GL_PROJECTION)
+	gl.loadIdentity()
+	gl.ortho(0, 800, 0, 600, -1, 1)
+	gl.matrixMode(gl.GL_MODELVIEW)
+	gl.loadIdentity()
+
 	while not done do
+		gl.clear(gl.GL_COLOR_BUFFER_BIT)
+
+		gl.color3f(0, 0.5, 0)
+		gl.Begin(gl.GL_TRIANGLES)
+			gl.vertex2f(100, 50)
+			gl.vertex2f(300, 50)
+			gl.vertex2f(200, 150)
+		gl.End()
+
 		dbg("bef swapBuffers")
 		glfw.swapBuffers()
 		dbg("aft swapBuffers")
