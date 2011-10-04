@@ -22,4 +22,5 @@
 ":arga test/tflua.c
 ":arga test/lua/*.lua
 ":arga test/lua/*.lua
+:arga gamelib/*.lua
 :b3
