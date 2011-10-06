@@ -2767,6 +2767,77 @@ first demo app 'pong.lua'. It always seems to take me longer than I anticipated,
 but it's working. Next: add window dim query, fps, font, key input.
 </p>
 
+<p>
+Home after a long day, time for a little proggin before dinner. Starting on 
+a lua wrapper for the existing sys.c module (gamelib needs sys_double_time())
+The question is, do I write the wrapper by hand or write another lua 
+script to generate it? I'm leaning towards the script approach - the better
+I get at auto-generating wrappers for C code, the easier it will be to wrap
+additional modules, which I'll definitely need to do.
+</p>
+
+<p>
+One issue that's cropping up is how to best organize all the lua and C code
+that I'm creating. Here are some existing categories:
+</p>
+<ul>
+<li>C code
+  <ul>
+  <li>C code for opengl           (ex: font/tfont.c)
+  <li>C code for utility purposes (ex: util/*.c)
+  <li>C code for lua libs         (ex: gl/*.c, glfw/*.c)
+  </ul>
+<li>lua code
+  <ul>
+  <li>gamelib                     (ex: gamelib/*.lua)
+  <li>vim editing                 (ex: test/lua/tf_edit,buffer,cursor,normal_mode,cmd_mode,line_buf.lua)
+  <li>debugging                   (ex: test/lua/tf_debug.lua)
+  <li>util                        (ex: test/lua/util.lua)
+  <li>wrapper-gen code            (ex: gl/gen_wrappers,gen_constants,preproc_header.lua)
+  </ul>
+<li>test code
+  <ul>
+  <li>C test code
+  <li>lua test code
+  </ul>
+</ul>
+
+<p>
+So I want to create a lua parser module to generalize and centralize the wrapper-generation code.
+Where to put it? A number of the modules currently under test/lua should be moved out of test,
+but where? Under 'CATEGORY/lua' subdirs? Or under 'lua/CATEGORY' subdir? I'm going to go
+with 'CATEGORY/lua', so will create a parse subdir and put them there. Or maybe just put
+the lua files directly under the 'CATEGORY' dir? How do other people do it? For now, think
+I'll just put everything under each category (both C and lua) unless there is a reason
+to organize more specifically.
+</p>
+
+<h2>2011-10-05</h2>
+
+<p>
+Up good and early today, but the time is flying. Started on the more generalized lua scripts
+to generate wrappers from C header files. It's going well, but I need to think of a way
+to specify various options during the processing. I changed the scripts to read from stdin,
+maybe I'll also just start doing command-line processing of options. Hmm, problem with that
+though is that it's awkward to directly specify a list of selected functions for parsing,
+well duh, just allow reading from file then.
+</p>
+
+<p>
+After work, power very low. I will write my own getopt.lua, I've already done similar
+in python.
+</p>
+
+<h2>2011-10-06</h2>
+
+<p>
+Thursday, wow. Up at the regular time, time for some regular coding. Implementing my
+own getopt in lua. The implementation was easy, but does it work?
+</p>
+
+<p>
+Cool, I believe it does work.
+</p>
 
 </body>
 

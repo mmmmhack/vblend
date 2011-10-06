@@ -1,7 +1,6 @@
 #ifndef sys_h
 #define sys_h
 #include <time.h>
-
 void sys_err(const char* msg);
 void sys_errno(int errn, const char* msg);
 

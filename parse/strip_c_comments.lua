@@ -1,20 +1,22 @@
--- preproc_header.lua : strips C-style comments from a .c file, writes to "preproc_gl.h"
+-- strip_c_comments.lua : reads from stdin, strips C-style comments from a .c file, writes to stdout
 
-local preproc_fname = "preproc_gl.h"
+--local preproc_fname = "preproc_gl.h"
 
-function preproc_header_file(fname)
-	io.input(fname)
+function preproc_header_file()
+--	io.input(fname)
 	local buf = io.read(math.huge)
 	io.close()
 
-	print("beg preproc")
+--	print("beg preproc")
 	local bufout = ""
 	local in_comment = false
 	local cp = nil
 	for i = 1, #buf do
+--[[
 		if i % 1000 == 0 then
 			print(i)
 		end
+]]
 		local c = string.sub(buf, i, i)		
 		-- non-comment mode
 		if not in_comment then
@@ -33,13 +35,13 @@ function preproc_header_file(fname)
 		cp = c
 	end
 
-	io.output(preproc_fname)
+--	io.output(preproc_fname)
 	io.write(bufout)
 	
-	print(string.format("end preproc: created %s", preproc_fname))
+--	print(string.format("end preproc: created %s", preproc_fname))
 --	return preproc_fname
 end
 
-fname = ...
-preproc_header_file(fname)
+--fname = ...
+preproc_header_file()
 
