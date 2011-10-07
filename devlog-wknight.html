@@ -2839,6 +2839,70 @@ own getopt in lua. The implementation was easy, but does it work?
 Cool, I believe it does work.
 </p>
 
+<p>
+Done with work, in car before drive home, will work a little to get my mind going
+on finishing this wrapper script, must get it done.
+</p>
+
+<p>
+Got 'ret_decl, func_name, params' parsed ok with regex.
+</p>
+
+<p>
+Will add special lua code to convert lua tables to C structs
+</p>
+
+<p>
+Using the debug a little, I need to add support for printing globals.
+</p>
+
+<p>
+Also need to fix tflua refs in tf_debug.lua:
+</p>
+<pre>
+&gt; q
+lua: ../test/lua/tf_debug.lua:338: attempt to index global 'tflua' (a nil value)
+stack traceback:
+../test/lua/tf_debug.lua:338: in function 'debug_console'
+../test/lua/tf_debug.lua:59: in function &lt;../test/lua/tf_debug.lua:52&gt;
+../parse/gen_wrappers.lua:282: in function 'gen_func_wrapper'
+../parse/gen_wrappers.lua:320: in function 'main'
+../parse/gen_wrappers.lua:334: in main chunk
+[C]: ?
+mhackslab:util $ 
+</pre>
+
+<p>
+Fixed, just replaced the tflua.quit() with os.exit()
+</p>
+
+<p>
+sel_funcs is working
+</p>
+
+<h2>2011-10-07</h2>
+
+<p>
+Friday, Hallelujah. Solid night's sleep, but not a whole lot of time left this
+morning, gotta get this wrapper done! Need to implement 'remove-prefix' option.
+</p>
+
+<p>
+Did it, it works. Next, continue adding rest of code generation.
+</p>
+
+<p>
+Tried to use the debugger again, it's still got issues...grr
+The stack doesn't appear correct when I break in gen_func_wrapper().
+Oh well, there's always printf.
+</p>
+
+<p>
+Ok, finally got the code for the first function generated. Now, just need
+to output to file, and add the register list output and we'll be done for now.
+But time to go to work!
+</p>
+
 </body>
 
 </html>

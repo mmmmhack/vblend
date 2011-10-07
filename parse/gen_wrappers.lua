@@ -4,10 +4,13 @@ package.path=package.path .. ';../parse/?.lua'
 package.path=package.path .. ';../test/lua/?.lua'
 require('util')
 require('getopt')
+require('tf_debug')
 
 --local preproc_fname = "preproc_gl.h"
 local wrapper_fname = "wrapper_funcs.c"
 local reg_fname = "reg_list.c"
+
+local sel_funcs = nil
 
 local usage_desc = [[
 Usage: gen_wrappers [options] 
@@ -210,6 +213,30 @@ end
 
 --]]
 
+function get_lw_func_name(func_name)
+	local first_ch = string.sub(func_name, 1, 1)
+  local rest = string.sub(func_name, 2)
+	local lw_func_name = util.tolower(first_ch) .. rest
+  -- TODO: strip prefix if specified
+  if opts.remove_prefix then
+    local npre = #opts.remove_prefix
+    if #lw_func_name >= npre then
+      local pre = string.sub(lw_func_name, 1, npre)
+      if pre == opts.remove_prefix then
+        lw_func_name = string.sub(lw_func_name, npre + 1)
+      end
+    end
+  end
+  -- TODO: do lua keyword sub
+--[[  
+	if lua_keyword_sub[lw_func_name] then
+		lw_func_name = lua_keyword_sub[lw_func_name] 
+	end
+]]
+  return lw_func_name
+end
+
+-- parses src file returns table of function declarations as strings
 function get_function_declarations()
   if opts.src_file then
     io.input(opts.src_file)
@@ -238,13 +265,158 @@ function get_function_declarations()
   return decls
 end
 
+-- parses string of function parameters, returns table of param data suitable for generating the wrapper code
+function get_params(param_decls)
+  local params = {}
+  for i, p in ipairs(param_decls) do
+--print(string.format("get_params(): i: %2d, p: [%s]", i, p))
+    if p == "void" then
+    else  
+      local ctype, cident = string.match(p, "^(.-)([_%a][_%w]*)$")
+--      print(string.format("  param %2d: [%s]", i, p))
+        print(string.format("  param %2d: [%s] [%s]", i, ctype, cident))
+        local param = {}
+        param.ctype = ctype
+        param.cident = cident
+        params[#params + 1] = param
+    end
+  end
+  --   create param table:
+  --       ctype
+  --       cident
+  --       luatype
+
+  -- cident is final token
+  -- ctype is all but final token
+  return params
+ end
+
+-- reads list of functions from a file specified by command-line opt, only functions in the list will get wrappers
+function read_sel_funcs()
+  sel_funcs = {}
+  io.input(opts.sel_funcs)
+  for ln in io.lines() do
+    local func_name = util.trim(ln)
+    sel_funcs[func_name] = true 
+  end
+  io.close()
+end
+
+-- returns true if param func is in the list of selected funcs
+function is_sel_func(func_name)
+  if not sel_funcs then
+    read_sel_funcs()
+  end
+  for k, v in pairs(sel_funcs) do
+    if func_name == k then
+      return true
+    end
+  end
+  return false
+end
+
+-- returns c and lua return types from return type declaration
+function get_return_types(ret_decl)
+  local c_ret_type = ret_decl --TODO: add filtering as needed
+  local lua_ret_type = nil
+  -- TODO: replace with table lookup
+  if c_ret_type == "int" or
+     c_ret_type == "unsigned int" or
+     c_ret_type == "float" or
+     c_ret_type == "double" 
+  then
+    lua_ret_type = "number"
+  else  
+  end
+  return c_ret_type, lua_ret_type 
+end
+
+-- generates wrapper code for param function declaration
 function gen_func_wrapper(decl)
-  print(string.format("decl: [%s]", decl))
+--  print(string.format("decl: [%s]", decl))
+  local ret_decl, func_name, params_decl = string.match(decl, "^%s*(.-)%s+([_%a][_%w]+)%s*%((.*)%)%s*;%s*$") 
+  if opts.sel_funcs and not is_sel_func(func_name) then
+    return
+  end
+print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret_decl, func_name, params_decl))
+  -- parse ret_type, func_name and params
+  --   get param defs
+  --   emit beg func                            ex: static int lw_clearColor(lua_State* L) {
+  --   emit code to get args from lua stack     ex: float red = lua_tonumber(L, -4);
+  --   emit beg func call                       ex:   glClearColor(
+  --   emit cargs                               ex:     red,
+  --   emit end func call                       ex:   );
+  --   emit push cret to lua stack
+  --   emit ret count                           ex: return 0;
+  --   emit end func                            ex: }
+
+--debug_console()
+  -- get param defs
+  local params = {}
+  if #params_decl > 0 then
+    local param_decls_nt = util.split(params_decl, ",")
+    local param_decls = {}
+    for i, p in ipairs(param_decls_nt) do
+      param_decls[#param_decls + 1] = util.trim(p)
+    end
+    params = get_params(param_decls)
+  end
+
+  local code = ""
+
+  -- emit beg func
+  local lw_func_name = get_lw_func_name(func_name)
+  local s = string.format("static int lw_%s(lua_State* L) {\n", lw_func_name)
+  code = code .. s
+
+  -- emit get lua args from stack
+	local stack_index = 0 - #params
+  for i, param in ipairs(params) do
+    s = string.format("  %s %s = lua_to%s(L, %d);\n", param.ctype, param.cident, param.luatype, stack_index)
+    stack_index = stack_index + 1
+  end
+
+	-- emit assign ret val
+  local c_ret_type, lua_ret_type = get_return_types(ret_decl)
+	local nRet = 0
+	if c_ret_type ~= "void" then
+		s = string.format("  %s ret_val = \n", c_ret_type)
+    code = code .. s
+		nRet = 1
+	end
+
+  -- emit beg cfunc call
+  s = string.format("  lw_%s(\n", lw_func_name)
+  code = code .. s
+
+  -- TODO: emit cargs
+
+  -- emit end cfunc call
+  s = string.format("  );\n")
+  code = code .. s
+
+  --   emit push cret to lua stack
+  if nRet > 0 then
+    s = string.format("  lua_push%s(L, ret_val);\n", lua_ret_type)
+    code = code .. s
+  end
+
+  --   emit ret count                           ex: return 0;
+  s = string.format("  return %d;\n", nRet)
+  code = code .. s
+
+  --   emit end func                            ex: }
+  s = "}\n"
+  code = code .. s
+
+  print(string.format("  code:\n%s", code))
 end
 
 function main()
   -- getopts
   getopts(arg)
+
+--debug_console()
 
   -- read from stdin
   local decls = get_function_declarations()

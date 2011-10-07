@@ -314,7 +314,7 @@ function debug_console(print_traceback)
   local get_input = true
   while get_input do
     M.print_prompt();
-    local ln = io.read()
+    local ln = io.stdin:read()
     ln = util.trim(ln)
     if #ln ~= 0 then
       local c = string.sub(ln, 1, 1)
@@ -335,7 +335,8 @@ function debug_console(print_traceback)
         M.print_help()
       elseif c == 'q' then
         debug.sethook() -- clear debug hook or we might not ever return to the C code
-        tflua.quit()    -- TODO: replace with tfedit.quit()
+--        tflua.quit()    -- TODO: replace with tfedit.quit()
+        os.exit(0)
         do return end
       else
         print("unknown command '" .. c .. "'")
