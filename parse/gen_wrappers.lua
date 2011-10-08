@@ -7,24 +7,19 @@ require('getopt')
 require('tf_debug')
 
 --local preproc_fname = "preproc_gl.h"
-local wrapper_fname = "wrapper_funcs.c"
-local reg_fname = "reg_list.c"
+--local wrapper_fname = "wrapper_funcs.c"
+--local reg_fname = "reg_list.c"
 
+-- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
 
 local usage_desc = [[
-Usage: gen_wrappers [options] 
-Reads C header file from stdin, generates lua function wrappers from function declarations.
-]]
-
-local old_desc = [[
-Options:
-  -p, --remove-prefix PREFIX    remove PREFIX from function names
-  -s, --sel-funcs SEL_FILE      only generate wrappers for list of function names in SEL_FILE
-  -h, --help                    show this help
+Usage: gen_wrappers [options] DECL_FILE
+Reads C header file from DECL_FILE, generates lua function wrappers from function declarations.
 ]]
 
 local opt_defs = {
+--[[
   src_file = {
     short_opt = 'f',
     long_opt = 'src-file',
@@ -32,6 +27,7 @@ local opt_defs = {
     descrip = 'read declarations from FILE',
     arg_descrip = 'FILE',
   },
+--]]
   remove_prefix = {
     short_opt = 'p',
     long_opt = 'remove-prefix',
@@ -54,10 +50,12 @@ local opt_defs = {
   },
 }
 
+-- parsed cmd-line options
 local opts = nil
 
+-- parses cmd-line options from param args and option definitions
 function getopts(args)
-  opts = getopt.parse(args, opt_defs)  
+  opts, non_opt_args = getopt.parse(args, opt_defs)  
   if not opts then
     os.exit(1)
   end    
@@ -65,29 +63,13 @@ function getopts(args)
     getopt.usage(usage_desc, opt_defs) 
     os.exit(0)
   end
+  return non_opt_args
 end
 
 local lua_keyword_sub = {
 	['begin'] = 'Begin',
 	['end'] = 'End',
 }
-
---[[
-local selected_funcs = {
-	['glBegin'] = true,
-	['glBlendFunc'] = true,
-	['glClear'] = true,
-	['glClearColor'] = true,
-	['glColor3f'] = true,
-	['glColor4f'] = true,
-	['glEnd'] = true,
-	['glLoadIdentity'] = true,
-	['glMatrixMode'] = true,
-	['glOrtho'] = true,
-	['glVertex2f'] = true,
-	['glVertex3f'] = true,
-}
---]]
 
 local handled_return_types = {
 	['GLint']=true, 
@@ -237,10 +219,8 @@ function get_lw_func_name(func_name)
 end
 
 -- parses src file returns table of function declarations as strings
-function get_function_declarations()
-  if opts.src_file then
-    io.input(opts.src_file)
-  end
+function get_function_declarations(decl_fname)
+  io.input(decl_fname)
   local decls = {}
   local cur_decl = ""
   local i = 0
@@ -262,6 +242,7 @@ function get_function_declarations()
       cur_decl = ""
     end
   end
+  io.close()
   return decls
 end
 
@@ -331,14 +312,14 @@ function get_return_types(ret_decl)
   return c_ret_type, lua_ret_type 
 end
 
--- generates wrapper code for param function declaration
+-- returns wrapper code for param function declaration, and a 'register func' line
 function gen_func_wrapper(decl)
 --  print(string.format("decl: [%s]", decl))
   local ret_decl, func_name, params_decl = string.match(decl, "^%s*(.-)%s+([_%a][_%w]+)%s*%((.*)%)%s*;%s*$") 
   if opts.sel_funcs and not is_sel_func(func_name) then
     return
   end
-print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret_decl, func_name, params_decl))
+--print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret_decl, func_name, params_decl))
   -- parse ret_type, func_name and params
   --   get param defs
   --   emit beg func                            ex: static int lw_clearColor(lua_State* L) {
@@ -362,12 +343,12 @@ print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret
     params = get_params(param_decls)
   end
 
-  local code = ""
+  local func_def = ""
 
   -- emit beg func
   local lw_func_name = get_lw_func_name(func_name)
   local s = string.format("static int lw_%s(lua_State* L) {\n", lw_func_name)
-  code = code .. s
+  func_def = func_def .. s
 
   -- emit get lua args from stack
 	local stack_index = 0 - #params
@@ -381,58 +362,84 @@ print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret
 	local nRet = 0
 	if c_ret_type ~= "void" then
 		s = string.format("  %s ret_val = \n", c_ret_type)
-    code = code .. s
+    func_def = func_def .. s
 		nRet = 1
 	end
 
   -- emit beg cfunc call
-  s = string.format("  lw_%s(\n", lw_func_name)
-  code = code .. s
+  s = string.format("  %s(\n", func_name)
+  func_def = func_def .. s
 
   -- TODO: emit cargs
 
   -- emit end cfunc call
   s = string.format("  );\n")
-  code = code .. s
+  func_def = func_def .. s
 
-  --   emit push cret to lua stack
+  -- emit push cret to lua stack
   if nRet > 0 then
     s = string.format("  lua_push%s(L, ret_val);\n", lua_ret_type)
-    code = code .. s
+    func_def = func_def .. s
   end
 
-  --   emit ret count                           ex: return 0;
+  -- emit ret count                           ex: return 0;
   s = string.format("  return %d;\n", nRet)
-  code = code .. s
+  func_def = func_def .. s
 
-  --   emit end func                            ex: }
+  -- emit end func                            ex: }
   s = "}\n"
-  code = code .. s
+  func_def = func_def .. s
 
-  print(string.format("  code:\n%s", code))
+--print(string.format("  func_def:\n%s", func_def))
+
+  -- generate func reg line
+	local func_reg = string.format('  {"%s", lw_%s},\n', lw_func_name, lw_func_name)
+
+  return func_def, func_reg
 end
 
 function main()
   -- getopts
-  getopts(arg)
+  local non_opt_args = getopts(arg)
+  if #non_opt_args == 0 then
+    io.stderr:write("missing DECL_FILE\n")
+    os.exit(1)
+  end
+  -- input file
+  local decl_fname = non_opt_args[1]
+
+  -- ouput files
+  local base_name = string.match(decl_fname, "(.+)%.[^.]*$")
+  if not base_name then
+    base_name= decl_fname
+  end
+  local func_def_fname = string.format("lua_%s_func_def.c", base_name)
+  local func_reg_fname = string.format("lua_%s_func_reg.c", base_name)
 
 --debug_console()
 
-  -- read from stdin
-  local decls = get_function_declarations()
+  -- read from input file
+  local ndefs = 0
+  local func_defs = ""
+  local func_regs = ""
+  local decls = get_function_declarations(decl_fname)
   for i, decl in ipairs(decls) do
-    gen_func_wrapper(decl)  
+    local func_def, func_reg = gen_func_wrapper(decl)  
+    if func_def then
+      func_defs = func_defs .. func_def
+      func_regs = func_regs .. func_reg
+      ndefs = ndefs + 1
+    end
   end
 
---[[
-	io.output(wrapper_fname)	
-	io.write(wrappers)
+  -- output
+	io.output(func_def_fname)	
+	io.write(func_defs)
 	io.close()
-
-	io.output(reg_fname)
-	io.write(reg_list)
+	io.output(func_reg_fname)
+	io.write(func_regs)
 	io.close()
---]]
+print(string.format("%d func(s) written to %s, %s", ndefs, func_def_fname, func_reg_fname))
 end
 
 main()

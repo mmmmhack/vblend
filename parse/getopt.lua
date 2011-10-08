@@ -89,9 +89,10 @@ M.usage = function (usage_desc, opt_defs)
 	end
 end
 
--- returns table 'opt' with options set
+-- returns table 'opt' with options set, and remainder of non-option args from param args
 M.parse = function (args, opt_defs)
 	-- create default opts
+	local non_opt_args = {}
 	local opts = M.create_default_opts(opt_defs)
 
 	-- for each arg:
@@ -109,7 +110,7 @@ M.parse = function (args, opt_defs)
 				return nil
 			end
 
-			-- get opt arg if any
+			-- get arg of option, if any
 			if opt_def.has_arg then
 				if i == #args or M.is_opt(args[i+1]) then
 					M.err_msg(string.format("missing arg after option: %s\n", arg))
@@ -121,10 +122,14 @@ M.parse = function (args, opt_defs)
 			else
 				opts[opt_name] = true
 			end
+		-- else, non-opt arg
+		else
+			non_opt_args[#non_opt_args + 1] = arg
 		end
+
 		i = i + 1
 	end
-	return opts
+	return opts, non_opt_args
 end
 
 

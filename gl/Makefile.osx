@@ -10,6 +10,8 @@ includes= \
  -I$(glfw_dir)/include \
  -I$(lua_dir)/include
  
+all: gl.so
+
 gl.so: gl.o
 	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< -framework Cocoa -framework OpenGL
 

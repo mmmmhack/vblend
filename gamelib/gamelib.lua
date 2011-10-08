@@ -6,6 +6,7 @@ package.loaded[modname] = M
 
 require('gl')
 require('glfw')
+require('sys')
 
 -- game window defaults
 M.win_title = "Game"
@@ -66,24 +67,26 @@ M.draw_rect = function (x, y, w, h)
 end
 
 M.calc_fps = function ()
-  local cur_time = sys_float_time()
   if M._num_frames_drawn == 0 then
     M._prev_fps_frame = 0
-    M._prev_fps_time = sys_float_time()
+    M._prev_fps_time = sys.double_time()
     return M._fps;
   end
   local delta_frames = M._num_frames_drawn - M._prev_fps_frame
   if delta_frames < M._fps_frame_interval then
-    return M._fps;
+    return M._fps
+  end
+  local cur_time = sys.double_time()
   local delta_time = cur_time - M._prev_fps_time
   if delta_time <= 0 then
-    return M._fps;
+    return M._fps
+  end
 
   -- calc new fps
   M._prev_fps_time = cur_time;
-  M._prev_fps_frame = _num_frames_drawn;
+  M._prev_fps_frame = M._num_frames_drawn;
   M._fps = math.floor(delta_frames / delta_time)
-  return _fps;
+  return M._fps;
 end
 
 M.update = function ()
@@ -96,7 +99,6 @@ M.update = function ()
   local fps = M.calc_fps()
   local title = string.format("%s - fps: %3d", M.win_title, fps)
   glfw.setWindowTitle(title)
-
 end
 
 M.window_closed = function()

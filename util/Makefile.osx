@@ -1,8 +1,11 @@
 glfw_dir = $(HOME)/swtools/opengl/glfw
 libpng_dir = $(HOME)/swtools/graphics/libpng
+lua_dir = $(HOME)/swtools/lua
 
 includes = -I$(glfw_dir)/include 
 includes += -I$(libpng_dir)/include
+
+cl_includes = -I$(lua_dir)/include
 
 CC = gcc
 CFLAGS += -g -Wall
@@ -18,11 +21,18 @@ objs = \
  perf.o \
  win.o
 
-all: libutil.a
+all: libutil.a sys.so
 
 libutil.a: $(objs)
 	ar rv $@ $(objs)
 	ranlib $@
+
+# c-lua lib
+sys.so: lua_sys.o
+	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< libutil.a
+
+lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c 
+	$(CC) $(CFLAGS) -c $(cl_includes) -o $@ lua_sys.c
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(includes) -MM -MT '$@' -MF $(basename $@).d $<
