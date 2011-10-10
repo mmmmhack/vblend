@@ -10,11 +10,11 @@ includes= \
  -I$(glfw_dir)/include \
  -I$(lua_dir)/include
  
-glfw.so: glfw.o
+lua_glfw.so: lua_glfw.o
 	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< $(glfw_dir)/lib/libglfw.a -framework Cocoa -framework OpenGL
 
-glfw.o: constant_defs.c wrapper_funcs.c reg_list.c glfw.c 
-	$(CC) $(CFLAGS) -c $(includes) -o $@ glfw.c
+lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
+	$(CC) $(CFLAGS) -c $(includes) -o $@ lua_glfw.c
 
 test: test.app/Contents/MacOS/test
 	-ln -s $< $@
@@ -34,3 +34,4 @@ clean:
 	-rm *.so
 	-rm *.o
 	-rm *.a
+

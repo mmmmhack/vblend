@@ -5,7 +5,7 @@ _G[modname] = M
 package.loaded[modname] = M
 
 require('gl')
-require('glfw')
+require('lua_glfw')
 require('sys')
 
 -- game window defaults
@@ -23,10 +23,16 @@ M._fps_frame_interval = 60;
 M._fps = -1;
 
 -- functions
+
+-- opens a new window for a gamelib ap
+-- defaults:
+--  * 800x600 window size
+--  * ortho projection
+--  * color depth: ?
 M.open_window = function()
-	local rc = glfw.init()
+	local rc = lua_glfw.init()
   if rc ~= gl.GL_TRUE then
-    error(string.format("glfw.init() failed, rc: %d", rc))
+    error(string.format("lua_glfw.init() failed, rc: %d", rc))
   end
 
 	local w = M.win_width
@@ -37,12 +43,12 @@ M.open_window = function()
 	local a = 0
 	local d = 0
 	local s = 0
-	local mode = glfw.GLFW_WINDOW
-	rc = glfw.openWindow(
+	local mode = lua_glfw.GLFW_WINDOW
+	rc = lua_glfw.openWindow(
 		w, h, r, g, b, a, d, s, mode
 	)
   if rc ~= gl.GL_TRUE then
-    error(string.format("glfw.openWindow() failed, rc: %d", rc))
+    error(string.format("lua_glfw.openWindow() failed, rc: %d", rc))
   end
   M.win_open = true
 
@@ -89,16 +95,22 @@ M.calc_fps = function ()
   return M._fps;
 end
 
+-- Performs internal gamelib updates, should be called at the end of every game loop.
+-- Specifically, the following is done:
+--  * updates the screen with the opengl graphics buffer
+--  * updates glfw input buffers (keyboard and mouse)
+--  * clears the opengl graphics buffer
+--  * calculates fps
 M.update = function ()
-	glfw.swapBuffers()
-  M.win_open = glfw.getWindowParam(glfw.GLFW_OPENED)
+	lua_glfw.swapBuffers()
+  M.win_open = lua_glfw.getWindowParam(lua_glfw.GLFW_OPENED)
   gl.clear(gl.GL_COLOR_BUFFER_BIT)
 
   -- calc fps and update window title
   M._num_frames_drawn = M._num_frames_drawn + 1
   local fps = M.calc_fps()
   local title = string.format("%s - fps: %3d", M.win_title, fps)
-  glfw.setWindowTitle(title)
+  lua_glfw.setWindowTitle(title)
 end
 
 M.window_closed = function()

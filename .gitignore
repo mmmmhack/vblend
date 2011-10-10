@@ -28,3 +28,4 @@ test/tf_edit
 test/write_9x15_font_png
 test/test_lua_pcall
 test/tlua_reg
+util/*.i

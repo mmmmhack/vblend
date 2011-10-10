@@ -12,6 +12,12 @@ require('tf_debug')
 
 -- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
+local type_map = {
+  ['int'] = 'integer',
+  ['float'] = 'number',
+  ['double'] = 'number',
+}
+local opt_type_map = nil
 
 local usage_desc = [[
 Usage: gen_wrappers [options] DECL_FILE
@@ -19,15 +25,6 @@ Reads C header file from DECL_FILE, generates lua function wrappers from functio
 ]]
 
 local opt_defs = {
---[[
-  src_file = {
-    short_opt = 'f',
-    long_opt = 'src-file',
-    has_arg = true,
-    descrip = 'read declarations from FILE',
-    arg_descrip = 'FILE',
-  },
---]]
   remove_prefix = {
     short_opt = 'p',
     long_opt = 'remove-prefix',
@@ -41,6 +38,13 @@ local opt_defs = {
     has_arg = true,
     descrip = 'only generate wrappers for list of function names in SEL_FILE',
     arg_descrip = 'SEL_FILE',
+  },
+  type_map = {
+    short_opt = 't',
+    long_opt = 'type-map',
+    has_arg = true,
+    descrip = 'use list of c-lua type conversions in TYPE_MAPE_FILE',
+    arg_descrip = 'TYPE_MAPE_FILE',
   },
   help = {
     short_opt = 'h',
@@ -223,27 +227,64 @@ function get_function_declarations(decl_fname)
   io.input(decl_fname)
   local decls = {}
   local cur_decl = ""
+  local prev_ln = nil
+  local continued_line = false
+  local is_preproc_line = false
   local i = 0
   for ln in io.lines() do
     i = i + 1
     ln = util.trim(ln)
+--print(string.format("gfd: ln %04d: [%s], prev_ln: [%s], continued_line: %s", i, ln, tostring(prev_ln), tostring(continued_line)))
+    -- continued preproc
+    if is_preproc_line and continued_line then
+--print(string.format("  is #preproc ln continued"))
     -- blank ln
-    if #ln == 0 then
+    elseif #ln == 0 then
     -- preproc
     elseif string.sub(ln, 1, 1) == "#" then
+--print(string.format("  is #preproc ln"))
+      is_preproc_line = true
+    -- extern C
+    elseif ln == 'extern "C" {' then
+--print(string.format("  is extern C ln"))
     -- decl
     else
+--print(string.format("  adding to decl %04d: [%s]", #decls + 1, ln))
       cur_decl = cur_decl .. ln  
     end
 
     -- end decl
     if string.sub(ln, #ln) == ";" then
       decls[#decls + 1] = cur_decl
+print(string.format("  added decl %04d: [%s]", #decls, cur_decl))
       cur_decl = ""
     end
+
+    -- set continued line flag
+    if string.sub(ln, #ln) == "\\" then
+--print("  found continued line, next line should be same type")
+      continued_line = true
+    else
+      continued_line = false
+    end
+    prev_ln = ln
   end
   io.close()
   return decls
+end
+
+-- returns lua type name for corresponding param c type
+function get_lua_type(ctype)
+  -- supplement type-map table with opt-supplied filename if any
+  if opt_type_map and opt_type_map[ctype] ~= nil then
+    return opt_type_map[ctype] 
+  end
+  -- look in type-map table
+  if type_map[ctype] == nil then
+    debug_console()
+    error(string.format("lua type not found for ctype: [%s]", tostring(ctype)))
+  end
+  return type_map[ctype]
 end
 
 -- parses string of function parameters, returns table of param data suitable for generating the wrapper code
@@ -254,21 +295,14 @@ function get_params(param_decls)
     if p == "void" then
     else  
       local ctype, cident = string.match(p, "^(.-)([_%a][_%w]*)$")
---      print(string.format("  param %2d: [%s]", i, p))
-        print(string.format("  param %2d: [%s] [%s]", i, ctype, cident))
-        local param = {}
-        param.ctype = ctype
-        param.cident = cident
-        params[#params + 1] = param
+      print(string.format("  param %2d: [%s] [%s]", i, ctype, cident))
+      local param = {}
+      param.ctype = ctype
+      param.cident = cident
+      params[#params + 1] = param
+      param.luatype = get_lua_type(ctype)
     end
   end
-  --   create param table:
-  --       ctype
-  --       cident
-  --       luatype
-
-  -- cident is final token
-  -- ctype is all but final token
   return params
  end
 
@@ -314,9 +348,15 @@ end
 
 -- returns wrapper code for param function declaration, and a 'register func' line
 function gen_func_wrapper(decl)
---  print(string.format("decl: [%s]", decl))
+print(string.format("beg gfw: decl: [%s]", decl))
   local ret_decl, func_name, params_decl = string.match(decl, "^%s*(.-)%s+([_%a][_%w]+)%s*%((.*)%)%s*;%s*$") 
+print(string.format("  ret_decl: [%s], func_name: [%s], params_decl: [%s]", tostring(ret_decl), tostring(func_name), tostring(params_decl)))
+  if ret_decl == nil or func_name == nil or params_decl == nil then
+    print("failed parsing decl")
+    os.exit(1)
+  end
   if opts.sel_funcs and not is_sel_func(func_name) then
+print(string.format("gfw: no sel_func match: decl: [%s]", decl))
     return
   end
 --print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret_decl, func_name, params_decl))
@@ -416,6 +456,10 @@ function main()
   local func_def_fname = string.format("lua_%s_func_def.c", base_name)
   local func_reg_fname = string.format("lua_%s_func_reg.c", base_name)
 
+  -- add type conversions from opt if given
+  if opts.type_map then
+    opt_type_map = dofile(opts.type_map)
+  end
 --debug_console()
 
   -- read from input file
@@ -423,12 +467,20 @@ function main()
   local func_defs = ""
   local func_regs = ""
   local decls = get_function_declarations(decl_fname)
+print(string.format("%d decls found", #decls))
   for i, decl in ipairs(decls) do
-    local func_def, func_reg = gen_func_wrapper(decl)  
-    if func_def then
-      func_defs = func_defs .. func_def
-      func_regs = func_regs .. func_reg
-      ndefs = ndefs + 1
+print(string.format("bef gfw: decl %04d: [%s]", i, decl))
+    -- skip typedef decls
+    if string.match(decl, "^typedef") then
+print("skipping typedef decl")    
+    -- assume func decl
+    else
+      local func_def, func_reg = gen_func_wrapper(decl)  
+      if func_def then
+        func_defs = func_defs .. func_def
+        func_regs = func_regs .. func_reg
+        ndefs = ndefs + 1
+      end
     end
   end
 

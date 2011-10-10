@@ -15,6 +15,7 @@ M.print_help = function ()
   print("  b FILE:LINE   :    set breakpoint");
   print("  c             :    continue program execution");
   print("  o             :    print all local variables");
+  print("  u             :    print all upvalue variables");
   print("  p EXPR        :    print value of expression");
   print("  w             :    show backtrace");
   print("  q             :    quit program");
@@ -61,7 +62,7 @@ M.check_breakpoints = function (event, line)
 end
 
 -- global funcs
-function traceback()
+function traceback(show_debug)
   for level = 1, math.huge do 
     local info = debug.getinfo(level)   -- get all info
     if not info then break end 
@@ -69,9 +70,8 @@ function traceback()
       print(level, "C function") 
     else -- a Lua function 
       -- skip lines in debug module TODO: narrow this down if we ever want to debug the debug module itself
-      local m = string.match(info.short_src, "tf_debug.lua$")
-      local show_debug = false
-      if m == nil or show_debug then
+      local internal_level = string.match(info.short_src, "tf_debug.lua$") ~= nil
+      if not internal_level or show_debug then
         print(string.format("[%s]:%d (%s)", info.short_src, info.currentline, tostring(info.name))) 
       end
     end 
@@ -145,6 +145,7 @@ M.get_table_expr = function(val, index_expr)
   return M.get_table_expr(sub_val, rest)
 end
 
+-- splits param expression into a prefix preceding an index operator and the rest of the expression
 M.split_head_expr = function (expr)
   local pos = string.find(expr, "%.")
   if pos then
@@ -157,6 +158,7 @@ M.split_head_expr = function (expr)
   return expr
 end
 
+-- dumps all locals at param stack level
 M.dump_locals = function(stack_level)
 --print(string.format("--- dump_locals for stack level %d", stack_level))
   local i = 1
@@ -170,43 +172,10 @@ M.dump_locals = function(stack_level)
   end
 end
 
--- var_name = i1[.i2[.i3 ...]]
-M.eval_local_var_expr = function(expr)
-  local head, rest = M.split_head_expr(expr)
-  local bot_level = M.getinfo_bottom()
-  local level = bot_level - M.target_offset
---print(string.format("eval_local_var_expr(): bot_level: %d, target_offset: %d, looking for local var at stack level %d", 
---  bot_level, M.target_offset, level))
---traceback()
-  local info = debug.getinfo(level)
---util.dump_debug_info(info, "eval_local_var_expr()")
---M.dump_locals(level)
-  local i = 1
-  while true do
-    local name, val = debug.getlocal(level, i)    
---print(string.format("  name: [%s], val: [%s]", tostring(name), tostring(val)))
-    if not name then
-      break 
-    end
-    if name == head then
-      local final_val, err = M.get_table_expr(val, rest)
-      if err then
---print(string.format("  err: %s", err))
-        return nil, err
-      end
-      return name, final_val
-    end
-    i = i + 1
-  end
-print("---END eval_local_var_exp: returning nil")
-end
-
+-- returns name and value of local variable with param name, if found, else nil
 M.find_local_var = function(var_name)
   local bot_level = M.getinfo_bottom()
   local level = bot_level - M.target_offset
---print(string.format("find_local_var(): looking for local var at stack level %d", level))
---traceback()
-  local info = debug.getinfo(level)
   local i = 1
   while true do
     local name, val = debug.getlocal(level, i)    
@@ -220,8 +189,90 @@ M.find_local_var = function(var_name)
   end
 end
 
-M.print_local_var_expr = function (expr)
-  local n, v = M.eval_local_var_expr(expr)
+-- dumps all upvalues at param stack level
+M.dump_upvalues = function(stack_level)
+--print(string.format("du: looking for upvalues at stack level: %d", stack_level))
+  local func = debug.getinfo(stack_level, 'f').func
+  local i = 1
+  while true do
+    local name, val = debug.getupvalue(func, i)    
+    if not name then
+      break 
+    end
+    print(string.format("upvalue %04d: name: [%s], val: [%s]", i, tostring(name), tostring(val)))
+    i = i + 1
+  end
+end
+
+-- returns name and value of upvalue with param name, if found, else nil
+M.find_upvalue = function(var_name)
+  local bot_level = M.getinfo_bottom()
+  local level = bot_level - M.target_offset
+-- :P
+level = level-1 -- why??
+--traceback(true)
+  local func = debug.getinfo(level, 'f').func
+--print(string.format("fu: stack level: %d: func: [%s]: looking for var_name: [%s]", level, tostring(func), var_name))
+--print("-- locals:")
+--M.dump_locals(level)
+--print("-- debug info:")
+--local di = debug.getinfo(level)
+--for k,v in pairs(di) do print(k, v) end
+  local i = 1
+  while true do
+    local name, val = debug.getupvalue(func, i)    
+--print(string.format("fu: uv %2d: name: [%s], val: [%s]", i, tostring(name), tostring(val)))
+    if not name then
+      break 
+    end
+    if name == var_name then
+      return name, val
+    end
+    i = i + 1
+  end
+end
+
+M.find_global_var = function(var_name)
+  for k, v in pairs(_G) do
+    if k == var_name then
+      return k, v
+    end
+  end
+end
+
+-- recursively evaluates param expression, returns head, final val
+M.eval_expr = function(expr)
+  local head, rest = M.split_head_expr(expr)
+
+  -- look for local first
+  local name, val = M.find_local_var(head)
+
+  -- if not found, look for upvalue
+  if name == nil then
+    name, val = M.find_upvalue(head)
+  end
+
+  -- if not found, look for global
+  if name == nil then
+    name, val = M.find_global_var(head)
+  end
+
+  -- we struck out
+  if name == nil then
+    return nil, nil
+  end
+
+  -- do recursive lookup
+  local final_val, err = M.get_table_expr(val, rest)
+  if err then
+    return nil, err
+  end
+  return name, final_val
+end
+
+-- prints the value of param expression
+M.print_evaluated_expr = function (expr)
+  local n, v = M.eval_expr(expr)
   if n == nil then
     print("invalid expression: " .. expr)
     do return end
@@ -229,8 +280,9 @@ M.print_local_var_expr = function (expr)
   print(string.format("%s: %s", expr, tostring(v)))
 end
 
+-- prints the value of a builtin debugger function operating on param expression
 M.print_func_expr = function(func_name, expr)
-  local nm, val = M.eval_local_var_expr(expr)
+  local nm, val = M.eval_expr(expr)
   if      func_name == "type" then
     print(string.format("type(%s): %s", expr, type(val)))
   elseif func_name == "len" then
@@ -244,14 +296,16 @@ M.print_func_expr = function(func_name, expr)
   end
 end
 
+-- prints the value of param expression, where it is either a builtin debugger function, local var or global var
 M.print_expr = function(expr)
   func_name, arg = string.match(expr, "(%w+)%((.+)%)")
   if func_name then
     M.print_func_expr(func_name, arg)
     return
   end
-  -- do recursive var indexing
-  M.print_local_var_expr(expr)
+
+  -- print value of expression
+ M.print_evaluated_expr(expr)
 end
 
 -- returns stack level with debug.getinfo.func == param func name, or nil if not found. level is relative to caller, not this func
@@ -325,7 +379,10 @@ function debug_console(print_traceback)
         M.set_breakpoint(string.sub(ln, 2))
       elseif c == 'o' then
         local level = bot_level - M.target_offset
-        M.dump_locals(level+1)
+        M.dump_locals(level)
+      elseif c == 'u' then
+        local level = bot_level - M.target_offset
+        M.dump_upvalues(level)
       elseif c == 'p' then
         local expr = util.trim(string.sub(ln, 2))
         M.print_expr(expr)

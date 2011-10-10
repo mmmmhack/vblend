@@ -1,6 +1,6 @@
 static void define_constants(lua_State* L) {
 	// push table
-  lua_getglobal(L, "glfw");
+  lua_getglobal(L, "lua_glfw");
 
   lua_pushnumber(L, 2);
   lua_setfield(L, -2, "GLFW_VERSION_MAJOR");
