@@ -17,6 +17,7 @@ M.print_help = function ()
   print("  o             :    print all local variables");
   print("  u             :    print all upvalue variables");
   print("  p EXPR        :    print value of expression");
+  print("  t             :    show current location");
   print("  w             :    show backtrace");
   print("  q             :    quit program");
   print("  h             :    show this help");
@@ -63,16 +64,19 @@ end
 
 -- global funcs
 function traceback(show_debug)
+  local plevel = 1
   for level = 1, math.huge do 
     local info = debug.getinfo(level)   -- get all info
     if not info then break end 
     if info.what == "C" then -- is a C function? 
-      print(level, "C function") 
+      print(string.format("%2d [C function]", plevel)) 
+      plevel = plevel + 1
     else -- a Lua function 
       -- skip lines in debug module TODO: narrow this down if we ever want to debug the debug module itself
       local internal_level = string.match(info.short_src, "tf_debug.lua$") ~= nil
       if not internal_level or show_debug then
-        print(string.format("[%s]:%d (%s)", info.short_src, info.currentline, tostring(info.name))) 
+        print(string.format("%2d [%s:%d] (%s)", plevel, info.short_src, info.currentline, tostring(info.name))) 
+        plevel = plevel + 1
       end
     end 
   end 
@@ -158,12 +162,13 @@ M.split_head_expr = function (expr)
   return expr
 end
 
--- dumps all locals at param stack level
-M.dump_locals = function(stack_level)
+-- dumps all locals for target level
+M.dump_locals = function()
 --print(string.format("--- dump_locals for stack level %d", stack_level))
+  local target_level = M.target_level()
   local i = 1
   while true do
-    local name, val = debug.getlocal(stack_level, i)    
+    local name, val = debug.getlocal(target_level, i)
     if not name then
       break 
     end
@@ -172,13 +177,21 @@ M.dump_locals = function(stack_level)
   end
 end
 
+M.dump_debug_info = function(level)
+  print(string.format("---debug info for level %d:", level))
+  local info = debug.getinfo(level+1)
+  for k,v in pairs(info) do
+    print(string.format("  %s: [%s]", tostring(k), tostring(v)))
+  end
+end
+
 -- returns name and value of local variable with param name, if found, else nil
 M.find_local_var = function(var_name)
-  local bot_level = M.getinfo_bottom()
-  local level = bot_level - M.target_offset
+  local target_level = M.target_level()
   local i = 1
   while true do
-    local name, val = debug.getlocal(level, i)    
+    local name, val = debug.getlocal(target_level, i)
+--print(string.format(" i: %d: name: %s", i, tostring(name)))
     if not name then
       break 
     end
@@ -190,9 +203,10 @@ M.find_local_var = function(var_name)
 end
 
 -- dumps all upvalues at param stack level
-M.dump_upvalues = function(stack_level)
+M.dump_upvalues = function()
 --print(string.format("du: looking for upvalues at stack level: %d", stack_level))
-  local func = debug.getinfo(stack_level, 'f').func
+  local target_level = M.target_level()
+  local func = debug.getinfo(target_level, 'f').func
   local i = 1
   while true do
     local name, val = debug.getupvalue(func, i)    
@@ -206,18 +220,8 @@ end
 
 -- returns name and value of upvalue with param name, if found, else nil
 M.find_upvalue = function(var_name)
-  local bot_level = M.getinfo_bottom()
-  local level = bot_level - M.target_offset
--- :P
-level = level-1 -- why??
---traceback(true)
-  local func = debug.getinfo(level, 'f').func
---print(string.format("fu: stack level: %d: func: [%s]: looking for var_name: [%s]", level, tostring(func), var_name))
---print("-- locals:")
---M.dump_locals(level)
---print("-- debug info:")
---local di = debug.getinfo(level)
---for k,v in pairs(di) do print(k, v) end
+  local target_level = M.target_level()
+  local func = debug.getinfo(target_level, 'f').func
   local i = 1
   while true do
     local name, val = debug.getupvalue(func, i)    
@@ -277,7 +281,11 @@ M.print_evaluated_expr = function (expr)
     print("invalid expression: " .. expr)
     do return end
   end
-  print(string.format("%s: %s", expr, tostring(v)))
+  if type(v) == 'string' then
+    print(string.format("%s: '%s'", expr, v))
+  else
+    print(string.format("%s: %s", expr, tostring(v)))
+  end
 end
 
 -- prints the value of a builtin debugger function operating on param expression
@@ -289,7 +297,13 @@ M.print_func_expr = function(func_name, expr)
     print(string.format("len(%s): %d", expr, #val))
   elseif func_name == "pairs" then
     for k, v in pairs(val) do
-      print(string.format("%-16s: %s", k, tostring(v)))
+      local sv
+      if type(v) == 'string' then
+        sv = "'" .. v .. "'"
+      else  
+        sv = tostring(v)
+      end
+      print(string.format("%-16s: %s", k, sv))
     end
   else
     print("invalid function: " .. func_name)
@@ -306,6 +320,42 @@ M.print_expr = function(expr)
 
   -- print value of expression
  M.print_evaluated_expr(expr)
+end
+
+-- returns suffix of param path where suffix is everything after final path separator
+M.base_name = function(path)
+  local path_sep = '/' -- TODO: check OS path sep
+  local pos = #path
+  while pos >= 1 do
+    local ch = string.sub(path, pos, pos)
+    if ch == path_sep then
+      return string.sub(path, pos+1)
+    end
+    pos = pos - 1
+  end
+  return path
+end
+
+-- returns count of stack levels from bottom up to level with param source file name
+M.count_up_to_src_level = function(src_name)
+  local cnt = 0
+  local bot_level = M.getinfo_bottom()
+  local n = bot_level
+  while true do
+    local info = debug.getinfo(n, "S")
+    if not info then
+      break
+    end
+--    print(string.format("level %2d: src: [%s]", n, tostring(info.source)))
+    local base_name = M.base_name(string.sub(info.source, 2))
+--    print(string.format("  base_name: [%s]", base_name))
+    if base_name == src_name then
+      break
+    end
+    cnt = cnt + 1
+    n = n - 1
+  end
+  return cnt
 end
 
 -- returns stack level with debug.getinfo.func == param func name, or nil if not found. level is relative to caller, not this func
@@ -347,11 +397,31 @@ M.getinfo_bottom = function()
   return level - 1  -- return level relative to caller
 end
 
+-- returns the absolute stack level of the target debugging function
+M.target_level = function()
+  return M.getinfo_bottom() - M.target_offset
+end
+
+-- prints debug info for the target stack level
+M.print_target_level = function()
+  local target_level = M.target_level()
+  local info = debug.getinfo(target_level, 'Snl')
+  local func = info.name
+  local src = string.sub(info.source, 2)
+  local line = info.currentline
+  print(string.format("%2d [%s:%d] (%s)", 1, src, line, func))
+end
+
+-- interactive debugging console
 function debug_console(print_traceback)
   if M._first_time then
     print("--- lua debug console version " .. M._version)
     M._first_time = false
   end
+
+  M.target_offset = M.count_up_to_src_level('tf_debug.lua')
+
+--[[
   local print_traceback = false
   local bot_level = M.getinfo_bottom()
   local cur_level = M.getinfo_level('debug_console')
@@ -360,11 +430,18 @@ function debug_console(print_traceback)
   else
     M.target_offset = nil
   end
-  if print_traceback then
+--]]
+  -- count stack levels of debugger file, target level will be first non-debugger level
+--[[
+  if true or print_traceback then
     print(string.format("--- BEG debug_console(): bot_level: %s, cur_level: %s, M.target_offset: %s", 
       tostring(bot_level), tostring(cur_level), tostring(M.target_offset)))
     traceback()
+    M.print_target_level()
   end
+]]
+M.print_target_level()
+
   local get_input = true
   while get_input do
     M.print_prompt();
@@ -378,14 +455,14 @@ function debug_console(print_traceback)
       elseif c == 'b' then
         M.set_breakpoint(string.sub(ln, 2))
       elseif c == 'o' then
-        local level = bot_level - M.target_offset
-        M.dump_locals(level)
+        M.dump_locals()
       elseif c == 'u' then
-        local level = bot_level - M.target_offset
-        M.dump_upvalues(level)
+        M.dump_upvalues()
       elseif c == 'p' then
         local expr = util.trim(string.sub(ln, 2))
         M.print_expr(expr)
+      elseif c == 't' then
+        M.print_target_level()
       elseif c == 'w' then
         traceback()
       elseif c == 'h' then

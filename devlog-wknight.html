@@ -2994,7 +2994,77 @@ I need to come up with a 'best-way' of identifying the target stack level
 once and for all.
 </p>
 
-</body>
+<p>
+After work, back to working on gen_wrappers, need to trim space after ctype
+</p>
 
+<p>
+:[ still a problem printing vars in the debugger.
+</p>
+
+<pre>
+--- lua debug console version 0.1
+&gt; o
+local 0001: name: [param_decls], val: [table: 0x119d00]
+local 0002: name: [params], val: [table: 0x112830]
+local 0003: name: [(for generator)], val: [function: 0x100980]
+local 0004: name: [(for state)], val: [table: 0x119d00]
+local 0005: name: [(for control)], val: [1]
+local 0006: name: [i], val: [1]
+local 0007: name: [p], val: [GLclampf red]
+local 0008: name: [ctype], val: [GLclampf ]
+local 0009: name: [cident], val: [red]
+local 0010: name: [param], val: [table: 0x12a5d0]
+&gt; p param
+invalid expression: param
+&gt; 
+</pre>
+
+<p>
+This is the source of my debugger woes:
+<p>
+<pre>
+  if cur_level then
+    M.target_offset = bot_level - (cur_level + 2)  -- getinfo() stack level of target function, relative to bottom level (2 levels above debug_consol())
+  else
+    M.target_offset = nil
+  end
+</pre>
+
+<p>
+This level was defined in the context of hitting a breakpoint in 'check_breakpoints()' but
+now I'm calling the debug_console() directly in the target code and the target level is
+off by one. I need to add a check that looks at the number of debugger functions on the
+stack to determine the true target level.
+</p>
+
+<h2>2011-10-11</h2>
+<p>
+Last night I realized some changes that should be done to the debugger to improve it.
+First: all functions that need to reference a target level should receive a relative
+level parameter and calculate the actual level inside the function. This will fix the
+current behavior where the level breaks if the function call level changes.
+</p>
+
+<p>
+Second, determine the target level programmatically instead of using a fixed value,
+so it's correct no matter whether debug_console() is called directly from the
+target or from check_breakpoint().
+</p>
+
+<p>
+Created count_up_to_src_level() and target_level() functions, that is going to help.
+</p>
+
+<p>
+Ok, looks like it's working. Next, I would really like to implemnt 'next' and 'step'
+control. But will checkin code first. Wait, should also test breakpoint.
+</p>
+
+<p>
+Tested it, looks like still correct location, hallelujah.
+</p>
+
+</body>
 </html>
 

@@ -277,11 +277,11 @@ end
 function get_lua_type(ctype)
   -- supplement type-map table with opt-supplied filename if any
   if opt_type_map and opt_type_map[ctype] ~= nil then
-    return opt_type_map[ctype] 
+      return opt_type_map[ctype]
   end
   -- look in type-map table
   if type_map[ctype] == nil then
-    debug_console()
+--    debug_console()
     error(string.format("lua type not found for ctype: [%s]", tostring(ctype)))
   end
   return type_map[ctype]
@@ -295,12 +295,12 @@ function get_params(param_decls)
     if p == "void" then
     else  
       local ctype, cident = string.match(p, "^(.-)([_%a][_%w]*)$")
-      print(string.format("  param %2d: [%s] [%s]", i, ctype, cident))
       local param = {}
-      param.ctype = ctype
+      param.ctype = util.trim(ctype)
       param.cident = cident
       params[#params + 1] = param
-      param.luatype = get_lua_type(ctype)
+      param.luatype = get_lua_type(param.ctype)
+      print(string.format("  param %2d: [%s] [%s], luatype: [%s]", i, param.ctype, param.cident, param.luatype))
     end
   end
   return params
