@@ -111,7 +111,7 @@ the OpenGL redbook.
 <p>
 After all this, my plan is to reproduce the simple rendering of the letter 'F' using the glBitmap()
 example in the OpenGL book. Then I'm going to try to use/adapt the bitmap data from the glut
-GLUT_BITMAP_9_BY_15	font to render text.
+GLUT_BITMAP_9_BY_15font to render text.
 </p>
 
 <p>
@@ -1170,7 +1170,7 @@ So the only thing left is incorrect _tris???
 wtf?
 </p>
 <pre>
-35		glDrawElements(GL_TRIANGLES, 1, GL_UNSIGNED_INT, _tris);
+35	glDrawElements(GL_TRIANGLES, 1, GL_UNSIGNED_INT, _tris);
 (gdb) p _tris[0]
 $1 = 0
 (gdb) p _tris[1]
@@ -1252,8 +1252,8 @@ Here is what I want:
 </p>
 <table>
 <tr><th>Source red pixel</th><th>Source alpha</th><th>Dest red pixel</th><th>Result red pixel</th></tr>
-<tr><td>0										 <td>0           </td><td>0.5           </td><td>0.5             </td></tr>
-<tr><td>1										 <td>1           </td><td>0.5           </td><td>1               </td></tr>
+<tr><td>0									 <td>0           </td><td>0.5           </td><td>0.5             </td></tr>
+<tr><td>1									 <td>1           </td><td>0.5           </td><td>1               </td></tr>
 </table>
 
 <p>
@@ -1277,8 +1277,8 @@ Well, one solution seems to be S<sub>r</sub> = A<sub>s</sub>, D<sub>r</sub> = 1 
 So I did this, as before, and it works:
 </p>
 <pre>
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+glEnable(GL_BLEND);
 </pre>
 
 <p>
@@ -1579,16 +1579,16 @@ After work, debugging glfw keycode mappings:
 </p>
 <pre>
   k: [A], v: [A], ch: [A]
-	k!=ch: type(k): string, type(ch): string
-	k!=ch: #(k): 1, #(ch): 2
-	ch[1]: [A], ch[2]: []
+k!=ch: type(k): string, type(ch): string
+k!=ch: #(k): 1, #(ch): 2
+ch[1]: [A], ch[2]: []
 </pre>
 
 <p>
 Finally zeroing in on it.  This is the culprit conversion:
 </p>
 <pre>
-	ch = string.char(k,1)
+ch = string.char(k,1)
 </pre>
 
 <p>
@@ -1880,8 +1880,8 @@ mhackslab:test $ r
 ---l_traceback
 err: ./lua/util.lua:8: bad argument #1 to 'byte' (string expected, got nil)
 [./lua/util.lua]:29
-2	C function
-3	C function
+2C function
+3C function
 [./lua/util.lua]:8
 [./lua/normal_mode.lua]:71
 [lua/tf_edit.lua]:168
@@ -1941,7 +1941,7 @@ Here (from running test_lua_pcall):
 </p>
 <pre>
 breakpoint 1, l_traceback (L=0x100120) at test_lua_pcall.c:14
-14		printf("BEG l_traceback()\n");
+14	printf("BEG l_traceback()\n");
 (gdb) bt
 #0  l_traceback (L=0x100120) at test_lua_pcall.c:14
 #1  0x00009191 in luaD_precall (L=0x100120, func=0x801054, nresults=1) at ldo.c:319
@@ -1983,15 +1983,15 @@ The ttisfunction macro is where the failure is occurring for tf_edit. Here is
 the definition:
 </p>
 <pre>
-/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttisfunction(o)	(ttype(o) == LUA_TFUNCTION)
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttisfunction(o)(ttype(o) == LUA_TFUNCTION)
 </pre>
 <pre>
 Breakpoint 1, luaG_errormsg (L=0x1b4e20) at ldebug.c:620
-620	    StkId errfunc = restorestack(L, L-&gt;errfunc);
+620    StkId errfunc = restorestack(L, L-&gt;errfunc);
 (gdb) p L-&gt;errfunc
 $2 = 12
 (gdb) n
-621	    if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);
+621    if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);
 (gdb) p errfunc
 $3 = (StkId) 0x1668300c
 (gdb) 
@@ -2001,7 +2001,7 @@ $3 = (StkId) 0x1668300c
 Definition of ttisfunction:
 </p>
 <pre>
-/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttisfunction(o)	(ttype(o) == LUA_TFUNCTION)
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttisfunction(o)(ttype(o) == LUA_TFUNCTION)
 </pre>
 
 
@@ -2009,14 +2009,14 @@ Definition of ttisfunction:
 Definition of ttype:
 </p>
 <pre>
-/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttype(o)	((o)-&gt;tt)
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lobject.h:#define ttype(o)((o)-&gt;tt)
 </pre>
 
 <p>
 Definition of LUA_TFUNCTION:
 </p>
 <pre>
-/Users/williamknight/swtools/lua/lua-5.1.4/src//lua.h:#define LUA_TFUNCTION		6
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lua.h:#define LUA_TFUNCTION	6
 </pre>
 
 <pre>
@@ -2042,11 +2042,11 @@ Re-run test_lua_pcall, b at lapi.c:815:
 </p>
 <pre>
 Breakpoint 1, lua_pcall (L=0x100120, nargs=0, nresults=0, errfunc=1) at lapi.c:815
-815	    StkId o = index2adr(L, errfunc);
+815    StkId o = index2adr(L, errfunc);
 (gdb) p errfunc
 $1 = 1
 (gdb) n
-817	    func = savestack(L, o);
+817    func = savestack(L, o);
 (gdb) p o
 $2 = (StkId) 0x80100c
 (gdb) p o-&gt;tt
@@ -2059,9 +2059,9 @@ Re-run tf_edit, b at lapi.c:815:
 </p>
 <pre>
 Breakpoint 2, lua_pcall (L=0x1b4e40, nargs=0, nresults=0, errfunc=1) at lapi.c:815
-815	    StkId o = index2adr(L, errfunc);
+815    StkId o = index2adr(L, errfunc);
 (gdb) n
-817	    func = savestack(L, o);
+817    func = savestack(L, o);
 (gdb) p o-&gt;tt
 $1 = 5
 (gdb) 
@@ -2197,7 +2197,7 @@ flag with gcc:
 </p>
 <pre>
 tlr.so: tlr.o
-	$(CC) -dynamiclib -o tlr.so $&lt; $(lua_libs)
+$(CC) -dynamiclib -o tlr.so $&lt; $(lua_libs)
 </pre>
 
 <p>
@@ -2258,7 +2258,7 @@ Yes! Finally got the damn traceback during the original error:
 --- BEG tf_traceback
 err: ./lua/buffer.lua:106: attempt to get length of local 'ln' (a nil value)
 [./lua/util.lua]:29
-2	C function
+2C function
 [./lua/buffer.lua]:106
 [lua/tf_edit.lua]:184
 lua_pcall returned: 0
@@ -2381,20 +2381,20 @@ to be drawn on vscroll, but the code assumed that the array of lines in the buff
 least the size of the number of lines in the window, which is not true and caused an array bounds error:
 </p>
 <pre>
-	-- redraw all lines in window if scrolled
-	if b.scrolled then
-		beg_row = b.scroll_pos[1]
-		end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
-	end
-	for i = beg_row, end_row do
-=&gt;		local ln = b.lines[i]
-		local end_col = math.min(#ln, beg_col + b.win_size[0])
-		-- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
-		local pad = b.win_size[0] - (end_col - beg_col)
-		local s = string.sub(ln, beg_col, end_col) .. string.rep(" ", pad)
-		tflua.set_screen_buf(scr_row, scr_col, s)
-		scr_row = scr_row + 1
-	end
+-- redraw all lines in window if scrolled
+if b.scrolled then
+	beg_row = b.scroll_pos[1]
+	end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
+end
+for i = beg_row, end_row do
+=&gt;	local ln = b.lines[i]
+	local end_col = math.min(#ln, beg_col + b.win_size[0])
+	-- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
+	local pad = b.win_size[0] - (end_col - beg_col)
+	local s = string.sub(ln, beg_col, end_col) .. string.rep(" ", pad)
+	tflua.set_screen_buf(scr_row, scr_col, s)
+	scr_row = scr_row + 1
+end
 </pre>
 
 <p>
@@ -2446,10 +2446,10 @@ breakpoint hit!
 [../tf_debug.lua]:56 (nil)
 [../buffer.lua]:20 (new)
 [test_buffer.lua]:61 (nil)
-6	C function
+6C function
 [test_buffer.lua]:74 (main)
 [test_buffer.lua]:84 (nil)
-9	C function
+9C function
 &gt; 
 </pre>
 
@@ -2463,7 +2463,7 @@ breakpoint hit!
 6 C function
 7 [test_buffer.lua]:74 (main)
 8 [test_buffer.lua]:84 (nil)
-9	C function
+9C function
 <pre>
 
 <p>
@@ -2501,10 +2501,10 @@ eval_local_var_expr(): looking for local var at stack level 7
  6 [../tf_debug.lua]:56 (nil)
  7 [../buffer.lua]:20 (new)
  8 [test_buffer.lua]:61 (nil)
- 9	C function
+ 9C function
 10 [test_buffer.lua]:74 (main)
 11 [test_buffer.lua]:84 (nil)
-12	C function
+12C function
 </pre>
 
 <p>
@@ -2519,10 +2519,10 @@ eval_local_var_expr(): looking for local var at stack level 7
  5 [../tf_debug.lua]:56 (nil)
  6 [../buffer.lua]:20 (new)
  7 [test_buffer.lua]:61 (nil)
- 8 9	C function
+ 8 9C function
  9 [test_buffer.lua]:74 (main)
 10 [test_buffer.lua]:84 (nil)
-11 12	C function
+11 12C function
 </pre>
 
 <p>
@@ -3063,6 +3063,27 @@ control. But will checkin code first. Wait, should also test breakpoint.
 
 <p>
 Tested it, looks like still correct location, hallelujah.
+</p>
+
+<p>
+Next thing to work on: add script to replace defines in header files, to fix stuff
+like this:
+</p>
+<pre>
+beg gfw: decl: [GLAPI void GLAPIENTRY glClearIndex( GLfloat c );]
+  ret_decl: [GLAPI void GLAPIENTRY], func_name: [glClearIndex], params_decl: [ GLfloat c ]
+  param  1: [GLfloat] [c], luatype: [number]
+  lua: ../parse/gen_wrappers.lua:347: lua_ret_type is nil for c_ret_type: [GLAPI void GLAPIENTRY]
+</pre>
+
+<p>
+Created script, it works (but not robustly, need to update to support full token-scanning and
+substitution as opposed to simple gsub).
+</p>
+
+<p>
+parse/gen_wrappers.lua script is finally now parsing the whole gl header file. Now just
+have to finish implementation of arg, func call and return emission.
 </p>
 
 </body>

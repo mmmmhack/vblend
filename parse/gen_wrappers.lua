@@ -256,7 +256,7 @@ function get_function_declarations(decl_fname)
     -- end decl
     if string.sub(ln, #ln) == ";" then
       decls[#decls + 1] = cur_decl
-print(string.format("  added decl %04d: [%s]", #decls, cur_decl))
+--print(string.format("  added decl %04d: [%s]", #decls, cur_decl))
       cur_decl = ""
     end
 
@@ -300,7 +300,7 @@ function get_params(param_decls)
       param.cident = cident
       params[#params + 1] = param
       param.luatype = get_lua_type(param.ctype)
-      print(string.format("  param %2d: [%s] [%s], luatype: [%s]", i, param.ctype, param.cident, param.luatype))
+--      print(string.format("  param %2d: [%s] [%s], luatype: [%s]", i, param.ctype, param.cident, param.luatype))
     end
   end
   return params
@@ -341,22 +341,26 @@ function get_return_types(ret_decl)
      c_ret_type == "double" 
   then
     lua_ret_type = "number"
+  elseif c_ret_type == "void" then
+    lua_ret_type = "void"
   else  
+  end
+  if lua_ret_type == nil then
+    error(string.format("lua_ret_type is nil for c_ret_type: [%s]", c_ret_type))
   end
   return c_ret_type, lua_ret_type 
 end
 
 -- returns wrapper code for param function declaration, and a 'register func' line
 function gen_func_wrapper(decl)
-print(string.format("beg gfw: decl: [%s]", decl))
+--print(string.format("beg gfw: decl: [%s]", decl))
   local ret_decl, func_name, params_decl = string.match(decl, "^%s*(.-)%s+([_%a][_%w]+)%s*%((.*)%)%s*;%s*$") 
-print(string.format("  ret_decl: [%s], func_name: [%s], params_decl: [%s]", tostring(ret_decl), tostring(func_name), tostring(params_decl)))
+--print(string.format("  ret_decl: [%s], func_name: [%s], params_decl: [%s]", tostring(ret_decl), tostring(func_name), tostring(params_decl)))
   if ret_decl == nil or func_name == nil or params_decl == nil then
-    print("failed parsing decl")
-    os.exit(1)
+    error(string.format("failed parsing decl: [%s]", decl))
   end
   if opts.sel_funcs and not is_sel_func(func_name) then
-print(string.format("gfw: no sel_func match: decl: [%s]", decl))
+--print(string.format("gfw: no sel_func match: decl: [%s]", decl))
     return
   end
 --print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret_decl, func_name, params_decl))
@@ -467,12 +471,12 @@ function main()
   local func_defs = ""
   local func_regs = ""
   local decls = get_function_declarations(decl_fname)
-print(string.format("%d decls found", #decls))
+--print(string.format("%d decls found", #decls))
   for i, decl in ipairs(decls) do
-print(string.format("bef gfw: decl %04d: [%s]", i, decl))
+--print(string.format("bef gfw: decl %04d: [%s]", i, decl))
     -- skip typedef decls
     if string.match(decl, "^typedef") then
-print("skipping typedef decl")    
+--print("skipping typedef decl")    
     -- assume func decl
     else
       local func_def, func_reg = gen_func_wrapper(decl)  
@@ -491,7 +495,7 @@ print("skipping typedef decl")
 	io.output(func_reg_fname)
 	io.write(func_regs)
 	io.close()
-print(string.format("%d func(s) written to %s, %s", ndefs, func_def_fname, func_reg_fname))
+  print(string.format("%d func(s) written to %s, %s", ndefs, func_def_fname, func_reg_fname))
 end
 
 main()
