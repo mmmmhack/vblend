@@ -10,10 +10,12 @@
 #include "GL/glfw.h"
 
 #include "constant_defs.c"
-#include "wrapper_funcs.c"
+//#include "wrapper_funcs.c"
+#include "lua_gl_func_def.c"
 
 static const struct luaL_Reg funcs[] = {
-#include "reg_list.c"
+//#include "reg_list.c"
+#include "lua_gl_func_reg.c"
 	{NULL, NULL},
 };
 

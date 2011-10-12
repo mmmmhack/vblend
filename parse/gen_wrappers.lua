@@ -200,10 +200,8 @@ end
 --]]
 
 function get_lw_func_name(func_name)
-	local first_ch = string.sub(func_name, 1, 1)
-  local rest = string.sub(func_name, 2)
-	local lw_func_name = util.tolower(first_ch) .. rest
-  -- TODO: strip prefix if specified
+  local lw_func_name = func_name
+  --strip prefix if specified
   if opts.remove_prefix then
     local npre = #opts.remove_prefix
     if #lw_func_name >= npre then
@@ -213,12 +211,16 @@ function get_lw_func_name(func_name)
       end
     end
   end
-  -- TODO: do lua keyword sub
---[[  
+  -- make first char lower case
+	local first_ch = string.sub(lw_func_name, 1, 1)
+  local rest = string.sub(lw_func_name, 2)
+	lw_func_name = util.tolower(first_ch) .. rest
+
+  -- do lua keyword sub
 	if lua_keyword_sub[lw_func_name] then
 		lw_func_name = lua_keyword_sub[lw_func_name] 
 	end
-]]
+
   return lw_func_name
 end
 
@@ -399,6 +401,7 @@ function gen_func_wrapper(decl)
   for i, param in ipairs(params) do
     s = string.format("  %s %s = lua_to%s(L, %d);\n", param.ctype, param.cident, param.luatype, stack_index)
     stack_index = stack_index + 1
+    func_def = func_def .. s
   end
 
 	-- emit assign ret val
@@ -411,13 +414,21 @@ function gen_func_wrapper(decl)
 	end
 
   -- emit beg cfunc call
-  s = string.format("  %s(\n", func_name)
+  s = string.format("  %s(", func_name)
   func_def = func_def .. s
 
   -- TODO: emit cargs
+  -- for each param
+  for i, param in pairs(params) do
+    if i > 1 then
+      func_def = func_def .. ","
+    end
+    s = string.format("\n    %s", param.cident)
+    func_def = func_def .. s
+  end
 
   -- emit end cfunc call
-  s = string.format("  );\n")
+  s = string.format("\n  );\n")
   func_def = func_def .. s
 
   -- emit push cret to lua stack
