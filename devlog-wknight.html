@@ -3039,6 +3039,7 @@ stack to determine the true target level.
 </p>
 
 <h2>2011-10-11</h2>
+
 <p>
 Last night I realized some changes that should be done to the debugger to improve it.
 First: all functions that need to reference a target level should receive a relative
@@ -3084,6 +3085,57 @@ substitution as opposed to simple gsub).
 <p>
 parse/gen_wrappers.lua script is finally now parsing the whole gl header file. Now just
 have to finish implementation of arg, func call and return emission.
+</p>
+
+<h2>2011-10-12</h2>
+
+<p>
+Tuesday morning, slept in, maybe an hour of programming time left. Will start working on
+using the parse/gen_wrappers.lua script to generate wrappers for glfw.
+</p>
+
+<p>
+Need to work on the declaration parsing code, it's currently getting tripped up by a
+nested ; in a struct declaration. At some point, I'll probably need to implement a 
+real parser, but for now, would just like to get on with the game dev stuff!!
+</p>
+
+<p>
+After work, at Bernices, inspired by attending a political rally at Caras Park 
+(Occupy Missoula). Got to get moving on the game. Driving this mornign, I thought
+that a full parse won't be needed right now. Will just create a few new scripts
+to:
+</p>
+<ul>
+<li>join continued lines
+<li>remove preproc blocks (#ifXXX ... #endif)
+<li>remove blank lines
+<li>read the resulting file char-by-char and parse declarations by ignoring
+    everything in the outermost { } delimiters.
+</ul>
+
+<p>
+Got it working.
+</p>
+
+<p>
+At home, got parse/filter_ifdefs.lua script working. 
+</p>
+
+<p>
+Next: start on 'strip_non_func_decls.lua'.
+</p>
+
+<h2>2011-10-13</h2>
+
+<p>
+Up at 7, Thursday, getting to work. Last night, I realized that parsing the declarations
+to only yield function declarations works best when called from within the gen_wrappers
+script, as it will work like an iterator.
+</p>
+
+<p>
+glfw wrapping is now working with the parse scripts.
 </p>
 
 </body>

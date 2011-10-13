@@ -3,8 +3,7 @@
 --local preproc_fname = "preproc_gl.h"
 
 function preproc_header_file()
-  io.stderr:write("beg preproc\n")
---  io.input(fname)
+--  io.stderr:write("beg preproc\n")
   local buf = io.read(math.huge)
   io.close()
 
@@ -12,11 +11,11 @@ function preproc_header_file()
   local in_comment = false
   local cp = nil
   for i = 1, #buf do
-
+--[[
     if i % 1000 == 0 then
       io.stderr:write(i, "\n")
     end
-
+--]]
     local c = string.sub(buf, i, i)   
     -- non-comment mode
     if not in_comment then
@@ -35,14 +34,10 @@ function preproc_header_file()
     cp = c
   end
 
---  io.output(preproc_fname)
-  io.stderr:write("end preproc\n")
+--  io.stderr:write("end preproc\n")
   io.write(bufout)
   
---  print(string.format("end preproc: created %s", preproc_fname))
---  return preproc_fname
 end
 
---fname = ...
 preproc_header_file()
 

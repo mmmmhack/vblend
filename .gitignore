@@ -29,4 +29,8 @@ test/write_9x15_font_png
 test/test_lua_pcall
 test/tlua_reg
 util/*.i
+gl/old
 gl/gl_hdr_no_comments.i
+gl/gl_hdr_filter_ifdefs.i
+gl/gl_hdr_nc_joined.i
+glfw/old

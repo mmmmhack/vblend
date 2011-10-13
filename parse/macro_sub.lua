@@ -1,4 +1,4 @@
--- sub_defines.lua  : does token substitution
+-- macro_sub.lua  : does token substitution
 
 package.path=package.path .. ';../parse/?.lua'
 package.path=package.path .. ';../test/lua/?.lua'
