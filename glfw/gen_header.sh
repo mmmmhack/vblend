@@ -1,3 +1,5 @@
+# gen_header.sh  : script to generate pre-processed opengl header file glfw.i for input to gen_wrappers.sh script
+
 glfw_hdr=~/swtools/opengl/glfw/include/GL/glfw.h
 cat $glfw_hdr | \
 lua ../parse/strip_c_comments.lua | \

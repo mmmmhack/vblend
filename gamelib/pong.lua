@@ -1,5 +1,5 @@
 -- pong.lua : demo game for gamelib
-
+require('strict')
 require('gamelib')
 
 local r = { x=50, y=50, w=50, h=50 }
@@ -26,6 +26,11 @@ function update()
   end
 end
 
+function quit_key_pressed()
+  local state = glfw.getKey(glfw.GLFW_KEY_ESC)
+  return state == glfw.GLFW_PRESS
+end
+
 function main()
   gamelib.open_window()
 
@@ -35,7 +40,7 @@ function main()
     update()
 
     gamelib.update()
-    if gamelib.window_closed() then
+    if gamelib.window_closed() or quit_key_pressed() then
       run = false
     end
   end

@@ -3138,6 +3138,52 @@ script, as it will work like an iterator.
 glfw wrapping is now working with the parse scripts.
 </p>
 
+<p>
+Next: wrap sys then move on to the font module.
+</p>
+
+<h2>2011-10-14</h2>
+
+<p>
+Sweet Friday, up at 6, think I'll start on wrapping the tfont module. Nope, the sys module
+is broken, need to fix that first. Fixed. And I think I'll get the keyboard stuff
+in glfw working first too.
+</p>
+
+<p>
+The getKey() function works already. Next, I added code to report skipped functions in
+parse/genWrapper and currently it skips 35 funcs in glfw. Think I'll start adding support
+to return values via param int pointers so functions like glfwGetWindowSize() will
+can be wrapped. This will require an additional kind of input to the wrapper script
+to declare certain params as return params. Either that, or I could just _assume_
+that any int* param is a return param. But that might make an ass out of u and me.
+</p>
+
+<p>
+Gotta have some kind of declaration, hiding stuff, implicit and unexpected behavior in 
+sw is generally bad bad.
+</p>
+
+<p>
+I suspect over time there will be more qualifications and specifications needed
+for wrapping, but for now, will just create another input file type 'RET_PARAMS'
+with a format like:
+</p>
+<pre>
+return {
+  [func_name,param_id]=true,
+}
+</pre>
+
+<p>
+While I'm at it, I'm generalizing the use of lua files for parse/gen_wrapper.lua params.
+</p>
+
+<p>
+Updated gen header and gen wrappers for gl, added verbose flag to parse.gen_wrappers.luaparse. 
+So much little workies.
+</p>
+
 </body>
 </html>
 

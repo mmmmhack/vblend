@@ -6,6 +6,8 @@ package.loaded[modname] = M
 
 require('gl')
 require('lua_glfw')
+_G['glfw'] = _G['lua_glfw'] -- rename to more convenient prefix, the shared lib was made as 'lua_glfw' to avoid conflict 
+                            -- with the C glfw lib
 require('sys')
 
 -- game window defaults

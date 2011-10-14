@@ -11,6 +11,8 @@ require('tf_debug')
 --local wrapper_fname = "wrapper_funcs.c"
 --local reg_fname = "reg_list.c"
 
+local skipped_func_decls = {}
+
 -- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
 local type_map = {
@@ -34,19 +36,32 @@ local opt_defs = {
     descrip = 'remove PREFIX from function names',
     arg_descrip = 'PREFIX',
   },
+  ret_params = {
+    short_opt = 'r',
+    long_opt = 'ret-params',
+    has_arg = true,
+    descrip = "get return values from function params for '[func_name,param_name]=true' table entries in lua file RET_PARAMS_FILE",
+    arg_descrip = 'RET_PARAMS_FILE',
+  },
   sel_funcs = {
     short_opt = 's',
     long_opt = 'sel-funcs',
     has_arg = true,
-    descrip = 'only generate wrappers for list of function names in SEL_FILE',
-    arg_descrip = 'SEL_FILE',
+    descrip = "only generate wrappers for '[func_name]=true' table entries in lua file SEL_FUNCS_FILE",
+    arg_descrip = 'SEL_FUNCS_FILE',
   },
   type_map = {
     short_opt = 't',
     long_opt = 'type-map',
     has_arg = true,
-    descrip = 'use list of c-lua type conversions in TYPE_MAPE_FILE',
-    arg_descrip = 'TYPE_MAPE_FILE',
+    descrip = "use type conversions from '[ctype]=lua_type' table entries in lua file TYPE_MAP_FILE",
+    arg_descrip = 'TYPE_MAP_FILE',
+  },
+  verbose = {
+    short_opt = 'v',
+    long_opt = 'verbose',
+    has_arg = false,
+    descrip = 'be verbose about what is happening',
   },
   help = {
     short_opt = 'h',
@@ -212,6 +227,7 @@ function get_params(param_decls)
 
 -- reads list of functions from a file specified by command-line opt, only functions in the list will get wrappers
 function read_sel_funcs()
+--[[
   sel_funcs = {}
   io.input(opts.sel_funcs)
   for ln in io.lines() do
@@ -219,6 +235,17 @@ function read_sel_funcs()
     sel_funcs[func_name] = true 
   end
   io.close()
+--]]
+  if opts.verbose then
+    print(string.format("read_sel_funcs(): reading selected functions from lua file: [%s]", opts.sel_funcs))
+  end
+
+  sel_funcs = dofile(opts.sel_funcs)
+
+  if opts.verbose then
+    print(string.format("read_sel_funcs(): %d selected function(s) found", #opts.sel_funcs))
+  end
+
 end
 
 -- returns true if param func is in the list of selected funcs
@@ -260,18 +287,26 @@ end
 function gen_func_wrapper(decl)
 --print(string.format("beg gfw: decl: [%s]", decl))
   local ret_decl, func_name, params_decl = string.match(decl, "^%s*(.-)%s+([_%a][_%w]+)%s*%((.*)%)%s*;%s*$") 
---print(string.format("  ret_decl: [%s], func_name: [%s], params_decl: [%s]", tostring(ret_decl), tostring(func_name), tostring(params_decl)))
+  if opts.verbose then
+    print(string.format("gen_func_wrapper(): ret_decl: [%s], func_name: [%s], params_decl: [%s]", tostring(ret_decl), tostring(func_name), tostring(params_decl)))
+  end
   if ret_decl == nil or func_name == nil or params_decl == nil then
     error(string.format("failed parsing decl: [%s]", decl))
   end
   -- if wrapping a subset and function not in subset, skip wrapping this function
   if opts.sel_funcs and not is_sel_func(func_name) then
---print(string.format("gfw: no sel_func match: decl: [%s]", decl))
+    if opts.verbose then
+      print(string.format("gen_func_wrapper(): no sel_func match: decl: [%s]", decl))
+    end
     return
   end
 --print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret_decl, func_name, params_decl))
 --debug_console()
+
   -- get param defs
+  if opts.verbose then
+    print(string.format("gen_func_wrapper(): parsing param declarations"))
+  end
   local params = {}
   if #params_decl > 0 then
     local param_decls_nt = util.split(params_decl, ",")
@@ -286,6 +321,9 @@ function gen_func_wrapper(decl)
     end
   end
 
+  if opts.verbose then
+    print(string.format("gen_func_wrapper(): emitting C function definition"))
+  end
   local func_def = ""
 
   -- emit beg func
@@ -371,6 +409,7 @@ function main()
   end
   local func_def_fname = string.format("lua_%s_func_def.c", base_name)
   local func_reg_fname = string.format("lua_%s_func_reg.c", base_name)
+  local skipped_funcs_fname = string.format("lua_%s_func_skipped.txt", base_name)
 
   -- add type conversions from opt if given
   if opts.type_map then
@@ -379,25 +418,36 @@ function main()
 --debug_console()
 
   -- read from input file
-  local ndefs = 0
+  local num_typedefs = 0
+  local num_func_defs_generated = 0
   local func_defs = ""
   local func_regs = ""
 --  local decls = parse_declarations(decl_fname)
-  local decls = get_decls(decl_fname)
+  local decls = get_decls(decl_fname, opts.verbose)
 --print(string.format("%d decls found", #decls))
   for i, decl in ipairs(decls) do
-print(string.format("bef gfw: decl %04d: [%s]", i, decl))
+    if opts.verbose then
+      print(string.format("processing decl %04d: [%s]", i, decl))
+    end
+
     -- skip typedef decls
     if string.match(decl, "^%s*typedef") then
-print("skipping typedef decl")    
+      if opts.verbose then 
+        print("skipping typedef decl")    
+      end
+      num_typedefs = num_typedefs + 1
     -- assume func decl
     else
-print("processing func decl")    
+      if opts.verbose then
+        print("processing func decl")    
+      end
       local func_def, func_reg = gen_func_wrapper(decl)  
       if func_def then
         func_defs = func_defs .. func_def
         func_regs = func_regs .. func_reg
-        ndefs = ndefs + 1
+        num_func_defs_generated = num_func_defs_generated + 1
+      else
+        skipped_func_decls[#skipped_func_decls + 1] = decl
       end
     end
   end
@@ -409,7 +459,17 @@ print("processing func decl")
 	io.output(func_reg_fname)
 	io.write(func_regs)
 	io.close()
-  print(string.format("%d func(s) written to %s, %s", ndefs, func_def_fname, func_reg_fname))
+  io.output(skipped_funcs_fname)
+  for i, v in ipairs(skipped_func_decls) do
+    io.write(string.format("--- skipped decl %d:\n%s\n", i, v))
+  end
+	io.close()
+
+  -- summary
+  print(string.format("%d declarations(s) were parsed", #decls))
+  print(string.format("%d typedefs were skipped", num_typedefs))
+  print(string.format("%d func(s) written to %s, %s", num_func_defs_generated, func_def_fname, func_reg_fname))
+  print(string.format("%d func(s) were skipped: %s", #skipped_func_decls, skipped_funcs_fname))
 end
 
 main()
