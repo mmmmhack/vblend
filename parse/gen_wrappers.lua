@@ -7,12 +7,6 @@ require('getopt')
 require('get_decls')
 require('tf_debug')
 
---local preproc_fname = "preproc_gl.h"
---local wrapper_fname = "wrapper_funcs.c"
---local reg_fname = "reg_list.c"
-
-local skipped_func_decls = {}
-
 -- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
 local type_map = {
@@ -22,6 +16,7 @@ local type_map = {
   ['int'] = 'integer',
 }
 local opt_type_map = nil
+local ret_params_map = nil
 
 local usage_desc = [[
 Usage: gen_wrappers [options] DECL_FILE
@@ -40,7 +35,7 @@ local opt_defs = {
     short_opt = 'r',
     long_opt = 'ret-params',
     has_arg = true,
-    descrip = "get return values from function params for '[func_name,param_name]=true' table entries in lua file RET_PARAMS_FILE",
+    descrip = "identify returned values in function params from '[func_name,param_name]=lua_type' table entries in lua file RET_PARAMS_FILE",
     arg_descrip = 'RET_PARAMS_FILE',
   },
   sel_funcs = {
@@ -54,7 +49,7 @@ local opt_defs = {
     short_opt = 't',
     long_opt = 'type-map',
     has_arg = true,
-    descrip = "use type conversions from '[ctype]=lua_type' table entries in lua file TYPE_MAP_FILE",
+    descrip = "get type conversions from '[ctype]=lua_type' table entries in lua file TYPE_MAP_FILE",
     arg_descrip = 'TYPE_MAP_FILE',
   },
   verbose = {
@@ -134,76 +129,24 @@ function get_lw_func_name(func_name)
   return lw_func_name
 end
 
---[[
--- reads and parses header file with param filename, returns table of declarations as strings
-function parse_declarations(decl_fname)
-  io.input(decl_fname)
-  local decls = {}
-  local cur_decl = ""
-  local prev_ln = nil
-  local continued_line = false
-  local is_preproc_line = false
-  local i = 0
-  for ln in io.lines() do
-    i = i + 1
-    ln = util.trim(ln)
---print(string.format("gfd: ln %04d: [%s], prev_ln: [%s], continued_line: %s", i, ln, tostring(prev_ln), tostring(continued_line)))
-    -- continued preproc
-    if is_preproc_line and continued_line then
---print(string.format("  is #preproc ln continued"))
-    -- blank ln
-    elseif #ln == 0 then
-    -- preproc
-    elseif string.sub(ln, 1, 1) == "#" then
---print(string.format("  is #preproc ln"))
-      is_preproc_line = true
-    -- extern C
-    elseif ln == 'extern "C" {' then
---print(string.format("  is extern C ln"))
-    -- decl
-    else
---print(string.format("  adding to decl %04d: [%s]", #decls + 1, ln))
-      cur_decl = cur_decl .. ln  
-    end
-
-    -- end decl
-    if string.sub(ln, #ln) == ";" then
-      decls[#decls + 1] = cur_decl
---print(string.format("  added decl %04d: [%s]", #decls, cur_decl))
-      cur_decl = ""
-    end
-
-    -- set continued line flag
-    if string.sub(ln, #ln) == "\\" then
---print("  found continued line, next line should be same type")
-      continued_line = true
-    else
-      continued_line = false
-    end
-    prev_ln = ln
-  end
-  io.close()
-  return decls
-end
---]]
-
 -- returns lua type name for corresponding param c type
 function get_lua_type(ctype)
-  -- supplement type-map table with opt-supplied filename if any
+  -- look in opts type-map table
   if opt_type_map and opt_type_map[ctype] ~= nil then
       return opt_type_map[ctype]
   end
-  -- look in type-map table
+  -- look in default type-map table
   if type_map[ctype] == nil then
---    debug_console()
---    error(string.format("lua type not found for ctype: [%s]", tostring(ctype)))
+    if opts.verbose then
+      print(string.format("get_lua_type(): lua type not found for ctype: [%s]", tostring(ctype)))
+    end
     return nil
   end
   return type_map[ctype]
 end
 
 -- parses string of function parameters, returns table of param data suitable for generating the wrapper code
-function get_params(param_decls)
+function get_params(func_name, param_decls)
   local params = {}
   for i, p in ipairs(param_decls) do
 --print(string.format("get_params(): i: %2d, p: [%s]", i, p))
@@ -214,9 +157,23 @@ function get_params(param_decls)
       param.ctype = util.trim(ctype)
       param.cident = cident
       param.luatype = get_lua_type(param.ctype)
-      -- if no lua param type, return nil to skip wrapping function
+      param.is_ret = false
+
+      -- if no lua param type, check some extra cases before returning nil to skip wrapping function
       if param.luatype == nil then
-        return nil
+        -- look in 'return params' type-map table
+        if ret_params_map then
+          local rp_luatype = ret_params_map[func_name .. "," .. cident]
+          if rp_luatype ~= nil then
+            param.luatype = rp_luatype
+            param.is_ret = true
+          end
+        else
+          if opts.verbose then
+            print(string.format("get_params(): lua param not found for %s() param: %s", func_name, cident))
+          end
+          return nil
+        end
       end
       params[#params + 1] = param
 --      print(string.format("  param %2d: [%s] [%s], luatype: [%s]", i, param.ctype, param.cident, param.luatype))
@@ -227,15 +184,6 @@ function get_params(param_decls)
 
 -- reads list of functions from a file specified by command-line opt, only functions in the list will get wrappers
 function read_sel_funcs()
---[[
-  sel_funcs = {}
-  io.input(opts.sel_funcs)
-  for ln in io.lines() do
-    local func_name = util.trim(ln)
-    sel_funcs[func_name] = true 
-  end
-  io.close()
---]]
   if opts.verbose then
     print(string.format("read_sel_funcs(): reading selected functions from lua file: [%s]", opts.sel_funcs))
   end
@@ -277,7 +225,9 @@ function get_return_types(ret_decl)
   else  
   end
   if lua_ret_type == nil then
---    error(string.format("lua_ret_type is nil for c_ret_type: [%s]", c_ret_type))
+    if opts.verbose then
+      print(string.format("get_return_types(): lua_ret_type is nil for c_ret_type: [%s]", c_ret_type))
+    end
     return nil
   end
   return c_ret_type, lua_ret_type 
@@ -300,8 +250,6 @@ function gen_func_wrapper(decl)
     end
     return
   end
---print(string.format("  ret_decl: [%s],\n  func_name: [%s],\n  params: [%s]", ret_decl, func_name, params_decl))
---debug_console()
 
   -- get param defs
   if opts.verbose then
@@ -314,7 +262,7 @@ function gen_func_wrapper(decl)
     for i, p in ipairs(param_decls_nt) do
       param_decls[#param_decls + 1] = util.trim(p)
     end
-    params = get_params(param_decls)
+    params = get_params(func_name, param_decls)
     -- if params not support, skip wrapping this function
     if params == nil then
       return
@@ -334,8 +282,12 @@ function gen_func_wrapper(decl)
   -- emit get lua args from stack
 	local stack_index = 0 - #params
   for i, param in ipairs(params) do
-    s = string.format("  %s %s = lua_to%s(L, %d);\n", param.ctype, param.cident, param.luatype, stack_index)
-    stack_index = stack_index + 1
+    if param.is_ret then
+      s = string.format("  %s %s = 0;\n", param.ctype, param.cident)
+    else
+      s = string.format("  %s %s = lua_to%s(L, %d);\n", param.ctype, param.cident, param.luatype, stack_index)
+      stack_index = stack_index + 1
+    end
     func_def = func_def .. s
   end
 
@@ -356,13 +308,13 @@ function gen_func_wrapper(decl)
   s = string.format("  %s(", func_name)
   func_def = func_def .. s
 
-  -- TODO: emit cargs
-  -- for each param
+  -- emit cargs
   for i, param in pairs(params) do
     if i > 1 then
       func_def = func_def .. ","
     end
-    s = string.format("\n    %s", param.cident)
+    local ret_mod = param.is_ret and "&" or ""
+    s = string.format("\n    %s%s", ret_mod, param.cident)
     func_def = func_def .. s
   end
 
@@ -374,6 +326,15 @@ function gen_func_wrapper(decl)
   if nRet > 0 then
     s = string.format("  lua_push%s(L, ret_val);\n", lua_ret_type)
     func_def = func_def .. s
+  end
+
+  -- emit push ret param values if any
+  for i, param in pairs(params) do
+    if param.is_ret then
+      s = string.format("  lua_push%s(L, %s);\n", param.lua_type)
+      func_def = func_def .. s
+      nRet = nRet + 1
+    end
   end
 
   -- emit ret count                           ex: return 0;
@@ -415,16 +376,20 @@ function main()
   if opts.type_map then
     opt_type_map = dofile(opts.type_map)
   end
+  -- read 'return param' type conversions
+  if opts.ret_params then
+    ret_params_map = dofile(opts.ret_params)
+  end
+
 --debug_console()
 
-  -- read from input file
+  -- process all declarations
+  local skipped_func_decls = {}
   local num_typedefs = 0
   local num_func_defs_generated = 0
   local func_defs = ""
   local func_regs = ""
---  local decls = parse_declarations(decl_fname)
   local decls = get_decls(decl_fname, opts.verbose)
---print(string.format("%d decls found", #decls))
   for i, decl in ipairs(decls) do
     if opts.verbose then
       print(string.format("processing decl %04d: [%s]", i, decl))
