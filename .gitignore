@@ -34,3 +34,5 @@ gl/old
 gl/lua_gl_func_skipped.txt
 glfw/old
 glfw/lua_glfw_func_skipped.txt
+glfw/debug_wrapper
+glfw/debug_wrapper.app/

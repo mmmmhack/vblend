@@ -3195,6 +3195,90 @@ Ah, the weekend. Quiet early Saturday morning with coffee and rain outside. Star
 the --ret-params option.
 </p>
 
+<p>
+Finished implementation, looks like it works. Well, almost. After compiling, I realize
+another little piece of info is needed, the local declaration of 'int *' ret params
+needs to be 'int'. Will probably have to supplement the info in the ret_params map.
+</p>
+
+<p>
+Maybe for now, will just take the simple approach approach and assume a '*' needs
+to be stripped off of the ctype return param.
+</p>
+
+<p>
+Did it, it worked.
+</p>
+
+<p>
+Testing getWindowSize() in pong.lua, using the debugger again (moved out of test/lua
+to debugger), and another debugger problem:
+</p>
+<pre>
+mhackslab:gamelib $ lua pong.lua 
+--- lua debug console version 0.1
+level  5: src: [=[C]]
+level  4: src: [@pong.lua]
+level  3: src: [@./gamelib.lua]
+level  2: src: [@../debugger/debugger.lua]
+level  1: src: [@../debugger/debugger.lua]
+level  0: src: [=[C]]
+level -1: src: [=(tail call)]
+level -2: src: [=(tail call)]
+level -3: src: [=(tail call)]
+level -4: src: [=(tail call)]
+level -5: src: [=(tail call)]
+...
+</pre>
+
+<p>
+Had to fix some problems that resulted from renaming the debugger module.
+</p>
+
+<p>
+Fixed that, but more debugger debug fun:
+</p>
+<pre>
+mhackslab:gamelib $ lua pong.lua 
+--- lua debug console version 0.1
+ 1 [./gamelib.lua:79] (win_height)
+ &gt; print width
+ lua: ../debugger/debugger.lua:314: assign to undeclared variable 'func_name'
+ stack traceback:
+ [C]: in function 'error'
+./strict.lua:28: in function &lt;./strict.lua:24&gt;
+../debugger/debugger.lua:314: in function 'print_expr'
+../debugger/debugger.lua:467: in function 'debug_console'
+./gamelib.lua:79: in function 'win_height'
+pong.lua:15: in main chunk
+[C]: ?
+mhackslab:gamelib $ 
+</pre>
+
+<p>
+Cool, that one was a catch of a missing local declaration after I started
+requiring strict.
+</p>
+
+<p>
+Ok, debugger got me to the point of needing to step through the wrapper
+code, time to crank up the ole' gdb. I'll need to use a C app with lua
+calls for that, think I've already made one before, will adapt it.
+</p>
+
+<p>
+Hah, went through the whole trouble of creating a debug app that loads lua_glfw.o
+(which was working) and discovered the cause of the bug before I even got the chance
+to run gdb. I was retrieving the window width and height before the window had
+been created, duh.
+</p>
+
+<p>
+Ok, wrapped functions with return parameters (at least lua_glfw.getWindowSize()) are
+working.
+</p>
+
 </body>
 </html>
+
 

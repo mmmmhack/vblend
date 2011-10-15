@@ -11,11 +11,15 @@ _G['glfw'] = _G['lua_glfw'] -- rename to more convenient prefix, the shared lib 
 require('sys')
 
 -- game window defaults
-M.win_title = "Game"
-M.win_width = 800
-M.win_height = 600
+M.win_defaults = {
+  title = "Game",
+  width = 800,
+  height = 600,
+  bg_color = {[0]=0.2, [1]=0.2, [2]=0.2, [3]=0},
+}
+
+-- game window properties
 M.win_open = false
-M.win_bg_color = {[0]=0.2, [1]=0.2, [2]=0.2, [3]=0}
 
 -- fps
 M._num_frames_drawn = 0;
@@ -37,8 +41,8 @@ M.open_window = function()
     error(string.format("lua_glfw.init() failed, rc: %d", rc))
   end
 
-	local w = M.win_width
-	local h = M.win_height
+	local w = M.win_defaults.width
+	local h = M.win_defaults.height
 	local r = 0
 	local g = 0
 	local b = 0
@@ -61,8 +65,18 @@ M.open_window = function()
 	gl.matrixMode(gl.GL_MODELVIEW)
 	gl.loadIdentity()
 
-  local cc = M.win_bg_color
+  local cc = M.win_defaults.bg_color
   gl.clearColor(cc[0], cc[1], cc[2], cc[3])
+end
+
+M.win_width = function()
+  local width, height = glfw.getWindowSize()
+  return width
+end
+
+M.win_height = function()
+  local width, height = glfw.getWindowSize()
+  return height
 end
 
 M.draw_rect = function (x, y, w, h)
@@ -111,7 +125,7 @@ M.update = function ()
   -- calc fps and update window title
   M._num_frames_drawn = M._num_frames_drawn + 1
   local fps = M.calc_fps()
-  local title = string.format("%s - fps: %3d", M.win_title, fps)
+  local title = string.format("%s - fps: %3d", M.win_defaults.title, fps)
   lua_glfw.setWindowTitle(title)
 end
 

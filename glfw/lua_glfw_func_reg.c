@@ -4,6 +4,7 @@
   {"openWindowHint", lw_openWindowHint},
   {"closeWindow", lw_closeWindow},
   {"setWindowTitle", lw_setWindowTitle},
+  {"getWindowSize", lw_getWindowSize},
   {"setWindowSize", lw_setWindowSize},
   {"setWindowPos", lw_setWindowPos},
   {"iconifyWindow", lw_iconifyWindow},

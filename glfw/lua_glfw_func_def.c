@@ -56,6 +56,17 @@ static int lw_setWindowTitle(lua_State* L) {
   );
   return 0;
 }
+static int lw_getWindowSize(lua_State* L) {
+  int  width = 0;
+  int  height = 0;
+  glfwGetWindowSize(
+    &width,
+    &height
+  );
+  lua_pushinteger(L, width);
+  lua_pushinteger(L, height);
+  return 2;
+}
 static int lw_setWindowSize(lua_State* L) {
   int width = lua_tointeger(L, -2);
   int height = lua_tointeger(L, -1);

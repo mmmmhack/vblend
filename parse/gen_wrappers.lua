@@ -159,22 +159,23 @@ function get_params(func_name, param_decls)
       param.luatype = get_lua_type(param.ctype)
       param.is_ret = false
 
-      -- if no lua param type, check some extra cases before returning nil to skip wrapping function
-      if param.luatype == nil then
-        -- look in 'return params' type-map table
-        if ret_params_map then
-          local rp_luatype = ret_params_map[func_name .. "," .. cident]
-          if rp_luatype ~= nil then
-            param.luatype = rp_luatype
-            param.is_ret = true
-          end
-        else
-          if opts.verbose then
-            print(string.format("get_params(): lua param not found for %s() param: %s", func_name, cident))
-          end
-          return nil
+      -- check some extra cases for defining luatype: look in 'return params' type-map table
+      if param.luatype == nil and ret_params_map then
+        local rp_luatype = ret_params_map[func_name .. "," .. cident]
+        if rp_luatype ~= nil then
+          param.luatype = rp_luatype
+          param.is_ret = true
         end
       end
+
+      -- if no lua param type, return nil to skip this func
+      if param.luatype == nil then
+        if opts.verbose then
+          print(string.format("get_params(): lua param not found for %s() param: %s", func_name, cident))
+        end
+        return nil
+      end
+
       params[#params + 1] = param
 --      print(string.format("  param %2d: [%s] [%s], luatype: [%s]", i, param.ctype, param.cident, param.luatype))
     end
@@ -233,6 +234,12 @@ function get_return_types(ret_decl)
   return c_ret_type, lua_ret_type 
 end
 
+-- strips trailing '*' from param ctype declaration (for 'return param' definition before C func call)
+function strip_pointer(ctype)
+  local s = string.gsub(ctype, "%*%s*$", "")
+  return s
+end
+
 -- returns wrapper code for param function declaration, and a 'register func' line
 function gen_func_wrapper(decl)
 --print(string.format("beg gfw: decl: [%s]", decl))
@@ -283,7 +290,7 @@ function gen_func_wrapper(decl)
 	local stack_index = 0 - #params
   for i, param in ipairs(params) do
     if param.is_ret then
-      s = string.format("  %s %s = 0;\n", param.ctype, param.cident)
+      s = string.format("  %s %s = 0;\n", strip_pointer(param.ctype), param.cident)
     else
       s = string.format("  %s %s = lua_to%s(L, %d);\n", param.ctype, param.cident, param.luatype, stack_index)
       stack_index = stack_index + 1
@@ -295,6 +302,9 @@ function gen_func_wrapper(decl)
   local c_ret_type, lua_ret_type = get_return_types(ret_decl)
   -- skip this function if return type not supported
   if c_ret_type == nil then
+    if opts.verbose then
+      print(string.format("gen_func_wrapper(): func %s: no ret type for decl: [%s]", func_name, ret_decl))
+    end
     return nil
   end
 	local nRet = 0
@@ -331,7 +341,7 @@ function gen_func_wrapper(decl)
   -- emit push ret param values if any
   for i, param in pairs(params) do
     if param.is_ret then
-      s = string.format("  lua_push%s(L, %s);\n", param.lua_type)
+      s = string.format("  lua_push%s(L, %s);\n", param.luatype, param.cident)
       func_def = func_def .. s
       nRet = nRet + 1
     end

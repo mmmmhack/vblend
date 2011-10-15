@@ -1,13 +1,16 @@
 -- pong.lua : demo game for gamelib
+package.path=package.path .. ";../debugger/?.lua"
 require('strict')
+require('debugger')
 require('gamelib')
+require('sys')
 
 local r = { x=50, y=50, w=50, h=50 }
 local xdir = 1
 local ydir = 1
 
-local win_w = 800 -- TODO: replace with gamelib.win_width()
-local win_h = 600 -- TODO: replace with gamelib.win_height()
+--local win_w = 800 -- TODO: replace with gamelib.win_width()
+--local win_h = 600 -- TODO: replace with gamelib.win_height()
 
 function draw()
   gl.color3f(0, 0.75, 0)
@@ -15,6 +18,9 @@ function draw()
 end
 
 function update()
+  local win_w = gamelib.win_width()
+  local win_h = gamelib.win_height()
+
   r.x = r.x + xdir
   r.y = r.y + ydir
 
