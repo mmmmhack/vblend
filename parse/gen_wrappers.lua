@@ -10,6 +10,7 @@ require('tf_debug')
 -- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
 local type_map = {
+  ['const char*'] = 'string',   -- TODO: add pattern-matching properties as needed
   ['const char *'] = 'string',
   ['double'] = 'number',
   ['float'] = 'number',
@@ -255,7 +256,7 @@ function gen_func_wrapper(decl)
     if opts.verbose then
       print(string.format("gen_func_wrapper(): no sel_func match: decl: [%s]", decl))
     end
-    return
+    return nil, "not in selfuncs list"
   end
 
   -- get param defs
@@ -270,9 +271,9 @@ function gen_func_wrapper(decl)
       param_decls[#param_decls + 1] = util.trim(p)
     end
     params = get_params(func_name, param_decls)
-    -- if params not support, skip wrapping this function
+    -- if params not supported, skip wrapping this function
     if params == nil then
-      return
+      return nil, "param(s) not supported"
     end
   end
 
@@ -305,7 +306,7 @@ function gen_func_wrapper(decl)
     if opts.verbose then
       print(string.format("gen_func_wrapper(): func %s: no ret type for decl: [%s]", func_name, ret_decl))
     end
-    return nil
+    return nil, "return type not supported"
   end
 	local nRet = 0
 	if c_ret_type ~= "void" then
@@ -422,7 +423,8 @@ function main()
         func_regs = func_regs .. func_reg
         num_func_defs_generated = num_func_defs_generated + 1
       else
-        skipped_func_decls[#skipped_func_decls + 1] = decl
+        local reason = func_reg
+        skipped_func_decls[#skipped_func_decls + 1] = {reason=reason, decl=decl}
       end
     end
   end
@@ -435,8 +437,8 @@ function main()
 	io.write(func_regs)
 	io.close()
   io.output(skipped_funcs_fname)
-  for i, v in ipairs(skipped_func_decls) do
-    io.write(string.format("--- skipped decl %d:\n%s\n", i, v))
+  for i, skip in ipairs(skipped_func_decls) do
+    io.write(string.format("--- skipped decl %d (%s):\n%s\n", i, skip.reason, skip.decl))
   end
 	io.close()
 

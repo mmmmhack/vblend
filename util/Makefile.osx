@@ -21,15 +21,21 @@ objs = \
  perf.o \
  win.o
 
-all: libutil.a sys.so
+all: libutil.a util.so lua_sys.so
 
 libutil.a: $(objs)
 	ar rv $@ $(objs)
 	ranlib $@
 
+util.so: $(objs)
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $(objs) $(libpng_dir)/lib/libpng.a
+
 # c-lua lib
-sys.so: lua_sys.o
-	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< libutil.a
+#sys.so: lua_sys.o
+#	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< libutil.a
+
+lua_sys.so: util.so lua_sys.o
+	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ lua_sys.o util.so
 
 lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c 
 	$(CC) $(CFLAGS) -c $(cl_includes) -o $@ lua_sys.c
@@ -41,4 +47,4 @@ lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c
 -include $(objs:.o=.d)
 
 clean:
-	-rm *.a *.o
+	-rm *.a *.o *.so

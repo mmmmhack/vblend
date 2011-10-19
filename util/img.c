@@ -37,12 +37,16 @@ RgbaImage* img_read_png_rgba(const char* png_file) {
 	fin = fopen(png_file, "rb");
 	if(!fin) {
 		snprintf(err_msg, cb_err_msg, "failed opening file: %s\n", png_file);
+fprintf(stderr, err_msg);
+getcwd(err_msg, sizeof(err_msg));
+fprintf(stderr, "cwd: %s\n", err_msg);
 		return NULL;
 	}
 	fread(header, 1, sizeof(header), fin);
 	rc = png_sig_cmp(header, 0, sizeof(header));
 	if(rc) {
 		snprintf(err_msg, cb_err_msg, "not a png file: %s\n", png_file);
+fprintf(stderr, err_msg);
 		return NULL;
 	}
 
@@ -56,6 +60,7 @@ RgbaImage* img_read_png_rgba(const char* png_file) {
 	if(!png_ptr) {
 		fclose(fin);
 		snprintf(err_msg, cb_err_msg, "failed creating png struct\n");
+fprintf(stderr, err_msg);
 		return NULL;
 	}
 
@@ -65,6 +70,7 @@ RgbaImage* img_read_png_rgba(const char* png_file) {
 		fclose(fin);
 		png_destroy_read_struct(&png_ptr, 0, 0);
 		snprintf(err_msg, cb_err_msg, "failed creating png struct\n");
+fprintf(stderr, err_msg);
 		return NULL;
 	}
 
@@ -73,6 +79,7 @@ RgbaImage* img_read_png_rgba(const char* png_file) {
 		fclose(fin);
 		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 		snprintf(err_msg, cb_err_msg, "error reading png, error detail: ?\n");
+fprintf(stderr, err_msg);
 		return NULL;
 	}
 
@@ -101,6 +108,7 @@ RgbaImage* img_read_png_rgba(const char* png_file) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
     sprintf(c_bit_depth, "%02x",(char) bit_depth);
 		snprintf(err_msg, cb_err_msg, "unsupported color_type (%zu) or bit_depth (%s)\n", color_type, c_bit_depth);
+fprintf(stderr, err_msg);
 		return NULL;
 	}
 

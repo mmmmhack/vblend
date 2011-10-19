@@ -30,9 +30,12 @@ test/test_lua_pcall
 test/tlua_reg
 util/old
 util/*.i
+util/lua_sys_func_skipped.txt
 gl/old
 gl/lua_gl_func_skipped.txt
 glfw/old
 glfw/lua_glfw_func_skipped.txt
 glfw/debug_wrapper
 glfw/debug_wrapper.app/
+font/lua_tfont_func_skipped.txt
+demo/res

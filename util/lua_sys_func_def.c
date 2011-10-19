@@ -1,6 +1,8 @@
-static int lw_float_time(lua_State* L) {
-  float ret_val = 
-  sys_float_time(
+static int lw_chdir(lua_State* L) {
+  const char* path = lua_tostring(L, -1);
+  int ret_val = 
+  sys_chdir(
+    path
   );
   lua_pushnumber(L, ret_val);
   return 1;

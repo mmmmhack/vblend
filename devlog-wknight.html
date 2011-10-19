@@ -1170,7 +1170,7 @@ So the only thing left is incorrect _tris???
 wtf?
 </p>
 <pre>
-35	glDrawElements(GL_TRIANGLES, 1, GL_UNSIGNED_INT, _tris);
+35glDrawElements(GL_TRIANGLES, 1, GL_UNSIGNED_INT, _tris);
 (gdb) p _tris[0]
 $1 = 0
 (gdb) p _tris[1]
@@ -1252,8 +1252,8 @@ Here is what I want:
 </p>
 <table>
 <tr><th>Source red pixel</th><th>Source alpha</th><th>Dest red pixel</th><th>Result red pixel</th></tr>
-<tr><td>0									 <td>0           </td><td>0.5           </td><td>0.5             </td></tr>
-<tr><td>1									 <td>1           </td><td>0.5           </td><td>1               </td></tr>
+<tr><td>0 <td>0           </td><td>0.5           </td><td>0.5             </td></tr>
+<tr><td>1 <td>1           </td><td>0.5           </td><td>1               </td></tr>
 </table>
 
 <p>
@@ -1941,7 +1941,7 @@ Here (from running test_lua_pcall):
 </p>
 <pre>
 breakpoint 1, l_traceback (L=0x100120) at test_lua_pcall.c:14
-14	printf("BEG l_traceback()\n");
+14printf("BEG l_traceback()\n");
 (gdb) bt
 #0  l_traceback (L=0x100120) at test_lua_pcall.c:14
 #1  0x00009191 in luaD_precall (L=0x100120, func=0x801054, nresults=1) at ldo.c:319
@@ -2016,7 +2016,7 @@ Definition of ttype:
 Definition of LUA_TFUNCTION:
 </p>
 <pre>
-/Users/williamknight/swtools/lua/lua-5.1.4/src//lua.h:#define LUA_TFUNCTION	6
+/Users/williamknight/swtools/lua/lua-5.1.4/src//lua.h:#define LUA_TFUNCTION6
 </pre>
 
 <pre>
@@ -2383,17 +2383,17 @@ least the size of the number of lines in the window, which is not true and cause
 <pre>
 -- redraw all lines in window if scrolled
 if b.scrolled then
-	beg_row = b.scroll_pos[1]
-	end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
+beg_row = b.scroll_pos[1]
+end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
 end
 for i = beg_row, end_row do
-=&gt;	local ln = b.lines[i]
-	local end_col = math.min(#ln, beg_col + b.win_size[0])
-	-- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
-	local pad = b.win_size[0] - (end_col - beg_col)
-	local s = string.sub(ln, beg_col, end_col) .. string.rep(" ", pad)
-	tflua.set_screen_buf(scr_row, scr_col, s)
-	scr_row = scr_row + 1
+=&gt;local ln = b.lines[i]
+local end_col = math.min(#ln, beg_col + b.win_size[0])
+-- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
+local pad = b.win_size[0] - (end_col - beg_col)
+local s = string.sub(ln, beg_col, end_col) .. string.rep(" ", pad)
+tflua.set_screen_buf(scr_row, scr_col, s)
+scr_row = scr_row + 1
 end
 </pre>
 
@@ -3276,6 +3276,186 @@ been created, duh.
 <p>
 Ok, wrapped functions with return parameters (at least lua_glfw.getWindowSize()) are
 working.
+</p>
+
+<h2>2011-10-16</h2>
+
+<p>
+A little too much funs last night, my brain is dragging. This morning I started
+creating the 'hello world' demo for the gamelib framework and this motivated
+me to start on the documentation as well. I'm going to follow many of the vim
+conventions for documentation. I plan on leveraging capabilities of the vim editor 
+itself for navigating and displaying the docs (links, syntax coloring). The
+destination files will be simple text format, with simple markup vim conventions.
+</p>
+
+<p>
+A need for syntax coloring is finally driving me to learn how syntax coloring
+works in vim and how to create my own syntax coloring scripts. 
+</p>
+
+<p>
+Today is probably a good day to do the mundane and sometimes tedious work of
+creating documentation, as opposed to coding and debugging.
+</p>
+
+<p>
+Ha, all I really needed to do for now is 'se ft=help'. I knew that leveraging
+vim functionality would give quick payoffs.
+</p>
+
+<p>
+Demo function works, now must start on the wrapper for tfont module.
+</p>
+
+<p>
+Took a big break today because I wasn't feeling well, and also I'm lazy. Now
+I need to add support for the first 'const char*' param type to parse/gen_wrappers,
+should be very straightforward.
+</p>
+
+<p>
+Built the lua_tfont module, trying to get it to work with the hello.lua demo,
+I need to link in png-loading support.
+</p>
+
+<p>
+pws. sunlight-powered hydrolysis, using tea.
+</p>
+
+<h2>2011-10-19</h2>
+
+<p>
+Took a break over the last couple of days reading about shared libraries to deal with
+some linking and loading problems involving the additional shared libraries that I
+created for the demo app.
+</p>
+
+<p>
+Often when I run in to these kinds of problems I start reading the fundamentals of
+linking and loading, hoping to acquire a deep and detailed understanding of what's
+really going on. Generally after a little time and progress, I return to just trying
+to get it to work. That's where I'm at right now. I just created a shared lib
+for the util object files, using the '-dynamiclib -undefined dynamic_lookup' flags.
+I think added this util.so file to the end of the link line for the lua_sys.so
+shared lib. Now I'll try copying both to the gamelib directory and see what happens.
+</p>
+
+<p>
+Here is the current error I'm getting:
+</p>
+<pre>
+mhackslab:gamelib $ lua pong.lua
+lua: error loading module 'lua_sys' from file './lua_sys.so':
+dlopen(./lua_sys.so, 2): Symbol not found: _png_create_info_struct
+  Referenced from: /Users/williamknight/proj/git/vblend/gamelib/util.so
+  Expected in: dynamic lookup
+
+stack traceback:
+[C]: ?
+[C]: in function 'require'
+./gamelib.lua:11: in main chunk
+[C]: in function 'require'
+pong.lua:5: in main chunk
+[C]: ?
+mhackslab:gamelib $ 
+</pre>
+
+<p>
+I'm fairly confident that the _png_create_info_struct symbol is in the util.so
+lib so need to figure out why it isn't being found.
+</p>
+
+<p>
+nm on util.so shows:
+</p>
+<pre>
+         U _png_create_info_struct
+</pre>
+
+<p>
+So, just need to link either a static or shared lib for png.
+</p>
+
+<p>
+Hmm, this is weird, the only reference to libpng in my Makefiles is in util/Makefile.osx
+and it's not even referenced. Did it used to be?
+</p>
+
+<p>
+Weird, git history doesn't appear to show any use of it.
+</p>
+
+<p>
+I'm going to go back to the previous working config of pong.lua to see how the png lib
+gets loaded. Learned to retrieve prev version of a file using 'git show':
+</p>
+<pre>
+mhackslab:util $ git show HEAD^:./Makefile.osx &gt; Makefile-old.osx
+</pre>
+
+<p>
+Got it running again, now to search for _png_create_info_struct.
+</p>
+
+<p>
+Not there, so as usual, there is more going on than meets the eye. Must be loading
+it from a system path.
+</p>
+
+<p>
+But wait dumbkopf, no actual use is made of png in the old version of the gamelib
+app. It's only when you created the 'util.so' that the reference was needed.
+</p>
+
+<p>
+More clarity. For some reason I thought that png-loading capability was present
+in glfw and so thought maybe it was referencing libpng there somehow but after
+looking at nm output for libglfw.dylib and not finding it and then carefully
+reading the docs, I discover that it only supports tga format!
+</p>
+
+<p>
+So at this point my plan is to link libpng.a statically with the util.so shared
+lib and intend that this is going to fix the current loading problems.
+</p>
+
+<p>
+Did it, it worked!
+</p>
+
+<p>
+I also realize I can avoid the table-renaming of 'lua_sys' and 'lua_glfw' in
+lua because the actual shared lib file can be 'lua_glfw.so' while the registered
+name in lua can be 'glfw'. That will keep things cleaner.
+</p>
+
+<p>
+Got lua_tfont.so loaded in demo/hello.lua, now just need to add font-drawing call
+and resource file.
+</p>
+
+<p>
+Almost working!
+</p>
+
+<pre>
+mhackslab:demo $ lua hello.lua 
+failed opening file: res/9x15_font.png
+cwd: /Users/williamknight/swtools/lua/bin
+load_image() failed: No such file or directory
+mhackslab:demo $ 
+</pre>
+
+<p>
+Hack hack hack.
+Victory!
+We have text displayed in demo/hello.lua
+</p>
+
+<p>
+Even better, I am much more comfortable now with understanding and creating
+the lua wrapper and C shared libraries that are needed.
 </p>
 
 </body>

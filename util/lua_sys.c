@@ -16,7 +16,7 @@ static const struct luaL_Reg funcs[] = {
 	{NULL, NULL},
 };
 
-LUALIB_API int luaopen_sys(lua_State* L) {
+LUALIB_API int luaopen_lua_sys(lua_State* L) {
 	luaL_register(L, "sys", funcs);
 	return 1;
 }

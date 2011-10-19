@@ -5,13 +5,20 @@
 #include <mach/mach_host.h>
 #include <mach/mach_port.h>
 #endif
+
 #include <sys/time.h>
+#include <unistd.h>
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "sys.h"
+
+int sys_chdir(const char* path) {
+  int rc = chdir(path);  
+  return rc;
+}
 
 void sys_err(const char* msg) {
   perror(msg);

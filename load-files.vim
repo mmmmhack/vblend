@@ -23,4 +23,5 @@
 ":arga test/lua/*.lua
 ":arga test/lua/*.lua
 :arga gamelib/*.lua
+:arga doc/gamelib.txt
 :b3

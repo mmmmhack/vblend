@@ -18,7 +18,7 @@ static const struct luaL_Reg funcs[] = {
 };
 
 LUALIB_API int luaopen_lua_glfw(lua_State* L) {
-	luaL_register(L, "lua_glfw", funcs);
+	luaL_register(L, "glfw", funcs);
   define_constants(L);
 	return 1;
 }

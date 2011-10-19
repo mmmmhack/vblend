@@ -1,6 +1,8 @@
-#ifndef sys_h
-#define sys_h
+#ifndef __sys_h_
+#define __sys_h_
 #include <time.h>
+
+int sys_chdir(const char* path);
 void sys_err(const char* msg);
 void sys_errno(int errn, const char* msg);
 
