@@ -31,10 +31,6 @@ void sys_errno(int errn, const char* msg) {
   exit(1);
 }
 
-float sys_float_time() {
-	return (float) sys_double_time();
-}
-
 double sys_double_time() {
   struct timeval tp;
   struct timezone tzp;
@@ -46,6 +42,18 @@ double sys_double_time() {
     return tp.tv_usec/1000000.0;
   }
   return (tp.tv_sec - secbase) + tp.tv_usec/1000000.0;
+}
+
+float sys_float_time() {
+	return (float) sys_double_time();
+}
+
+const char* sys_getcwd() {
+  static char buf[1024];
+  const char* ret = getcwd(buf, sizeof(buf));
+  if(ret == NULL)
+    return NULL;
+  return buf;
 }
 
 struct timeval sys_timeval_now() {

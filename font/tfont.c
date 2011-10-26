@@ -14,7 +14,7 @@
 
 #include "util/img.h"
 #include "util/sys.h"
-#include "util/win.h"
+//#include "util/win.h"
 #include "tfont.h"
 
 static int _tfont_init = 0;
@@ -43,6 +43,12 @@ static int _num_verts = 0;
 static int _num_tcoords = 0;
 static int _num_tris = 0;
 static GLuint _tex_id = 0;
+
+static int win_height() {
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	return viewport[3];
+}
 
 static int load_image() {
 	_img = img_read_png_rgba(_image_file);	

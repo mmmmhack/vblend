@@ -1,11 +1,12 @@
-glfw_dir = $(HOME)/swtools/opengl/glfw
+libz_dir = $(HOME)/swtools/disk/zlib
 libpng_dir = $(HOME)/swtools/graphics/libpng
+glfw_dir = $(HOME)/swtools/opengl/glfw
 lua_dir = $(HOME)/swtools/lua
 
 includes = -I$(glfw_dir)/include 
 includes += -I$(libpng_dir)/include
 
-cl_includes = -I$(lua_dir)/include
+lua_includes = -I$(lua_dir)/include
 
 CC = gcc
 CFLAGS += -g -Wall
@@ -21,30 +22,53 @@ objs = \
  perf.o \
  win.o
 
-all: libutil.a util.so lua_sys.so
+#all: libutil.a util.so lua_sys.so
+all: sys.so lua_sys.so img.so 
+#lua_img.so
 
-libutil.a: $(objs)
-	ar rv $@ $(objs)
-	ranlib $@
+#libutil.a: $(objs)
+#	ar rv $@ $(objs)
+#	ranlib $@
 
-util.so: $(objs)
-	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $(objs) $(libpng_dir)/lib/libpng.a
+#util.so: $(objs)
+#	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $(objs) $(libpng_dir)/lib/libpng.a $(libz_dir)/lib/libz.a
 
 # c-lua lib
 #sys.so: lua_sys.o
 #	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< libutil.a
 
-lua_sys.so: util.so lua_sys.o
-	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ lua_sys.o util.so
+#lua_sys.so: util.so lua_sys.o
+#	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ lua_sys.o util.so
+
+sys.so: sys.o
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ sys.o
+
+sys.o: sys.c
+	$(CC) -o $@ $(CFLAGS) -c $<
+
+lua_sys.so: sys.so lua_sys.o
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ lua_sys.o sys.so
 
 lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c 
-	$(CC) $(CFLAGS) -c $(cl_includes) -o $@ lua_sys.c
+	$(CC) -o $@ $(CFLAGS) $(lua_includes) -c lua_sys.c
 
-%.o: %.c
-	$(CC) $(CFLAGS) $(includes) -MM -MT '$@' -MF $(basename $@).d $<
-	$(CC) -o $@ $(CFLAGS) $(includes) -c $<
+img.so: img.o
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ img.o $(libpng_dir)/lib/libpng.dylib
 
--include $(objs:.o=.d)
+img.o: img.c
+	$(CC) -o $@ $(CFLAGS) -I$(libpng_dir)/include -c $<
+
+#lua_img.so: img.so lua_img.o
+#	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ lua_img.o img.so
+
+#lua_img.o: lua_img_func_def.c lua_img_func_reg.c lua_img.c 
+#	$(CC) -o $@ $(CFLAGS) $(lua_includes) -c lua_img.c
+
+#%.o: %.c
+#	$(CC) $(CFLAGS) $(includes) -MM -MT '$@' -MF $(basename $@).d $<
+#	$(CC) -o $@ $(CFLAGS) $(includes) -c $<
+
+#-include $(objs:.o=.d)
 
 clean:
 	-rm *.a *.o *.so

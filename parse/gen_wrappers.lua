@@ -9,7 +9,7 @@ require('tf_debug')
 
 -- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
-local type_map = {
+local param_type_map = {
   ['const char*'] = 'string',   -- TODO: add pattern-matching properties as needed
   ['const char *'] = 'string',
   ['double'] = 'number',
@@ -88,22 +88,6 @@ local lua_keyword_sub = {
 	['end'] = 'End',
 }
 
-local handled_return_types = {
-	['GLint']=true, 
-	['void']=true,
-}
-
-local handled_param_types = {
-	['GLbitfield']='integer', 
-	['GLclampf']='float', 
-	['GLenum']='integer', 
-	['GLfloat']='float',
-	['GLdouble']='double',
-	['GLint']='integer', 
-	['const char *']='string',
-	['void']='none',
-}
-
 -- returns lua function name for param c function name
 function get_lw_func_name(func_name)
   local lw_func_name = func_name
@@ -137,13 +121,13 @@ function get_lua_type(ctype)
       return opt_type_map[ctype]
   end
   -- look in default type-map table
-  if type_map[ctype] == nil then
+  if param_type_map[ctype] == nil then
     if opts.verbose then
       print(string.format("get_lua_type(): lua type not found for ctype: [%s]", tostring(ctype)))
     end
     return nil
   end
-  return type_map[ctype]
+  return param_type_map[ctype]
 end
 
 -- parses string of function parameters, returns table of param data suitable for generating the wrapper code
@@ -216,12 +200,16 @@ function get_return_types(ret_decl)
   local c_ret_type = ret_decl --TODO: add filtering as needed
   local lua_ret_type = nil
   -- TODO: replace with table lookup
-  if c_ret_type == "int" or
-     c_ret_type == "unsigned int" or
-     c_ret_type == "float" or
-     c_ret_type == "double" 
-  then
-    lua_ret_type = "number"
+  if 
+    c_ret_type == "int" or
+    c_ret_type == "unsigned int" or
+    c_ret_type == "float" or
+    c_ret_type == "double" then
+      lua_ret_type = "number"
+  elseif 
+    c_ret_type == "const char*" or
+    c_ret_type == "const char *" then
+      lua_ret_type = "string"
   elseif c_ret_type == "void" then
     lua_ret_type = "void"
   else  

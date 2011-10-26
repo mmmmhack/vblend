@@ -14,3 +14,10 @@ static int lw_double_time(lua_State* L) {
   lua_pushnumber(L, ret_val);
   return 1;
 }
+static int lw_getcwd(lua_State* L) {
+  const char* ret_val = 
+  sys_getcwd(
+  );
+  lua_pushstring(L, ret_val);
+  return 1;
+}

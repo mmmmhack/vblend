@@ -3458,6 +3458,311 @@ Even better, I am much more comfortable now with understanding and creating
 the lua wrapper and C shared libraries that are needed.
 </p>
 
+<p>
+Next:
+</p>
+<ul>
+<li>fix cwd
+<li>more docs, esp for font
+<li>more demos
+<li>make pong have paddles, physics
+<li>finish edit module
+</ul>
+
+<p>
+After work, a little more proggin. Investigating the cwd which requires
+another sys and wrapper function, with a new return type, const char*.
+</p>
+
+<p>
+Added it, but now, wtf is _crc32?:
+</p>
+<pre>
+mhackslab:demo $ lua pwd.lua 
+lua: error loading module 'lua_sys' from file './lua_sys.so':
+        dlopen(./lua_sys.so, 2): Symbol not found: _crc32
+  Referenced from: /Users/williamknight/proj/git/vblend/demo/util.so
+  Expected in: dynamic lookup
+
+stack traceback:
+        [C]: ?
+        [C]: in function 'require'
+        pwd.lua:1: in main chunk
+        [C]: ?
+mhackslab:demo $ 
+</pre>
+
+<pre>
+mhackslab:demo $ nm -A *.so | grep _crc32
+util.so:single module:          U _crc32
+mhackslab:demo $ 
+</pre>
+
+<p>
+Somehow referencing zlib?
+</p>
+<pre>
+mhackslab:demo $ find /usr/include | xargs grep -l crc32 2&gt;/dev/null
+/usr/include/php/ext/hash/php_hash.h
+/usr/include/php/ext/hash/php_hash_crc32.h
+/usr/include/php/ext/standard/basic_functions.h
+/usr/include/php/ext/standard/crc32.h
+/usr/include/zconf.h
+/usr/include/zlib.h
+mhackslab:demo $ 
+</pre>
+
+<h2>2011-10-20</h2>
+
+<p>
+Thursday, 7:22 am. I slept 9 hours last night, which is great, but not a whole
+lot of time before work. I will add zlib to the link line of util.so in an
+attempt to fix the above problem.
+</p>
+
+<p>
+Added it, don't get that error anymore, but now more probs:
+</p>
+<pre>
+mhackslab:demo $ lua pwd.lua 
+lua: error loading module 'lua_sys' from file './lua_sys.so':
+        dlopen(./lua_sys.so, 2): Symbol not found: _glfwInit
+  Referenced from: /Users/williamknight/proj/git/vblend/demo/util.so
+  Expected in: dynamic lookup
+
+stack traceback:
+        [C]: ?
+        [C]: in function 'require'
+        pwd.lua:1: in main chunk
+        [C]: ?
+</pre>
+
+<p>
+So this is crap:
+</p>
+<pre>
+mhackslab:demo $ nm -A *.so |grep _glfwInit
+lua_glfw.so: 0000b004 D __glfwInitialized
+lua_glfw.so: 00004910 T _glfwInit
+util.so:single module:          U _glfwInit
+mhackslab:demo $ 
+</pre>
+
+<p>
+I guess I'm back to needing to understand in excruciating detail what the hell
+is going on in dynamic lookup.
+</p>
+
+<p>
+Did some googling, I need to read up on otool I think.
+</p>
+
+<h2>2011-10-20</h2>
+
+<p>
+Sweet Friday again. Readin a very nice book: "Mac OSX Internals - Complete".
+Playing with my otool. This might be a problem:
+</p>
+<pre>
+mhackslab:demo $ otool -L util.so
+util.so:
+        util.so (compatibility version 0.0.0, current version 0.0.0)
+        /usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+mhackslab:demo $ 
+</pre>
+
+<p>
+The cyclical reference to itself doesn't look right.
+</p>
+
+<p>
+Looking through the Makefiles, I wonder if the problem is because I'm statically linking glfw
+with lua_glfw.so:
+</p>
+<pre>
+lua_glfw.so: lua_glfw.o
+  $(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $&lt; $(glfw_dir)/lib/libglfw.a -framework Cocoa -framework OpenGL
+</pre>
+
+<p>
+I tried that. Previously, otool for lua_glfw.so looked like:
+</p>
+<pre>
+mhackslab:demo $ otool -L lua_glfw.so
+lua_glfw.so:
+        /System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa (compatibility version 1.0.0, current version 12.0.0)
+        /System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
+        /usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+        /usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 227.0.0)
+        /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 476.19.0)
+        /System/Library/Frameworks/AppKit.framework/Versions/C/AppKit (compatibility version 45.0.0, current version 949.54.0)
+        /System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices (compatibility version 1.0.0, current version 34.0.0)
+        /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 677.26.0)
+mhackslab:demo $ 
+</pre>
+
+<p>
+Now it looks like:
+</p>
+<pre>
+mhackslab:glfw $ otool -L lua_glfw.so
+lua_glfw.so:
+        @executable_path/libglfw.dylib (compatibility version 1.0.0, current version 1.0.0)
+        /System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa (compatibility version 1.0.0, current version 12.0.0)
+        /System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
+        /usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+mhackslab:glfw $ 
+</pre>
+
+<p>
+Tried that, now I'm getting:
+</p>
+<pre>
+mhackslab:demo $ lua hello.lua 
+lua: error loading module 'lua_glfw' from file './lua_glfw.so':
+        dlopen(./lua_glfw.so, 2): Library not loaded: @executable_path/libglfw.dylib
+  Referenced from: /Users/williamknight/proj/git/vblend/demo/lua_glfw.so
+  Reason: image not found
+stack traceback:
+        [C]: ?
+        [C]: in function 'require'
+        ../gamelib/gamelib.lua:8: in main chunk
+        [C]: in function 'require'
+        hello.lua:7: in main chunk
+        [C]: ?
+mhackslab:demo $ ls libglfw.dylib
+libglfw.dylib
+mhackslab:demo $ 
+</pre>
+
+<p>
+So what is the @executable_path? Probably something dumb like './appName?.app/Contents/MacOS/'
+</p>
+
+<p>
+I vaguely remember using some other mac tool to specify the @executable_path for some
+cross-platform desktop work I did last year. Not sure if that is really the problem though,
+will keep reading.
+</p>
+
+<h2>2011-10-25</h2>
+
+<p>
+Spending some time on other stuff, like gamepad input device, so progress is slow. Read
+some more this morning about mac osx shared libs and loading in Mac OSX internals book. Will
+read a little more about otool now.
+</p>
+
+<p>
+Well, I just fixed the pwd.lua problem by splitting out the sys.o code from the problematic
+messy grab-bag of util.so and just built a sys.so. I'll just keep doing that with all
+the other modules in the util dir and see if that makes things go more smoothly.
+</p>
+
+<p>
+Still a problem here though:
+</p>
+<pre>
+hackslab:demo $ lua hello.lua 
+lua: error loading module 'lua_glfw' from file './lua_glfw.so':
+dlopen(./lua_glfw.so, 2): Library not loaded: @executable_path/libglfw.dylib
+  Referenced from: /Users/williamknight/proj/git/vblend/demo/lua_glfw.so
+  Reason: image not found
+stack traceback:
+[C]: ?
+[C]: in function 'require'
+../gamelib/gamelib.lua:8: in main chunk
+[C]: in function 'require'
+hello.lua:7: in main chunk
+[C]: ?
+</pre>
+
+<p>
+Reading this: http://www.mikeash.com/pyblog/friday-qa-2009-11-06-linking-and-install-names.html
+and this: http://www.dribin.org/dave/blog/archives/2009/11/15/rpath/
+</p>
+
+<p>
+ftfa: "@executable_path will expand to /Applications/Bar.app/Contents/MacOS."
+Yup, I thought it might be that appended crap.
+</p>
+
+<p>
+damn mac shit:
+</p>
+
+<pre>
+mhackslab:demo $ install_name_tool -change @executable_path/libglfw.dylib ./libglfw.dylib libglfw.dylib 
+mhackslab:demo $ otool -D libglfw.dylib 
+libglfw.dylib:
+@executable_path/libglfw.dylib
+mhackslab:demo $ 
+</pre>
+
+<p>
+Read this: http://stackoverflow.com/questions/2985315/using-install-name-tool-whats-going-wrong
+</p>
+
+<p>
+So next I do this:
+</p>
+<pre>
+mhackslab:demo $ otool -L lua_glfw.so 
+lua_glfw.so:
+lua_glfw.so (compatibility version 0.0.0, current version 0.0.0)
+@executable_path/libglfw.dylib (compatibility version 1.0.0, current version 1.0.0)
+/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa (compatibility version 1.0.0, current version 12.0.0)
+/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+mhackslab:demo $ install_name_tool -change @executable_path/libglfw.dylib ./libglfw.dylib lua_glfw.so
+mhackslab:demo $ otool -L lua_glfw.so 
+lua_glfw.so:
+lua_glfw.so (compatibility version 0.0.0, current version 0.0.0)
+./libglfw.dylib (compatibility version 1.0.0, current version 1.0.0)
+/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa (compatibility version 1.0.0, current version 12.0.0)
+/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+mhackslab:demo $ 
+</pre>
+
+<p>
+Still busted:
+</p>
+<pre>
+lua: attempt to index a nil value
+stack traceback:
+[C]: ?
+[C]: in function 'require'
+../gamelib/gamelib.lua:8: in main chunk
+[C]: in function 'require'
+hello.lua:7: in main chunk
+[C]: ?
+mhackslab:demo $ 
+</pre>
+
+<p>
+Ok, rebuilt libglfw.dylib in the glfw dir after removing the 'install_name' DYLIBFLAG, fixed up
+lua module name of glfw in glfw/lua_glfw_const_def.c and now pong demo runs again!
+</p>
+
+<p>
+Now, back to the demos, need to create an img.so for tfont.so
+</p>
+
+<h2>2011-10-26</h2>
+
+<p>
+Rebuilt tfont lib to get rid of dependency on win.o, it gets the win height from gl viewport
+call. 'hello.lua' demo works now. Things are looking good. Next, I want to complete the
+cross-platform build process and improve the docs and maybe make the gamelib available
+on a web page.
+</p>
+
 </body>
 </html>
 

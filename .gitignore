@@ -38,4 +38,7 @@ glfw/lua_glfw_func_skipped.txt
 glfw/debug_wrapper
 glfw/debug_wrapper.app/
 font/lua_tfont_func_skipped.txt
+gamelib/libglfw.dylib
 demo/res
+demo/ud
+demo/pwd.lua

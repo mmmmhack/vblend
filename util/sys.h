@@ -3,12 +3,16 @@
 #include <time.h>
 
 int sys_chdir(const char* path);
+
 void sys_err(const char* msg);
 void sys_errno(int errn, const char* msg);
 
 // returns a time in seconds, relative to first call, with time resolution in microseconds
-float sys_float_time(void);
 double sys_double_time(void);
+float sys_float_time(void);
+
+// returns ptr to current working directory
+const char* sys_getcwd();
 
 struct timeval sys_timeval_now();
 int sys_timeval_greater(const struct timeval* x, const struct timeval* y);

@@ -15,8 +15,9 @@ CC = gcc
 CFLAGS += -g -Wall
 OS = $(shell uname -s)
 
+# font.o 
+
 objs = \
- font.o \
  font-9x15.o \
  tfont.o 
 
@@ -26,8 +27,8 @@ libfont.a: $(objs)
 	ar rv $@ $(objs)
 	ranlib $@
 
-tfont.so:
-	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $(objs)
+tfont.so: $(objs)
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $(objs) ../util/img.so
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(includes) -MM -MT '$@' -MF $(basename $@).d $<

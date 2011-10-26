@@ -6,12 +6,7 @@ package.loaded[modname] = M
 
 require('gl')
 require('lua_glfw')
---_G['glfw'] = _G['lua_glfw'] -- rename to more convenient prefix, the shared lib was made as 'lua_glfw' to avoid conflict with the C glfw lib
-
---require('util')   -- not needed!
 require('lua_sys')
---_G['sys'] = _G['lua_sys']   -- rename to more convenient prefix, the shared lib was made as 'lua_sys' to clearly identify lua wrapper libs from C libs
---require('sys')
 
 -- game window defaults
 M.win_defaults = {
@@ -39,9 +34,9 @@ M._fps = -1;
 --  * ortho projection
 --  * color depth: ?
 M.open_window = function()
-	local rc = lua_glfw.init()
+	local rc = glfw.init()
   if rc ~= gl.GL_TRUE then
-    error(string.format("lua_glfw.init() failed, rc: %d", rc))
+    error(string.format("glfw.init() failed, rc: %d", rc))
   end
 
 	local w = M.win_defaults.width
@@ -52,12 +47,12 @@ M.open_window = function()
 	local a = 0
 	local d = 0
 	local s = 0
-	local mode = lua_glfw.GLFW_WINDOW
-	rc = lua_glfw.openWindow(
+	local mode = glfw.GLFW_WINDOW
+	rc = glfw.openWindow(
 		w, h, r, g, b, a, d, s, mode
 	)
   if rc ~= gl.GL_TRUE then
-    error(string.format("lua_glfw.openWindow() failed, rc: %d", rc))
+    error(string.format("glfw.openWindow() failed, rc: %d", rc))
   end
   M.win_open = true
 
@@ -121,15 +116,15 @@ end
 --  * clears the opengl graphics buffer
 --  * calculates fps
 M.update = function ()
-	lua_glfw.swapBuffers()
-  M.win_open = lua_glfw.getWindowParam(lua_glfw.GLFW_OPENED)
+	glfw.swapBuffers()
+  M.win_open = glfw.getWindowParam(glfw.GLFW_OPENED)
   gl.clear(gl.GL_COLOR_BUFFER_BIT)
 
   -- calc fps and update window title
   M._num_frames_drawn = M._num_frames_drawn + 1
   local fps = M.calc_fps()
   local title = string.format("%s - fps: %3d", M.win_defaults.title, fps)
-  lua_glfw.setWindowTitle(title)
+  glfw.setWindowTitle(title)
 end
 
 M.window_closed = function()
