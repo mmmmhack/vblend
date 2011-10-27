@@ -12,8 +12,8 @@
 
 #include "GL/glfw.h"
 
-#include "util/img.h"
-#include "util/sys.h"
+#include "img.h"
+#include "sys.h"
 //#include "util/win.h"
 #include "tfont.h"
 

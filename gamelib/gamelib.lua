@@ -4,7 +4,8 @@ local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
-require('gl')
+require('strict')
+require('lua_gl')
 require('lua_glfw')
 require('lua_sys')
 

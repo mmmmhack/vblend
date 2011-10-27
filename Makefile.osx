@@ -1,0 +1,9 @@
+# Makefile.osx  : makefile for gamelib
+
+all:
+	cd gl && $(MAKE) -f Makefile.osx
+	cd glfw && $(MAKE) -f Makefile.osx
+	cd util && $(MAKE) -f Makefile.osx
+	cd img && $(MAKE) -f Makefile.osx
+	cd font && $(MAKE) -f Makefile.osx
+

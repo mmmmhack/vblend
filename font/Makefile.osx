@@ -1,48 +1,38 @@
 # Makefile.osx  : makefile for tfont module (texture-mapped fonts in opengl)
 
-glfw_dir = $(HOME)/swtools/opengl/glfw
-lua_dir = $(HOME)/swtools/lua
+#glfw_dir = $(HOME)/swtools/opengl/glfw
+#glfw_dir = ../glfw/libglfw
+lua_dir = $(HOME)/swtools/lua/lua-5.1.4/src
 
-includes = \
- -I$(glfw_dir)/include \
- -I.. \
-
-cl_includes = \
- -I$(lua_dir)/include \
- -I$(glfw_dir)/include 
-
+# -I$(glfw_dir)/include \
+ 
 CC = gcc
 CFLAGS += -g -Wall
-OS = $(shell uname -s)
 
-# font.o 
+tfont_includes=-I ../glfw/libglfw/include -I ../util
+lua_tfont_includes=-I ../glfw/libglfw/include -I $(lua_dir)
 
 objs = \
  font-9x15.o \
  tfont.o 
 
-all: libfont.a tfont.so lua_tfont.so
-
-libfont.a: $(objs)
-	ar rv $@ $(objs)
-	ranlib $@
+all: tfont.so lua_tfont.so
 
 tfont.so: $(objs)
-	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $(objs) ../util/img.so
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $(objs) ../img/img.so
 
-%.o: %.c
-	$(CC) $(CFLAGS) $(includes) -MM -MT '$@' -MF $(basename $@).d $<
-	$(CC) -o $@ $(CFLAGS) $(includes) -c $<
+font-9x15.o: font-9x15.c
+	$(CC) -o $@ $(CFLAGS) $(tfont_includes) -c $<
 
--include $(objs:.o=.d)
+tfont.o: tfont.c
+	$(CC) -o $@ $(CFLAGS) $(tfont_includes) -c $<
 
-# --- lua wrappers
 lua_tfont.so: tfont.so lua_tfont.o
-	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ lua_tfont.o tfont.so
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ lua_tfont.o tfont.so
 
 lua_tfont.o: lua_tfont_func_def.c lua_tfont_func_reg.c lua_tfont.c 
-	$(CC) $(CFLAGS) -c $(cl_includes) -o $@ lua_tfont.c
+	$(CC) -o $@ $(CFLAGS) $(lua_tfont_includes) -c lua_tfont.c
 
 clean:
-	-rm *.a *.o *.so
+	-rm *.o *.so
 

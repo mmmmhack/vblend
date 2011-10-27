@@ -1,9 +1,10 @@
 -- pong.lua : demo game for gamelib
-package.path=package.path .. ";../debugger/?.lua"
-require('strict')
-require('debugger')
+--package.path=package.path .. ";../debugger/?.lua"
+--require('strict')
+--require('debugger')
+package.path=package.path .. ";../gamelib/?.lua"
 require('gamelib')
-require('sys')
+--require('sys')
 
 local r = { x=50, y=50, w=50, h=50 }
 local xdir = 1

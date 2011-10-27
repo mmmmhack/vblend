@@ -11,10 +11,10 @@ includes= \
  -I $(lua_dir)/include
  
 lua_glfw.so: lua_glfw.o
-	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $< libglfw/libglfw.so -framework Cocoa -framework OpenGL
+	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< libglfw/libglfw.so -framework Cocoa -framework OpenGL
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
-	$(CC) $(CFLAGS) -c $(includes) -o $@ lua_glfw.c
+	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c
 
 # --- testing and debug targets
 test: test.app/Contents/MacOS/test
