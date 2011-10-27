@@ -1,0 +1,54 @@
+# OSX Makefile for zlib
+
+CC=gcc
+
+CFLAGS=-O3
+#CFLAGS=-O -DMAX_WBITS=14 -DMAX_MEM_LEVEL=7
+#CFLAGS=-g -DDEBUG
+#CFLAGS=-O3 -Wall -Wwrite-strings -Wpointer-arith -Wconversion \
+#           -Wstrict-prototypes -Wmissing-prototypes
+
+SFLAGS=-O3 -fPIC
+#LDFLAGS= -L. libz.a
+#LDSHARED=gcc -dynamiclib -install_name ${exec_prefix}/lib/libz.1.dylib -compatibility_version 1 -current_version 1.2.5
+LDSHARED=gcc -dynamiclib -compatibility_version 1 -current_version 1.2.5
+CPP=gcc -E
+
+SHAREDLIB=libz.dylib
+SHAREDLIBV=libz.1.2.5.dylib
+SHAREDLIBM=libz.1.dylib
+LIBS=$(STATICLIB) $(SHAREDLIBV)
+
+AR=ar rc
+RANLIB=ranlib
+LDCONFIG=ldconfig
+LDSHAREDLIBC=-lc
+TAR=tar
+SHELL=/bin/sh
+EXE=
+
+PIC_OBJC = adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o \
+	gzwrite.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o
+
+PIC_OBJS = $(PIC_OBJC)
+
+all: $(SHAREDLIBV)
+
+%.o: %.c
+	$(CC) $(SFLAGS) -DPIC -c -o $*.o $<
+
+$(SHAREDLIBV): $(PIC_OBJS)
+	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+	rm -f $(SHAREDLIB) $(SHAREDLIBM)
+	ln -s $@ $(SHAREDLIB)
+	ln -s $@ $(SHAREDLIBM)
+
+example$(EXE): example.o $(SHAREDLIBV)
+	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDLIBV)
+
+check: example$(EXE)
+	./example$(EXE)
+
+clean:
+	rm -f *.o *.dylib example$(EXE)
+

@@ -7,15 +7,11 @@ CC=gcc
 CFLAGS += -O0 -g -Wall
 
 includes= \
- -I$(glfw_dir)/include \
- -I$(lua_dir)/include
+ -I libglfw/include \
+ -I $(lua_dir)/include
  
-#lua_glfw.so: lua_glfw.o
-#	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< $(glfw_dir)/lib/libglfw.a -framework Cocoa -framework OpenGL
-#lua_glfw.so: lua_glfw.o
-#	$(CC) $(CFLAGS) -bundle -undefined dynamic_lookup -o $@ $< $(glfw_dir)/lib/libglfw.dylib -framework Cocoa -framework OpenGL
 lua_glfw.so: lua_glfw.o
-	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $< $(glfw_dir)/glfw-2.7/lib/cocoa/libglfw.dylib -framework Cocoa -framework OpenGL
+	$(CC) $(CFLAGS) -dynamiclib -undefined dynamic_lookup -o $@ $< libglfw/libglfw.so -framework Cocoa -framework OpenGL
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) $(CFLAGS) -c $(includes) -o $@ lua_glfw.c
