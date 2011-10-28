@@ -1,9 +1,9 @@
-# OSX Makefile for img lib
+# Makefile.osx: Mac OSX Makefile for img lib
 
 CC = gcc
 CFLAGS += -g -Wall
 
-all: img.so 
+all: subdirs img.so 
 
 img.so: img.o
 	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup img.o libpng/libpng.so
@@ -11,5 +11,9 @@ img.so: img.o
 img.o: img.c
 	$(CC) -o $@ $(CFLAGS) -I libpng/include -c $<
 
-clean:
+clean: subdirs
 	-rm *.o *.so
+
+subdirs:
+	cd zlib && make -f Makefile.osx $(MAKECMDGOALS)
+	cd libpng && make -f Makefile.osx $(MAKECMDGOALS)

@@ -1,7 +1,6 @@
 # Makefile for gl lua wrapper
 
-lua_dir = $(HOME)/swtools/lua
-#glfw_dir = $(HOME)/swtools/opengl/glfw
+lua_dir = ../lua
 glfw_dir = ../glfw/libglfw
 
 CC=gcc

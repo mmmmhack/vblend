@@ -1,9 +1,27 @@
 # Makefile.osx  : makefile for gamelib
 
-all:
-	cd gl && $(MAKE) -f Makefile.osx
-	cd glfw && $(MAKE) -f Makefile.osx
-	cd util && $(MAKE) -f Makefile.osx
-	cd img && $(MAKE) -f Makefile.osx
-	cd font && $(MAKE) -f Makefile.osx
+PREFIX = demo
 
+all : subdirs
+
+subdirs:
+	cd lua && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd gl && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd glfw && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd util && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd img && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd font && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+
+install :
+	cp gl/*.so $(PREFIX)/
+	cp glfw/*.so $(PREFIX)/
+	cp glfw/libglfw/*.so $(PREFIX)/
+	cp util/*.so $(PREFIX)/
+	cp img/*.so $(PREFIX)/
+	cp img/zlib/*.so $(PREFIX)/
+	cp img/libpng/*.so $(PREFIX)/
+	cp font/*.so $(PREFIX)/
+
+# clean demo
+clean: subdirs
+	rm -f demo/*.so

@@ -1,24 +1,11 @@
-#libz_dir = $(HOME)/swtools/disk/zlib
-#libpng_dir = $(HOME)/swtools/graphics/libpng
-#glfw_dir = $(HOME)/swtools/opengl/glfw
-lua_dir = $(HOME)/swtools/lua
+# Makefile.osx	:	 Mac OSX Makefile for util shared libs
 
-#includes = -I$(glfw_dir)/include 
-#includes += -I$(libpng_dir)/include
+lua_dir = ../lua
 
 lua_includes = -I$(lua_dir)/include
 
 CC = gcc
 CFLAGS += -g -Wall
-
-#objs = \
-# StrIntMap.o \
-# strmap.o \
-# str.o \
-# sys.o \
-# fps.o \
-# perf.o \
-# win.o
 
 all: sys.so lua_sys.so
 

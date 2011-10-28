@@ -1,0 +1,7 @@
+# Makefile.osx	: Mac OSX makefile for lua
+
+all:
+	make -f Makefile.all macosx
+
+clean:
+	make -f Makefile.all clean
