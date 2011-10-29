@@ -3852,6 +3852,45 @@ then I'll start on the mingw makefiles.
 Moved in lua, tomorrow will start on mingw.
 </p>
 
+<h2>2011-10-28</h2>
+
+<p>
+Sweet Friday, working on Windows XP on my old thinkpad, but with nice big external
+flat screen monitor and keyboard, it's almost as good as working on linux or my macbook
+now, which use same monitor and keyboard. Anyhow, I'm ready to start generating mingw
+makefiles from the Makefile.osx files.
+</p>
+
+<p>
+Bleh, had to log out and into admin just to turn off the damn speaker beep, now to work.
+</p>
+
+<p>
+Weird, there are some strange diffs with the version of lua I just built on win xp/mingw,
+might be because of the luaconf.h file I used from Mac OSX, here is what it's doing:
+</p>
+<pre>
+&gt; print(math.huge)
+1.#INF
+&gt; buf=io.read(math.huge)
+&gt; print(#buf)
+0
+</pre>
+
+<p>
+Hmm, does the same thing with the pre-built version of lua too, well guess that's good.
+I'll just deal.
+</p>
+
+<h2>2011-10-29</h2>
+
+<p>
+Saturday morning. Wasn't able to check in the work I did yesterday on this thinkpad
+because I had cloned the git repository on my macbook, which wasn't a bare repository.
+This morning, I did a clone instead from the missoulagamedev repository on modwest.
+Next, I'll do a test push to make sure I can upload the work.
+</p>
+
 </body>
 </html>
 
