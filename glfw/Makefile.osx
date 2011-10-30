@@ -4,36 +4,26 @@ lua_dir = ../lua
 
 CC=gcc
 CFLAGS += -O0 -g -Wall
+SO=so
+lua_libs=
 
 includes= \
  -I libglfw/include \
  -I $(lua_dir)/include
  
-all: subdirs lua_glfw.so
+all: subdirs lua_glfw.$(SO)
 
 subdirs:
 	cd libglfw && make -f Makefile.osx $(MAKECMDGOALS)
 
-lua_glfw.so: lua_glfw.o
-	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< libglfw/libglfw.so -framework Cocoa -framework OpenGL
+lua_glfw.$(SO): lua_glfw.o
+	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< libglfw/libglfw.$(SO) -framework Cocoa -framework OpenGL
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c
 
-# --- testing and debug targets
-test: test.app/Contents/MacOS/test
-	-ln -s $< $@
-
-test.app/Contents/MacOS/test: test.o
-	/bin/sh ../test/bundle.sh test
-	$(CC) $(CFLAGS) -o $@ $< glfw.a $(lua_dir)/liblua.a libglfw/libglfw.so -framework Cocoa -framework OpenGL
-
-debug_wrapper: debug_wrapper.o
-	/bin/sh ../test/bundle.sh debug_wrapper
-	$(CC) $(CFLAGS) -o $@ $< lua_glfw.o $(lua_dir)/liblua.a libglfw/libglfw.so -framework Cocoa -framework OpenGL
-	
 %.o: %.c
 	$(CC) $(CFLAGS) -c $(includes) -o $@ $<
 
 clean: subdirs
-	-rm test *.so *.o
+	-rm *.$(SO) *.o

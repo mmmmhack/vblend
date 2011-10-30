@@ -1,21 +1,26 @@
-# Makefile.mingw for pong - an OpenGL game in C/lua
+# mingw Makefile for gl lua wrapper
 
-lua_dir = c:/home/willkn/swtools/lua/lua-5.1.4
-glfw_dir = c:/home/willkn/swtools/glfw/glfw-2.7.2
+lua_dir = ../lua
+glfw_dir = ../glfw/libglfw
 
 CC=gcc
 CFLAGS += -O0 -g -Wall
+SO=dll
+lua_libs=$(lua_dir)/lua51.dll
 
 includes= \
  -I$(glfw_dir)/include \
- -I$(lua_dir)/src
+ -I$(lua_dir)/include
  
-ponglib.dll: ponglib.o
-	$(CC) $(CFLAGS) -shared -o $@ $< $(lua_dir)/src/lua51.dll $(glfw_dir)/lib/win32/glfw.dll -lopengl32 -glu32
+all: lua_gl.$(SO)
 
-ponglib.o: ponglib.c
-	$(CC) $(CFLAGS) -c $(includes) -o $@ $<
+lua_gl.$(SO): lua_gl.o
+	$(CC) -o $@ -shared $< $(lua_libs) -lopengl32 -glu32
+
+lua_gl.o: constant_defs.c lua_gl_func_def.c lua_gl_func_reg.c lua_gl.c 
+	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_gl.c
 
 clean:
-	-rm ponglib.dll
-	-rm ponglib.o
+	rm -f *.o *.$(SO)
+
+

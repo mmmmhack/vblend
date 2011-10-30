@@ -89,7 +89,15 @@ typedef struct {
 // glfw.h)
 //------------------------------------------------------------------------
 
-#include "platform.h"
+#ifdef PLATFORM_MINGW
+#include "platform_mingw.h"
+#else
+#ifdef PLATFORM_OSX
+#include "platform_osx.h"
+#else
+#include "platform_x11.h"
+#endif
+#endif
 
 
 //------------------------------------------------------------------------

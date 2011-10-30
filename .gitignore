@@ -33,6 +33,13 @@ util/*.i
 util/lua_sys_func_skipped.txt
 gl/old
 gl/lua_gl_func_skipped.txt
+gl/lua_gl.dll
+gl/Makefile.mingw.old
+glfw/Makefile.mingw.old
+glfw/libglfw/Makefile.mingw.old
+glfw/libglfw/make.out
+glfw/libglfw/ref-make.out
+glfw/libglfw/*.I
 glfw/old
 glfw/lua_glfw_func_skipped.txt
 glfw/debug_wrapper
@@ -43,3 +50,6 @@ demo/res
 demo/ud
 demo/pwd.lua
 img/zlib/example
+lua/lua.exe
+lua/luac.exe
+lua/lua51.dll

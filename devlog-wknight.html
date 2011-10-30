@@ -3891,6 +3891,104 @@ This morning, I did a clone instead from the missoulagamedev repository on modwe
 Next, I'll do a test push to make sure I can upload the work.
 </p>
 
+<p>
+Good, worked liked I expected. On with it.
+</p>
+
+<p>
+Hmm, lua string.gsub() is _NOT_ working at all how I expected it to:
+</p>
+<pre>
+&gt; print(repl)
+bf
+&gt; print(buf)
+        $(CC) -o $@ -dynamiclib -undefined dynamic_lookup $&lt; -framework Cocoa -framework OpenGL
+
+&gt; pat='-dynamiclib -u'
+&gt; s = string.gsub(buf,pat,repl)
+&gt; print(s)
+        $(CC) -o $@ -dynamiclib -undefined dynamic_lookup $&lt; -framework Cocoa -framework OpenGL
+
+&gt; pat='-dynamiclib -'
+&gt; s = string.gsub(buf,pat,repl)
+&gt; print(s)
+        $(CC) -o $@ bf -undefined dynamic_lookup $&lt; -framework Cocoa -framework OpenGL
+
+&gt;
+</pre>
+
+<p>
+It's not specific to gsub, it's something with the lua pattern matching:
+</p>
+<pre>
+&gt; pat='-dynamiclib -'
+&gt; n = string.find(buf, pat)
+&gt; print(n)
+14
+&gt; pat='-dynamiclib -u'
+&gt; n = string.find(buf, pat)
+&gt; print(n)
+nil
+&gt; print(buf)
+        $(CC) -o $@ -dynamiclib -undefined dynamic_lookup $&lt; -framework Cocoa -framework OpenGL
+
+&gt;
+</pre>
+
+<p>
+First thing I will do is test this on mac to see if there's more weirdness
+with lua on mingw.
+</p>
+
+<p>
+Tried it, then reviewed lua patterns, duh, I forgot that '-' is magic!
+</p>
+
+<h2>2011-10-30</h2>
+
+<p>
+Ran in to a linking problem yesterday building glfw:
+</p>
+<pre>
+C:\Documents and Settings\strangecell\proj\vblend\glfw\libglfw&gt;make -f Makefile.mingw
+dllwrap --dllname libglfw.dll --def glfwdll_mgw1.def enable_dll.o fullscreen_dll.o glext_dll.o image_dll.o init_dll.o
+ stream_dll.o tga_dll.o thread_dll.o time_dll.o window_dll.o win32_dllmain_dll.o win32_enable_dll.o win32_fullscreen_
+ 32_init_dll.o win32_joystick_dll.o win32_thread_dll.o win32_time_dll.o win32_window_dll.o -s -lopengl32 -lwinmm -lgdi
+ win32_window_dll.o:win32_window.c:(.text+0x19ab): undefined reference to `_glfwRefreshContextParams'
+ collect2: ld returned 1 exit status
+ C:\home\willkn\swtools\mingw\bin\dllwrap.exe: C:\home\willkn\swtools\mingw\bin\gcc exited with status 1
+ make: *** [libglfw.dll] Error 1
+
+ C:\Documents and Settings\strangecell\proj\vblend\glfw\libglfw&gt;
+</pre>
+
+<p>
+Before investigating, need to cleanup to free some disk space.
+</p>
+
+<p>
+Did that, next, built ref version of glfw on mingw, no probs. I'm thinking
+my version fails because I removed the static lib build, comparing the
+two different make outputs.
+</p>
+
+<p>
+Comparing them, I now think there must be something different in the
+includes for compiling win32_window.c, because the ref build doesn't
+give the warning about glfwRefreshContextParams.
+</p>
+
+<p>
+Next, will probably compare preprocessed files of that c file.
+</p>
+
+<p>
+Ok, believe that I tracked it down, the diff is in glfw/lib/internal.h,
+the glfw-2.7.2 version on my xp thinkpad has the missing _glfwRefreshContextParams()
+declaration and the reason is because the version of glfw on my macbook
+is different! It's glfw-2.7! DUH!!
+</p>
+
 </body>
 </html>
 

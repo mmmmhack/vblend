@@ -5,15 +5,6 @@
 #  make -f Makefile.cocoa
 ##########################################################################
 
-##########################################################################
-# Installation prefix (default to /usr/local)
-##########################################################################
-#PREFIX ?= /usr/local
-
-
-##########################################################################
-# Default: Build GLFW static and shared library
-##########################################################################
 all: libglfw.so
 
 
@@ -21,7 +12,7 @@ all: libglfw.so
 # Compiler settings
 ##########################################################################
 CC     ?= cc
-CFLAGS = -c -I. -Iinclude -Wall -O2 -fno-common -g
+CFLAGS = -c -I. -Iinclude -Wall -O2 -fno-common -g -DPLATFORM_OSX
 
 
 ##########################################################################
@@ -35,22 +26,8 @@ RANLIB      = ranlib
 DYLIBFLAGS  = -framework Cocoa -framework OpenGL \
               -dynamiclib -Wl,-single_module -compatibility_version 1 \
               -current_version 1 
-#              -install_name @executable_path/libglfw.dylib
-#HEADERS     = ../../include/GL/glfw.h ../internal.h platform.h
-HEADERS     = include/GL/glfw.h internal.h platform.h
+HEADERS     = include/GL/glfw.h internal.h platform_osx.h
 
-
-##########################################################################
-# Install GLFW header and static library
-##########################################################################
-#install: libglfw.a libglfw.pc
-#	$(INSTALL) -d $(PREFIX)/lib
-#	$(INSTALL) -c -m 644 libglfw.a $(PREFIX)/lib/libglfw.a
-#	$(RANLIB) $(PREFIX)/lib/libglfw.a
-#	$(INSTALL) -d $(PREFIX)/include/GL
-#	$(INSTALL) -c -m 644 ../../include/GL/glfw.h $(PREFIX)/include/GL/glfw.h
-#	$(INSTALL) -d $(PREFIX)/lib/pkgconfig
-#	$(INSTALL) -c -m 644 libglfw.pc $(PREFIX)/lib/pkgconfig/libglfw.pc
 
 
 ##########################################################################
@@ -79,19 +56,6 @@ OBJS = \
        cocoa_window.o
 
 
-##########################################################################
-# Rule for building libglfw.pc
-##########################################################################
-#libglfw.pc: libglfw.pc.in
-#	$(SED) -e 's,\@PREFIX\@,$(PREFIX),' libglfw.pc.in > libglfw.pc
-
-
-##########################################################################
-# Rule for building static library
-##########################################################################
-#libglfw.a: $(OBJS)
-#	$(AR) $(ARFLAGS) $@ $(OBJS)
-#	$(RANLIB) $@
 
 
 ##########################################################################
@@ -99,14 +63,6 @@ OBJS = \
 ##########################################################################
 libglfw.so: $(OBJS)
 	$(CC) -o $@ $(DYLIBFLAGS) $(OBJS)
-
-
-##########################################################################
-# Rule for cleaning up generated files
-##########################################################################
-#	rm -f $(OBJS) libglfw.a libglfw.dylib libglfw.pc
-clean:
-	rm -f $(OBJS) libglfw.so
 
 
 ##########################################################################
@@ -171,4 +127,13 @@ cocoa_time.o: cocoa_time.m $(HEADERS)
 
 cocoa_window.o: cocoa_window.m $(HEADERS)
 	$(CC) $(CFLAGS) -o $@ cocoa_window.m
+
+##########################################################################
+# Rule for cleaning up generated files
+##########################################################################
+#	rm -f $(OBJS) libglfw.a libglfw.dylib libglfw.pc
+clean:
+	rm -f $(OBJS) libglfw.so
+
+
 
