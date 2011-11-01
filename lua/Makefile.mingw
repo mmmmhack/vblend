@@ -1,0 +1,7 @@
+# Makefile.mingw	: mingw makefile for lua
+
+all:
+	make -f Makefile.all mingw
+
+clean:
+	make -f Makefile.all clean

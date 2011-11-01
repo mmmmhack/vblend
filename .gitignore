@@ -8,6 +8,9 @@
 .s3
 .s4
 .s5
+e.bat
+lua-path.bat
+mingw-path.bat
 test/*.app*
 test/bitmap_letter
 test/cl_fps
