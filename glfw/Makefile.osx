@@ -1,4 +1,4 @@
-# Makefile.osx : Mac OSX Makefile for glfw lua wrapper
+# Makefile.osx : Mac OSX makefile for glfw lua wrapper
 
 lua_dir = ../lua
 
@@ -17,7 +17,7 @@ subdirs:
 	cd libglfw && make -f Makefile.osx $(MAKECMDGOALS)
 
 lua_glfw.$(SO): lua_glfw.o
-	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< libglfw/libglfw.$(SO) -framework Cocoa -framework OpenGL
+	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< $(lua_libs) libglfw/libglfw.$(SO) -framework Cocoa -framework OpenGL
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c

@@ -2,7 +2,7 @@
 # Makefile for GLFW on Windows using MinGW32.
 #-------------------------------------------------------------------------
 # To compile GLFW using this makefile, run:
-#  make -f Makefile.win32.mgw
+#  make -f Makefile.mingw
 ##########################################################################
 
 all: libglfw.dll
@@ -26,7 +26,7 @@ LINK      = dllwrap
 LINKFLAGS = -s
 LINKLIBS  = -lopengl32 -lwinmm -lgdi32
 
-HEADERS   = include/GL/glfw.h internal.h platform_mingw.h
+HEADERS   = include/GL/glfw.h internal.h win32/platform_mingw.h
 
 
 ##########################################################################
@@ -105,32 +105,32 @@ time_dll.o: time.c $(HEADERS)
 window_dll.o: window.c $(HEADERS)
 	$(CC) $(CFLAGS_DLL) -o $@ window.c
 
-win32_dllmain_dll.o: win32_dllmain.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_dllmain.c
+win32_dllmain_dll.o: win32/win32_dllmain.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_dllmain.c
 
-win32_enable_dll.o: win32_enable.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_enable.c
+win32_enable_dll.o: win32/win32_enable.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_enable.c
 
-win32_fullscreen_dll.o: win32_fullscreen.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_fullscreen.c
+win32_fullscreen_dll.o: win32/win32_fullscreen.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_fullscreen.c
 
-win32_glext_dll.o: win32_glext.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_glext.c
+win32_glext_dll.o: win32/win32_glext.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_glext.c
 
-win32_init_dll.o: win32_init.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_init.c
+win32_init_dll.o: win32/win32_init.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_init.c
 
-win32_joystick_dll.o: win32_joystick.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_joystick.c
+win32_joystick_dll.o: win32/win32_joystick.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_joystick.c
 
-win32_thread_dll.o: win32_thread.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_thread.c
+win32_thread_dll.o: win32/win32_thread.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_thread.c
 
-win32_time_dll.o: win32_time.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_time.c
+win32_time_dll.o: win32/win32_time.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_time.c
 
-win32_window_dll.o: win32_window.c $(HEADERS)
-	$(CC) $(CFLAGS_DLL) -o $@ win32_window.c
+win32_window_dll.o: win32/win32_window.c $(HEADERS)
+	$(CC) $(CFLAGS_DLL) -o $@ win32/win32_window.c
 
 ##########################################################################
 # Rule for cleaning up generated files

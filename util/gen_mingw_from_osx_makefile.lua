@@ -1,7 +1,7 @@
 -- gen_mingw_from_osx_makefile.lua  : generates Makefile.mingw from Makefile.osx
 
 local subs = {
-  ['Mac OSX Makefile'] = 'mingw Makefile',
+  ['Mac OSX makefile'] = 'mingw makefile',
   ['Makefile%.osx'] = 'Makefile.mingw',
   ['%-dynamiclib %-undefined dynamic_lookup'] = '-shared',
   ['%-framework Cocoa %-framework OpenGL'] = '-lopengl32 -glu32',

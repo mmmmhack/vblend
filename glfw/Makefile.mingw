@@ -1,4 +1,4 @@
-# Makefile.mingw : mingw Makefile for glfw lua wrapper
+# Makefile.mingw : mingw makefile for glfw lua wrapper
 
 lua_dir = ../lua
 
@@ -17,7 +17,7 @@ subdirs:
 	cd libglfw && make -f Makefile.mingw $(MAKECMDGOALS)
 
 lua_glfw.$(SO): lua_glfw.o
-	$(CC) -o $@ -shared $< libglfw/libglfw.$(SO) -lopengl32 -glu32
+	$(CC) -o $@ -shared $< $(lua_libs) libglfw/libglfw.$(SO) -lopengl32 -glu32
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c

@@ -137,6 +137,7 @@ struct timeval sys_timeval_max(const struct timeval* x, const struct timeval* y)
     return *y;
 }
 
+#ifdef HAVE_TIMESPEC
 // ---- timespec functions
 struct timespec sys_timespec_now() {
   struct timespec ts;
@@ -228,4 +229,4 @@ struct timespec sys_timespec_max(const struct timespec* x, const struct timespec
   else
     return *y;
 }
-
+#endif // HAVE_TIMESPEC

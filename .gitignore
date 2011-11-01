@@ -11,6 +11,7 @@
 e.bat
 lua-path.bat
 mingw-path.bat
+Makefile.mingw.old
 test/*.app*
 test/bitmap_letter
 test/cl_fps
@@ -33,6 +34,7 @@ test/test_lua_pcall
 test/tlua_reg
 util/old
 util/*.i
+util/*.dll
 util/lua_sys_func_skipped.txt
 gl/old
 gl/lua_gl_func_skipped.txt
@@ -43,7 +45,10 @@ glfw/libglfw/Makefile.mingw.old
 glfw/libglfw/make.out
 glfw/libglfw/ref-make.out
 glfw/libglfw/*.I
+glfw/libglfw/*.dll
+glfw/libglfw/cf.bat
 glfw/old
+glfw/*.dll
 glfw/lua_glfw_func_skipped.txt
 glfw/debug_wrapper
 glfw/debug_wrapper.app/

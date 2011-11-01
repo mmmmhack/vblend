@@ -1,26 +1,28 @@
-# Makefile.osx	:	 Mac OSX Makefile for util shared libs
+# Makefile.osx	:	 Mac OSX makefile for util shared libs
 
-lua_dir = ../lua
+SO=so
 
-lua_includes = -I$(lua_dir)/include
+lua_dir=../lua
+lua_includes=-I$(lua_dir)/include
+lua_libs=
 
 CC = gcc
 CFLAGS += -g -Wall
 
-all: sys.so lua_sys.so
+all: sys.$(SO) lua_sys.$(SO)
 
-sys.so: sys.o
+sys.$(SO): sys.o
 	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup sys.o
 
 sys.o: sys.c
 	$(CC) -o $@ $(CFLAGS) -c $<
 
-lua_sys.so: sys.so lua_sys.o
-	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup lua_sys.o sys.so
+lua_sys.$(SO): sys.$(SO) lua_sys.o
+	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup lua_sys.o sys.$(SO) $(lua_libs)
 
 lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c 
 	$(CC) -o $@ $(CFLAGS) $(lua_includes) -c lua_sys.c
 
 clean:
-	-rm *.o *.so
+	-rm *.o *.$(SO)
 

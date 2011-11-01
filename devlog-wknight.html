@@ -4067,6 +4067,26 @@ cocoa, win32 and x11 files.
 Built, tested, pong works. Back to win32.
 </p>
 
+<p>
+Got glfw-2.7.2 files syncd up, it builds. Moving on to next Makefile.
+</p>
+
+<p>
+Working on building util, now I'm back to real porting issues, timespec
+isn't declared.
+</p>
+
+<p>
+Ah, duh, that's the later, more precise struct, I only need timeval
+for now, will just handle with ifdefs.
+</p>
+
+<p>
+Did it, it works. On to the next one, zlib, need to get the multi-platform
+version off of macbook, so back to checkin and switch-over and then must
+go to work.
+</p>
+
 </body>
 </html>
 

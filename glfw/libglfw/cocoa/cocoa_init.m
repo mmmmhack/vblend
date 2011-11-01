@@ -32,6 +32,17 @@
 
 #include "internal.h"
 
+@interface GLFWThread : NSThread
+@end
+
+@implementation GLFWThread
+
+- (void)main
+{
+}
+
+@end
+
 @interface GLFWApplication : NSApplication
 @end
 
@@ -228,6 +239,17 @@ int _glfwPlatformInit( void )
 
     // Implicitly create shared NSApplication instance
     [GLFWApplication sharedApplication];
+
+    _glfwLibrary.OpenGLFramework =
+        CFBundleGetBundleWithIdentifier( CFSTR( "com.apple.opengl" ) );
+    if( _glfwLibrary.OpenGLFramework == NULL )
+    {
+        return GL_FALSE;
+    }
+
+    GLFWThread* thread = [[GLFWThread alloc] init];
+    [thread start];
+    [thread release];
 
     NSString* resourcePath = [[NSBundle mainBundle] resourcePath];
 

@@ -1,4 +1,4 @@
-# Makefile.osx  : top-level Mac OSX makefile for gamelib project
+# Makefile.mingw  : top-level mingw makefile for gamelib project
 
 PREFIX=demo
 SO=dll
@@ -8,12 +8,12 @@ CP=copy
 all : subdirs
 
 subdirs:
-	cd lua && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd gl && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd glfw && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd util && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd img && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd font && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd lua && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
+	cd gl && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
+	cd glfw && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
+	cd util && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
+	cd img && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
+	cd font && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
 
 install :
 	$(CP) lua/lua$(EXE) $(PREFIX)/
