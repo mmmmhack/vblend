@@ -2,7 +2,7 @@
 # Makefile for GLFW on Cocoa on Mac OS X using Apple GCC
 #-------------------------------------------------------------------------
 # To compile GLFW using this makefile, run:
-#  make -f Makefile.cocoa
+#  make -f Makefile.osx
 ##########################################################################
 
 all: libglfw.so
@@ -12,7 +12,7 @@ all: libglfw.so
 # Compiler settings
 ##########################################################################
 CC     ?= cc
-CFLAGS = -c -I. -Iinclude -Wall -O2 -fno-common -g -DPLATFORM_OSX
+CFLAGS = -c -I. -Iinclude -Icocoa -Wall -O2 -fno-common -g -DPLATFORM_OSX
 
 
 ##########################################################################
@@ -26,7 +26,7 @@ RANLIB      = ranlib
 DYLIBFLAGS  = -framework Cocoa -framework OpenGL \
               -dynamiclib -Wl,-single_module -compatibility_version 1 \
               -current_version 1 
-HEADERS     = include/GL/glfw.h internal.h platform_osx.h
+HEADERS     = include/GL/glfw.h internal.h cocoa/platform_osx.h
 
 
 
@@ -104,29 +104,29 @@ time.o: time.c $(HEADERS)
 window.o: window.c $(HEADERS)
 	$(CC) $(CFLAGS) -o $@ window.c
 
-cocoa_enable.o: cocoa_enable.m $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_enable.m
+cocoa_enable.o: cocoa/cocoa_enable.m $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_enable.m
 
-cocoa_fullscreen.o: cocoa_fullscreen.m $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_fullscreen.m
+cocoa_fullscreen.o: cocoa/cocoa_fullscreen.m $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_fullscreen.m
 
-cocoa_glext.o: cocoa_glext.m $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_glext.m
+cocoa_glext.o: cocoa/cocoa_glext.m $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_glext.m
 
-cocoa_init.o: cocoa_init.m $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_init.m
+cocoa_init.o: cocoa/cocoa_init.m $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_init.m
 
-cocoa_joystick.o: cocoa_joystick.m $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_joystick.m
+cocoa_joystick.o: cocoa/cocoa_joystick.m $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_joystick.m
 
-cocoa_thread.o: cocoa_thread.c $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_thread.c
+cocoa_thread.o: cocoa/cocoa_thread.c $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_thread.c
 
-cocoa_time.o: cocoa_time.m $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_time.m
+cocoa_time.o: cocoa/cocoa_time.m $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_time.m
 
-cocoa_window.o: cocoa_window.m $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ cocoa_window.m
+cocoa_window.o: cocoa/cocoa_window.m $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ cocoa/cocoa_window.m
 
 ##########################################################################
 # Rule for cleaning up generated files

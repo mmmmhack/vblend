@@ -52,6 +52,9 @@ gamelib/libglfw.dylib
 demo/res
 demo/ud
 demo/pwd.lua
+demo/lua
+demo/gamelib.lua
+demo/strict.lua
 img/zlib/example
 lua/lua.exe
 lua/luac.exe

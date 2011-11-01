@@ -90,12 +90,12 @@ typedef struct {
 //------------------------------------------------------------------------
 
 #ifdef PLATFORM_MINGW
-#include "platform_mingw.h"
+#include "win32/platform_mingw.h"
 #else
 #ifdef PLATFORM_OSX
-#include "platform_osx.h"
+#include "cocoa/platform_osx.h"
 #else
-#include "platform_x11.h"
+#include "x11/platform_x11.h"
 #endif
 #endif
 
