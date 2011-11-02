@@ -1,9 +1,12 @@
 # Makefile.mingw  : top-level mingw makefile for gamelib project
 
+lua_dir=lua
+
 PREFIX=dist
 SO=dll
 EXE=.exe
 CP=cp
+lua_libs=$(lua_dir)/lua51.dll
 
 all : subdirs
 
@@ -19,7 +22,7 @@ $(PREFIX):
 	mkdir $(PREFIX)
 
 install : $(PREFIX)
-	$(CP) lua/lua$(EXE) $(PREFIX)/
+	$(CP) $(lua_dir)/lua$(EXE) $(lua_libs) $(PREFIX)/
 	$(CP) gl/*.$(SO) $(PREFIX)/
 	$(CP) glfw/*.$(SO) $(PREFIX)/
 	$(CP) glfw/libglfw/*.$(SO) $(PREFIX)/

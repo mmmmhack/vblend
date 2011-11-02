@@ -53,7 +53,11 @@ glfw/lua_glfw_func_skipped.txt
 glfw/debug_wrapper
 glfw/debug_wrapper.app/
 font/lua_tfont_func_skipped.txt
+font/*.dll
+img/*.dll
+img/zlib/*.dll
 img/zlib/example
+img/libpng/*.dll
 lua/lua
 lua/luac
 lua/lua.exe

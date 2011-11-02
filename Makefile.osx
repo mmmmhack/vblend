@@ -1,9 +1,12 @@
 # Makefile.osx  : top-level Mac OSX makefile for gamelib project
 
+lua_dir=lua
+
 PREFIX=dist
 SO=so
 EXE=
 CP=cp
+lua_libs=
 
 all : subdirs
 
@@ -19,7 +22,7 @@ $(PREFIX):
 	mkdir $(PREFIX)
 
 install : $(PREFIX)
-	$(CP) lua/lua$(EXE) $(PREFIX)/
+	$(CP) $(lua_dir)/lua$(EXE) $(lua_libs) $(PREFIX)/
 	$(CP) gl/*.$(SO) $(PREFIX)/
 	$(CP) glfw/*.$(SO) $(PREFIX)/
 	$(CP) glfw/libglfw/*.$(SO) $(PREFIX)/
