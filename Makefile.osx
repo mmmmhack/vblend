@@ -1,6 +1,6 @@
 # Makefile.osx  : top-level Mac OSX makefile for gamelib project
 
-PREFIX=demo
+PREFIX=dist
 SO=so
 EXE=
 CP=cp
@@ -15,7 +15,10 @@ subdirs:
 	cd img && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
 	cd font && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
 
-install :
+$(PREFIX):
+	mkdir $(PREFIX)
+
+install : $(PREFIX)
 	$(CP) lua/lua$(EXE) $(PREFIX)/
 	$(CP) gl/*.$(SO) $(PREFIX)/
 	$(CP) glfw/*.$(SO) $(PREFIX)/
@@ -26,6 +29,7 @@ install :
 	$(CP) img/libpng/*.$(SO) $(PREFIX)/
 	$(CP) font/*.$(SO) $(PREFIX)/
 	$(CP) gamelib/*.lua $(PREFIX)/
+	$(CP) -r demo/* $(PREFIX)/
 
 # clean demo
 clean: subdirs

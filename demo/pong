@@ -1,1 +1,1 @@
-../lua/lua pong.lua
+./lua pong.lua
