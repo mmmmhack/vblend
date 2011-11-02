@@ -7,7 +7,7 @@ local subs = {
   ['%-framework Cocoa %-framework OpenGL'] = '-lopengl32 -glu32',
   ['SO=so'] = 'SO=dll',
   ['EXE='] = 'EXE=.exe',
-  ['CP=cp'] = 'CP=copy',
+--  ['CP=cp'] = 'CP=copy',
   ['lua_libs='] = 'lua_libs=$(lua_dir)/lua51.dll',
 }
 

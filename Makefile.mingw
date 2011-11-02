@@ -3,7 +3,7 @@
 PREFIX=demo
 SO=dll
 EXE=.exe
-CP=copy
+CP=cp
 
 all : subdirs
 

@@ -4,4 +4,4 @@ all:
 	make -f Makefile.all mingw
 
 clean:
-	make -f Makefile.all clean
+	make -f Makefile.all "LUA_A=lua51.dll" "LUA_T=lua.exe" "LUAC_T=luac.exe" clean

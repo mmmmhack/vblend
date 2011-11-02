@@ -107,7 +107,7 @@ fprintf(stderr, err_msg);
     char c_bit_depth[32];
 		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
     sprintf(c_bit_depth, "%02x",(char) bit_depth);
-		snprintf(err_msg, cb_err_msg, "unsupported color_type (%zu) or bit_depth (%s)\n", color_type, c_bit_depth);
+		snprintf(err_msg, cb_err_msg, "unsupported color_type (%lu) or bit_depth (%s)\n", color_type, c_bit_depth);
 fprintf(stderr, err_msg);
 		return NULL;
 	}

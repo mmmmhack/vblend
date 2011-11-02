@@ -60,6 +60,8 @@ demo/pwd.lua
 demo/lua
 demo/gamelib.lua
 demo/strict.lua
+demo/*.dll
+demo/*.exe
 img/zlib/example
 lua/lua.exe
 lua/luac.exe
