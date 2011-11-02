@@ -1,0 +1,41 @@
+# Makefile.mingw 	:	mingw makefile for libpng
+
+zlib_dir=../zlib
+
+CC=gcc
+SO=dll
+
+#CFLAGS= -DHAVE_CONFIG_H -DPNG_CONFIGURE_LIBPNG -g -O2 -I. -I include -fno-common -DPIC -c
+CFLAGS=-Iinclude -I$(zlib_dir) -W -Wall -O3 -funroll-loops -DPNG_NO_MMX_CODE -fomit-frame-pointer
+
+objs= \
+ png.o \
+ pngerror.o \
+ pnggccrd.o \
+ pngget.o \
+ pngmem.o \
+ pngpread.o \
+ pngread.o \
+ pngrio.o \
+ pngrtran.o \
+ pngrutil.o \
+ pngset.o \
+ pngtest.o \
+ pngtrans.o \
+ pngvcrd.o \
+ pngwio.o \
+ pngwrite.o \
+ pngwtran.o \
+ pngwutil.o
+
+all : libpng.$(SO)
+
+libpng.$(SO) : $(objs)
+	$(CC) -o $@ -shared $(objs) -Wl,--out-implib=libpng.dll.a $(zlib_dir)/zlib1.$(SO)
+
+%.o : %.c
+	$(CC) -o $@ $(CFLAGS) -c $<
+
+clean :
+	-rm *.o *.$(SO)
+

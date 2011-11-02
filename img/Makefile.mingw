@@ -1,0 +1,21 @@
+# Makefile.mingw: mingw makefile for img lib
+
+CC=gcc
+CFLAGS+=-g -Wall -Izlib -Ilibpng/include 
+SO=dll
+
+all: subdirs img.$(SO)
+
+img.$(SO): img.o
+	$(CC) -o $@ -shared img.o libpng/libpng.$(SO)
+
+img.o: img.c
+	$(CC) -o $@ $(CFLAGS) -c $<
+
+clean: subdirs
+	-rm *.o *.$(SO)
+
+subdirs:
+	cd zlib && make -f Makefile.mingw $(MAKECMDGOALS)
+	cd libpng && make -f Makefile.mingw $(MAKECMDGOALS)
+
