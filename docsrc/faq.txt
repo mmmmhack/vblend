@@ -1,0 +1,6 @@
+gamelib FAQ
+
+1. Q: gamelib.window_closed() returns true even though I never closed the window, why?
+
+	 A: Make sure you are callng gamelib.update() each time in the game loop to get 
+	 the correct state of the window.

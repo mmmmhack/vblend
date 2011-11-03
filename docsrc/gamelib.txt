@@ -27,10 +27,30 @@ to run on GNU/Linux, Mac OSX and Windows platforms.
                                                         *gamelib*
 1. gamelib
 
-Reference for the gamelib module. Below are the documented public functions
-for the gamelib framework.
+|input|
+|functions|
+|drawing|
+|game_loop|
+|examples|
+
+                                                        *input*
+INPUT
+
+See the |glfw| for handling input.
+
+                                                        *functions*
 
 FUNCTIONS
+
+Function reference for the gamelib module. Below are the documented public functions
+for the gamelib framework.
+
+|draw_rect|
+|open_window|
+|update|
+|win_width|
+|win_height|
+|window_closed|
 
                                                         *draw_rect*
 draw_rect()	
@@ -38,10 +58,10 @@ draw_rect()
 Draws a rectangle in the screen buffer.
 
 Params:
-	x			number, x position of rectagle lower-left corner
-	y			number, y position of rectagle lower-left corner
-	w			number, width of rectangle
-	h			number, height of rectangle
+	x			type: number, descrip: x position of rectagle lower-left corner
+	y			type: number, descrip: y position of rectagle lower-left corner
+	w			type: number, descrip: width of rectangle
+	h			type:	number, descrip: height of rectangle
 
 Returns:
 	nil
@@ -64,7 +84,11 @@ in orthographic mode, with (left, right, bot, top) = (0, width, 0, height)
 and (near, far) = (-1, 1).
 
 Params:
-	[title]		string, caption to be displayed in the window title area
+	title		
+					type: 		string 
+					descrip: 	caption to be displayed in the window title area
+					optional:	true
+					default:	'Game'
 
 Returns:
 	nil
@@ -102,7 +126,7 @@ Params:
 	None
 
 Returns:
-	width, number
+	width 		type: number
 
 See Also:
 	|win_height|
@@ -116,7 +140,7 @@ Params:
 	None
 
 Returns:
-	height, number
+	height 		type: number
 
 See Also:
 	|win_width|
@@ -131,7 +155,8 @@ Params:
 	None
 
 Returns:
-	boolean: true if window closed, else false.
+	flag		type: 		boolean
+					descrip:  true if window closed, else false.
 	
 See Also:
 	|open_window|
@@ -140,7 +165,25 @@ See Also:
                                                         *glfw*
 2. glfw
 
+glfw is lua wrapper around the glfw C library. See glfwrm.txt and glfwum.txt
+for additional documentation of the C library.
+
+*functions*
+
+*getKey*
+
+Returns the state of a specific keyboard key.
+
+Params:
+	key_code		type: 		number
+							descrip:	glfw.GLFW_KEY_XXX (see keycodes table TODO: create table)
+
+Returns:
+	state				type:			number
+							descrip:	glfw.GLFW_PRESS if key down, else glfw.GLFW_RELEASE
+
 ==============================================================================
+
                                                         *gl*
 3. gl
 

@@ -4133,6 +4133,60 @@ Back on macbook, adding missing demo/res dir.
 Back on mingw, both pong and hello demos work.
 </p>
 
+<h2>2011-11-03</h2>
+
+<p>
+Back on macbook, starting on joystick inputs. First, I want to create
+new glfw text docs from the glfw-2.7.2 src. They are in LaTex format,
+should be a simple way to convert to text I'm hoping...
+</p>
+
+<p>
+Downloading Ian Hutchison's TtH and checking it out. Once in html, think
+I have a good html2ascii converter.. html2markdown I believe...
+</p>
+
+<p>
+Looked at it, pretty incomprensible lex-generated C code, compiled it, tried it out on 
+glfw ref manual, works great! Now converting to ascii with html2markdown...
+</p>
+
+<p>
+Crap, that's failing, not sure if I'm using the right version.
+</p>
+
+<p>
+Cool, after running the 2.39 version and also seeing it fail on 0xad bytes,
+I just deleted those in vim and it completed.
+</p>
+
+<p>
+Looks good, next, trying to get a good markdown syntax file in vim that works
+with it, tried plasticboy mkd.vim but didn't work right. I just need to learn
+vim syntax creation myself soon.
+</p>
+
+<p>
+Working on show_js_params.lua in test/joystick directory, ran into a new
+problem where all the shared libs can't load, even after setting package.cpath,
+because they all are referenced in 'current directory'. Will think about a
+solution but for now, will just develop test apps in the dist dir.
+</p>
+
+<p>
+Lovely, looks like the joystick isn't being detected on my macbook. I _really_
+hope this is fixable, after all the trouble I went to to develop this cross-platform
+gamelib.
+</p>
+
+<p>
+Google time, there is a shareware usb driver, usb overdrive, that will probably
+work but I want an opensource solution.
+</p>
+
+<p>
+There is this, at the very least: http://xhd.sourceforge.net/
+</p>
 
 </body>
 </html>
