@@ -1,5 +1,6 @@
 #ifndef __sys_h_
 #define __sys_h_
+#include <unistd.h>
 #include <time.h>
 
 int sys_chdir(const char* path);
@@ -29,5 +30,7 @@ struct timespec sys_timespec_sub(const struct timespec* x, const struct timespec
 struct timespec sys_timespec_min(const struct timespec* x, const struct timespec* y);
 struct timespec sys_timespec_max(const struct timespec* x, const struct timespec* y);
 #endif // HAVE_TIMESPEC
+
+void sys_usleep(useconds_t sleep_time);
 
 #endif // __sys_h_

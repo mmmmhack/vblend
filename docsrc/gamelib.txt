@@ -1,31 +1,6 @@
-Gamelib Documentation
-
-|Introduction|
-|Installing|
-|Quick_Start|
-|Reference|
-|Demos|
-
-*Introduction*
-
-Gamelib is a simple computer game development library created in lua by William Knight <william.knight@gmail.com>.
-It is open source and cross-platform. It relies on OpenGL and the glfw framework and is intended
-to run on GNU/Linux, Mac OSX and Windows platforms.
-
-*Quick_Start*
-
-*Installing*
-
-*Reference*
-
-1. gamelib 
-2. glfw
-3. gl
-4. TODO: glu
-
 ==============================================================================
                                                         *gamelib*
-1. gamelib
+gamelib
 
 |input|
 |functions|
@@ -36,7 +11,7 @@ to run on GNU/Linux, Mac OSX and Windows platforms.
                                                         *input*
 INPUT
 
-See the |glfw| for handling input.
+See |glfw| for handling input.
 
                                                         *functions*
 
@@ -160,36 +135,6 @@ Returns:
 	
 See Also:
 	|open_window|
-
-==============================================================================
-                                                        *glfw*
-2. glfw
-
-glfw is lua wrapper around the glfw C library. See glfwrm.txt and glfwum.txt
-for additional documentation of the C library.
-
-*functions*
-
-*getKey*
-
-Returns the state of a specific keyboard key.
-
-Params:
-	key_code		type: 		number
-							descrip:	glfw.GLFW_KEY_XXX (see keycodes table TODO: create table)
-
-Returns:
-	state				type:			number
-							descrip:	glfw.GLFW_PRESS if key down, else glfw.GLFW_RELEASE
-
-==============================================================================
-
-                                                        *gl*
-3. gl
-
-*Demos*
-
-Demos are located in the demos subdirectory.
 
 
  vim:tw=78:sw=4:ts=2:ft=help:norl

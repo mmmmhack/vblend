@@ -1,0 +1,24 @@
+==============================================================================
+                                                        *glfw*
+2. glfw
+
+glfw is lua wrapper around the glfw C library. See glfwrm.txt and glfwum.txt
+for additional documentation of the C library.
+
+*functions*
+
+                                                        *getKey*
+getKey()
+
+Returns the state of a specific keyboard key.
+
+Params:
+	key_code		type: 		number
+							descrip:	glfw.GLFW_KEY_XXX (see keycodes table TODO: create table)
+
+Returns:
+	key_state		type:			number
+							descrip:	glfw.GLFW_PRESS if key down, else glfw.GLFW_RELEASE
+
+
+ vim:tw=78:sw=4:ts=2:ft=help:norl

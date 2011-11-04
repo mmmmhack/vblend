@@ -230,3 +230,8 @@ struct timespec sys_timespec_max(const struct timespec* x, const struct timespec
     return *y;
 }
 #endif // HAVE_TIMESPEC
+
+void sys_usleep(useconds_t sleep_time) {
+	usleep(sleep_time);
+}
+

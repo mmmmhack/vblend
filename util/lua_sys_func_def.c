@@ -21,3 +21,10 @@ static int lw_getcwd(lua_State* L) {
   lua_pushstring(L, ret_val);
   return 1;
 }
+static int lw_usleep(lua_State* L) {
+  useconds_t sleep_time = lua_tonumber(L, -1);
+  sys_usleep(
+    sleep_time
+  );
+  return 0;
+}

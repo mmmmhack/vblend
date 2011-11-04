@@ -1,0 +1,44 @@
+==============================================================================
+                                                        *sys*
+sys
+
+|purpose|
+|functions|
+
+                                                        *purpose*
+PURPOSE
+
+This module contains general-purpose and utility functions.
+
+                                                        *functions*
+
+FUNCTIONS
+
+Function reference for the sys module.
+
+|double_time|
+|usleep|
+
+                                                        *double_time*
+double_time()
+
+Returns the current system time in seconds.
+
+Params:
+	none
+
+Returns:
+	cur_time	type: number
+
+                                                        *usleep*
+usleep()
+
+Sleeps for param micro-seconds.
+
+Params:
+	sleep_time	type: number
+
+Returns:
+	none
+
+ vim:tw=78:sw=4:ts=2:ft=help:norl

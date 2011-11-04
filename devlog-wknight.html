@@ -4188,6 +4188,35 @@ work but I want an opensource solution.
 There is this, at the very least: http://xhd.sourceforge.net/
 </p>
 
+<h2>2011-11-04</h2>
+
+<p>
+Another fine Friday has come around. Continuing on the paddle demo, which I'll
+use to update the current pong demo into an actual game. Might start investigating
+sound at some point, which might turn out to be easier than getting the joystick
+to work at this point (tried detecting the Logitech game pad in win32, no luck there
+either, even though the OS recognized it).
+</p>
+
+<p>
+Adding code to produce 60 fps in paddle.lua. On mingw, there is no nanosleep, but
+there is usleep (in unistd.h). Hmm, there is usleep on mac as well, wonder why it's
+not mentioned in the gnu libc.txt docs. Will check on gnu/linux.
+</p>
+
+<p>
+It's got it there, that's what I'll use.
+</p>
+
+<p>
+Running into annoying lua path issues again, think I might start setting an
+env var for development.
+</p>
+
+<p>
+Added sys.usleep(), used it in paddle.lua, it now has 60 fps rate.
+</p>
+
 </body>
 </html>
 

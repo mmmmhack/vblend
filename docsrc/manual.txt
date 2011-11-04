@@ -1,0 +1,36 @@
+==============================================================================
+manual.txt
+
+Gamelib Documentation
+
+|Introduction|
+|Installing|
+|Quick_Start|
+|Reference|
+|Demos|
+
+*Introduction*
+
+Gamelib is a simple computer game development library created in lua by William Knight <william.knight@gmail.com>.
+It is open source and cross-platform. It relies on OpenGL and the glfw framework and is intended
+to run on GNU/Linux, Mac OSX and Windows platforms.
+
+*Quick_Start*
+
+*Installing*
+
+*Reference*
+
+|gamelib|
+|sys|
+|glfw|
+|gl|
+TODO: glu
+
+==============================================================================
+*Demos*
+
+Demos are located in the demos subdirectory.
+
+
+ vim:tw=78:sw=4:ts=2:ft=help:norl
