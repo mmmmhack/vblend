@@ -4230,6 +4230,45 @@ it is complicated and takes me a long time. I get the initial implementation don
 but there are bugs. I will create some unit tests to shake it out.
 </p>
 
+<p>
+Later at home, after good programming sesh with Sam. Would like to get the collision
+detection working, wrote a couple of unit tests so far, will write a few more
+before just cracking out the debugger.
+</p>
+
+<h2>2011-11-06</h2>
+
+<p>
+Sunday, up way too early, but there it is. Added some more unit tests to the collision
+functions but no joy yet. Now, will just output some info on the collisions
+</p>
+
+<p>
+Did it, will plug these values into a unit test case:
+</p>
+<pre>
+mhackslab:dist $ r
+paddle geom: 600, 400, 40, 100
+ball geom: 620, 520, 30, 30
+--- ball edge intersects:
+  x1: 0, x2: 1
+
+  y1: 1, y2: 1
+</pre>
+
+<p>
+Ok, that did it, just needed a simple fix to geom.get_edge_intersects(), I was
+interpreting boundary intersections as value 1 when they are actually value 0.
+The ball-paddle collisions now work, but still not good enough for real game
+play. Simple mirror-rebound doesn't give good action off paddle, the angle
+needs to vary depending on collision position along paddle. But that is
+something Sam and I can work on together.
+</p>
+
+<p>
+Now, maybe I'll start investigating sound libs.
+</p>
+
 </body>
 </html>
 
