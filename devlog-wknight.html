@@ -4269,6 +4269,63 @@ something Sam and I can work on together.
 Now, maybe I'll start investigating sound libs.
 </p>
 
+<p>
+Read the pyglet docs, will checkout openal.
+</p>
+
+<p>
+Uh, maybe openal soft, I've been down this road before, openal is a creative labs
+product and open source status and availability is dubious.
+</p>
+
+<p>
+Initial attempt at building older version of openal-soft fails:
+</p>
+<pre>
+...
+[ 90%] Building C object CMakeFiles/openal.dir/Alc/bs2b.o
+[ 95%] Building C object CMakeFiles/openal.dir/Alc/wave.o
+Linking C shared library libopenal.dylib
+ld: malformed version number: 1.12.854
+collect2: ld returned 1 exit status
+make[2]: *** [libopenal.1.12.854.dylib] Error 1
+make[1]: *** [CMakeFiles/openal.dir/all] Error 2
+make: *** [all] Error 2
+mhackslab:build $ 
+</pre>
+
+<p>
+Next, will try version 1.13.
+</p>
+
+<p>
+Yay:
+</p>
+<pre>
+...
+Linking C shared library libopenal.dylib
+[ 96%] Built target openal
+Scanning dependencies of target openal-info
+[100%] Building C object CMakeFiles/openal-info.dir/utils/openal-info.o
+/Users/williamknight/swtools/audio/openal-soft/openal-soft-1.13/utils/openal-info.c: In function ‘main’:
+/Users/williamknight/swtools/audio/openal-soft/openal-soft-1.13/utils/openal-info.c:332: warning: internal and protected visibility attributes not supported in this configuration; ignored
+Linking C executable openal-info
+[100%] Built target openal-info
+mhackslab:build $ 
+</pre>
+
+<h2>2011-11-19</h2>
+
+<p>
+Long hiatus, much going on. Been working on some test openal projects on macbook recently,
+but no sound is coming out. Will perhaps start on some 3D stuff today for demo for Sam.
+Would be nice to quickly whip out some 3D matrix libs in C and lua.
+</p>
+
+<p>
+Looking here: http://lua-users.org/wiki/LibrariesAndBindinga. Will checkout luamatrix.
+</p>
+
 </body>
 </html>
 

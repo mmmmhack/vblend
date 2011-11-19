@@ -6,9 +6,11 @@ return {
   ['glColor3f']=true,
   ['glColor4f']=true,
   ['glEnd']=true,
+  ['glFrustum']=true,
   ['glLoadIdentity']=true,
   ['glMatrixMode']=true,
   ['glOrtho']=true,
+  ['glTranslatef']=true,
   ['glVertex2f']=true,
   ['glVertex3f']=true,
 }
