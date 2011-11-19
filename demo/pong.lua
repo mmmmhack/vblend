@@ -1,6 +1,8 @@
 -- pong.lua	:	demo pong game
 require('gamelib')
+require('geom')
 
+local update_enabled = true
 local fps = 60
 local frm_time = 1.0 / fps
 
@@ -69,97 +71,17 @@ function update_paddle()
 	end
 end
 
-function get_boundary_intersects(r1, r2)
-	local isc = {
-		[1] = {
-			[1] = 0,
-			[2] = 0,
-		},
-		[2] = {
-			[1] = 0,
-			[2] = 0,
-		},
-	}
-	local r1x1 = r1.pos.x
-	local r1x2 = r1.pos.x + r1.w
-	local r2x1 = r2.pos.x
-	local r2x2 = r2.pos.x + r2.w
-	if r1x1 < r2x1 then
-		isc[1][1] = -1
-	elseif r1x1 > r2x2 then
-		isc[1][1] =  1
-	end
-	if r1x2 < r2x1 then
-		isc[1][2] = -1
-	elseif r1x2 > r2x2 then
-		isc[1][2] =  1
-	end
-	local r1y1 = r1.pos.y
-	local r1y2 = r1.pos.y + r1.h
-	local r2y1 = r2.pos.y
-	local r2y2 = r2.pos.y + r2.h
-	if r1y1 < r2y1 then
-		isc[2][1] = -1
-	elseif r1y1 > r2y2 then
-		isc[2][1] =  1
-	end
-	if r1y2 < r2y1 then
-		isc[2][2] = -1
-	elseif r1y2 > r2y2 then
-		isc[2][2] =  1
-	end
-	return isc
-end
-
-function get_edge_intersects(r1, r2)
-	local intersects = {
-		[1] = {
-			[1] = 0,
-			[2] = 0,
-		},
-		[2] = {
-			[1] = 0,
-			[2] = 0,
-		},
-	}
-	local bi = get_boundary_intersects(r1, r2)
-	for dim = 1, 2 do
-		local other_dim = dim == 1 and 2 or 1
-		for edge = 1, 2 do
-			-- first condition: edge 'boundary' must intersect other rect edge boundaries
-			if bi[dim][edge] == 1 then
-				-- second condition: other-dim boundaries:
-				--		(lower boundary intersect OR upper boundary intersect) OR
-				if (bi[other_dim][1] ==  1  or bi[other_dim][2] == 1) or
-				--    (lower boundary below AND upper boundary above)
-					 (bi[other_dim][1] == -1 and bi[other_dim][2] == 1)
-					then
-						intersects[dim][edge] = 1
-				end
-			end
-		end
-	end
-	return intersects
-end
-
-function get_edge_intersect_counts(edge_intersects)
-	local counts = {
-		x = 0,
-		y = 0,
-	}
-	for dim = 1, 2 do
-		for edge = 1, 2 do
-			local isc = edge_intersects[dim][edge]
-			if isc == 1 then
-				if dim == 1 then
-					counts.x = counts.x + 1
-				else
-					counts.y = counts.y + 1
-				end
-			end
-		end
-	end
-	return counts
+function dump_intersects()
+	local bbi = geom.get_boundary_intersects(ball, paddle)
+	local bei = geom.get_edge_intersects(ball, paddle)
+	print(string.format("  ball geom: %d, %d, %d, %d", ball.pos.x, ball.pos.y, ball.w, ball.h))
+	print(string.format("paddle geom: %d, %d, %d, %d", paddle.pos.x, paddle.pos.y, paddle.w, paddle.h))
+	print("--- ball boundary intersects:")
+	print(string.format("  x1: %d, x2: %d\n", bbi[1][1], bbi[1][2]))
+	print(string.format("  y1: %d, y2: %d\n", bbi[2][1], bbi[2][2]))
+	print("--- ball edge intersects:")
+	print(string.format("  x1: %d, x2: %d\n", bei[1][1], bei[1][2]))
+	print(string.format("  y1: %d, y2: %d\n", bei[2][1], bei[2][2]))
 end
 
 function update_ball()
@@ -178,10 +100,12 @@ function update_ball()
   end
 
 	-- paddle collision
-	local bei = get_edge_intersects(ball, paddle)
-	local ic = get_edge_intersect_counts(bei)
+	local bei = geom.get_edge_intersects(ball, paddle)
+	local ic = geom.get_edge_intersect_counts(bei)
 
 	if 		 ic.x == 1 then
+--dump_intersects()		
+--update_enabled = false
     ball.xdir = -ball.xdir
 		if ic.y == 1 then
     	ball.ydir = -ball.ydir
@@ -207,10 +131,12 @@ function main()
 		do_input()
 
 		-- update paddle pos
-		update_paddle()
+		if update_enabled then
+			update_paddle()
 
-		-- update ball
-		update_ball()
+			-- update ball
+			update_ball()
+		end
 
 		-- check for quit
 		gamelib.update()

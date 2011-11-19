@@ -4230,6 +4230,102 @@ it is complicated and takes me a long time. I get the initial implementation don
 but there are bugs. I will create some unit tests to shake it out.
 </p>
 
+<p>
+Later at home, after good programming sesh with Sam. Would like to get the collision
+detection working, wrote a couple of unit tests so far, will write a few more
+before just cracking out the debugger.
+</p>
+
+<h2>2011-11-06</h2>
+
+<p>
+Sunday, up way too early, but there it is. Added some more unit tests to the collision
+functions but no joy yet. Now, will just output some info on the collisions
+</p>
+
+<p>
+Did it, will plug these values into a unit test case:
+</p>
+<pre>
+mhackslab:dist $ r
+paddle geom: 600, 400, 40, 100
+ball geom: 620, 520, 30, 30
+--- ball edge intersects:
+  x1: 0, x2: 1
+
+  y1: 1, y2: 1
+</pre>
+
+<p>
+Ok, that did it, just needed a simple fix to geom.get_edge_intersects(), I was
+interpreting boundary intersections as value 1 when they are actually value 0.
+The ball-paddle collisions now work, but still not good enough for real game
+play. Simple mirror-rebound doesn't give good action off paddle, the angle
+needs to vary depending on collision position along paddle. But that is
+something Sam and I can work on together.
+</p>
+
+<p>
+Now, maybe I'll start investigating sound libs.
+</p>
+
+<p>
+Read the pyglet docs, will checkout openal.
+</p>
+
+<p>
+Uh, maybe openal soft, I've been down this road before, openal is a creative labs
+product and open source status and availability is dubious.
+</p>
+
+<p>
+Initial attempt at building older version of openal-soft fails:
+</p>
+<pre>
+...
+[ 90%] Building C object CMakeFiles/openal.dir/Alc/bs2b.o
+[ 95%] Building C object CMakeFiles/openal.dir/Alc/wave.o
+Linking C shared library libopenal.dylib
+ld: malformed version number: 1.12.854
+collect2: ld returned 1 exit status
+make[2]: *** [libopenal.1.12.854.dylib] Error 1
+make[1]: *** [CMakeFiles/openal.dir/all] Error 2
+make: *** [all] Error 2
+mhackslab:build $ 
+</pre>
+
+<p>
+Next, will try version 1.13.
+</p>
+
+<p>
+Yay:
+</p>
+<pre>
+...
+Linking C shared library libopenal.dylib
+[ 96%] Built target openal
+Scanning dependencies of target openal-info
+[100%] Building C object CMakeFiles/openal-info.dir/utils/openal-info.o
+/Users/williamknight/swtools/audio/openal-soft/openal-soft-1.13/utils/openal-info.c: In function ‘main’:
+/Users/williamknight/swtools/audio/openal-soft/openal-soft-1.13/utils/openal-info.c:332: warning: internal and protected visibility attributes not supported in this configuration; ignored
+Linking C executable openal-info
+[100%] Built target openal-info
+mhackslab:build $ 
+</pre>
+
+<h2>2011-11-19</h2>
+
+<p>
+Long hiatus, much going on. Been working on some test openal projects on macbook recently,
+but no sound is coming out. Will perhaps start on some 3D stuff today for demo for Sam.
+Would be nice to quickly whip out some 3D matrix libs in C and lua.
+</p>
+
+<p>
+Looking here: http://lua-users.org/wiki/LibrariesAndBindinga. Will checkout luamatrix.
+</p>
+
 </body>
 </html>
 

@@ -51,8 +51,36 @@ static int lw_ortho(lua_State* L) {
   );
   return 0;
 }
+static int lw_frustum(lua_State* L) {
+  GLdouble left = lua_tonumber(L, -6);
+  GLdouble right = lua_tonumber(L, -5);
+  GLdouble bottom = lua_tonumber(L, -4);
+  GLdouble top = lua_tonumber(L, -3);
+  GLdouble near_val = lua_tonumber(L, -2);
+  GLdouble far_val = lua_tonumber(L, -1);
+  glFrustum(
+    left,
+    right,
+    bottom,
+    top,
+    near_val,
+    far_val
+  );
+  return 0;
+}
 static int lw_loadIdentity(lua_State* L) {
   glLoadIdentity(
+  );
+  return 0;
+}
+static int lw_translatef(lua_State* L) {
+  GLfloat x = lua_tonumber(L, -3);
+  GLfloat y = lua_tonumber(L, -2);
+  GLfloat z = lua_tonumber(L, -1);
+  glTranslatef(
+    x,
+    y,
+    z
   );
   return 0;
 }

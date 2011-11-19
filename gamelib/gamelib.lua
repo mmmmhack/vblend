@@ -6,6 +6,7 @@ package.loaded[modname] = M
 
 require('strict')
 require('lua_gl')
+require('lua_glu')
 require('lua_glfw')
 require('lua_sys')
 

@@ -1,0 +1,25 @@
+# Mac OSX Makefile for glu lua wrapper
+
+lua_dir = ../lua
+glfw_dir = ../glfw/libglfw
+
+CC=gcc
+CFLAGS += -O0 -g -Wall
+SO=so
+lua_libs=
+
+includes= \
+ -I$(glfw_dir)/include \
+ -I$(lua_dir)/include
+ 
+all: lua_glu.$(SO)
+
+lua_glu.$(SO): lua_glu.o
+	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< $(lua_libs) -framework Cocoa -framework OpenGL
+
+lua_glu.o: constant_defs.c lua_glu_func_def.c lua_glu_func_reg.c lua_glu.c 
+	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glu.c
+
+clean:
+	rm -f *.o *.$(SO)
+
