@@ -22,7 +22,8 @@ $(PREFIX):
 	mkdir $(PREFIX)
 
 install : $(PREFIX)
-	$(CP) $(lua_dir)/lua$(EXE) $(lua_libs) $(PREFIX)/
+	$(CP) $(lua_dir)/lua$(EXE) $(PREFIX)/
+	$(CP) $(lua_libs) $(PREFIX)/
 	$(CP) gl/*.$(SO) $(PREFIX)/
 	$(CP) glfw/*.$(SO) $(PREFIX)/
 	$(CP) glfw/libglfw/*.$(SO) $(PREFIX)/
