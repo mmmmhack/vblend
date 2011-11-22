@@ -35,7 +35,7 @@ M._fps = -1;
 --  * 800x600 window size
 --  * ortho projection
 --  * color depth: ?
-M.open_window = function()
+M.open_window = function(title)
 	local rc = glfw.init()
   if rc ~= gl.GL_TRUE then
     error(string.format("glfw.init() failed, rc: %d", rc))
@@ -57,6 +57,10 @@ M.open_window = function()
     error(string.format("glfw.openWindow() failed, rc: %d", rc))
   end
   M.win_open = true
+
+  if title ~= nil then
+	M.win_defaults.title = title
+  end
 
   -- set default ortho project
 	gl.matrixMode(gl.GL_PROJECTION)
