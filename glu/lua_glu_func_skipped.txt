@@ -75,100 +75,97 @@
  void  gluLoadSamplingMatrices (GLUnurbs* nurb, const GLfloat *model, const GLfloat *perspective, const GLint *view);
 --- skipped decl 26 (not in selfuncs list):
 
- void  gluLookAt (GLdouble eyeX, GLdouble eyeY, GLdouble eyeZ, GLdouble centerX, GLdouble centerY, GLdouble centerZ, GLdouble upX, GLdouble upY, GLdouble upZ);
+ GLUnurbs*  gluNewNurbsRenderer (void);
 --- skipped decl 27 (not in selfuncs list):
 
- GLUnurbs*  gluNewNurbsRenderer (void);
+ GLUquadric*  gluNewQuadric (void);
 --- skipped decl 28 (not in selfuncs list):
 
- GLUquadric*  gluNewQuadric (void);
+ GLUtesselator*  gluNewTess (void);
 --- skipped decl 29 (not in selfuncs list):
 
- GLUtesselator*  gluNewTess (void);
+ void  gluNextContour (GLUtesselator* tess, GLenum type);
 --- skipped decl 30 (not in selfuncs list):
 
- void  gluNextContour (GLUtesselator* tess, GLenum type);
+ void  gluNurbsCallback (GLUnurbs* nurb, GLenum which, _GLUfuncptr CallBackFunc);
 --- skipped decl 31 (not in selfuncs list):
 
- void  gluNurbsCallback (GLUnurbs* nurb, GLenum which, _GLUfuncptr CallBackFunc);
+ void  gluNurbsCallbackData (GLUnurbs* nurb, GLvoid* userData);
 --- skipped decl 32 (not in selfuncs list):
 
- void  gluNurbsCallbackData (GLUnurbs* nurb, GLvoid* userData);
+ void  gluNurbsCallbackDataEXT (GLUnurbs* nurb, GLvoid* userData);
 --- skipped decl 33 (not in selfuncs list):
 
- void  gluNurbsCallbackDataEXT (GLUnurbs* nurb, GLvoid* userData);
+ void  gluNurbsCurve (GLUnurbs* nurb, GLint knotCount, GLfloat *knots, GLint stride, GLfloat *control, GLint order, GLenum type);
 --- skipped decl 34 (not in selfuncs list):
 
- void  gluNurbsCurve (GLUnurbs* nurb, GLint knotCount, GLfloat *knots, GLint stride, GLfloat *control, GLint order, GLenum type);
+ void  gluNurbsProperty (GLUnurbs* nurb, GLenum property, GLfloat value);
 --- skipped decl 35 (not in selfuncs list):
 
- void  gluNurbsProperty (GLUnurbs* nurb, GLenum property, GLfloat value);
+ void  gluNurbsSurface (GLUnurbs* nurb, GLint sKnotCount, GLfloat* sKnots, GLint tKnotCount, GLfloat* tKnots, GLint sStride, GLint tStride, GLfloat* control, GLint sOrder, GLint tOrder, GLenum type);
 --- skipped decl 36 (not in selfuncs list):
 
- void  gluNurbsSurface (GLUnurbs* nurb, GLint sKnotCount, GLfloat* sKnots, GLint tKnotCount, GLfloat* tKnots, GLint sStride, GLint tStride, GLfloat* control, GLint sOrder, GLint tOrder, GLenum type);
+ void  gluOrtho2D (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top);
 --- skipped decl 37 (not in selfuncs list):
 
- void  gluOrtho2D (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top);
+ void  gluPartialDisk (GLUquadric* quad, GLdouble inner, GLdouble outer, GLint slices, GLint loops, GLdouble start, GLdouble sweep);
 --- skipped decl 38 (not in selfuncs list):
 
- void  gluPartialDisk (GLUquadric* quad, GLdouble inner, GLdouble outer, GLint slices, GLint loops, GLdouble start, GLdouble sweep);
+ void  gluPickMatrix (GLdouble x, GLdouble y, GLdouble delX, GLdouble delY, GLint *viewport);
 --- skipped decl 39 (not in selfuncs list):
 
- void  gluPickMatrix (GLdouble x, GLdouble y, GLdouble delX, GLdouble delY, GLint *viewport);
+ GLint  gluProject (GLdouble objX, GLdouble objY, GLdouble objZ, const GLdouble *model, const GLdouble *proj, const GLint *view, GLdouble* winX, GLdouble* winY, GLdouble* winZ);
 --- skipped decl 40 (not in selfuncs list):
 
- GLint  gluProject (GLdouble objX, GLdouble objY, GLdouble objZ, const GLdouble *model, const GLdouble *proj, const GLint *view, GLdouble* winX, GLdouble* winY, GLdouble* winZ);
+ void  gluPwlCurve (GLUnurbs* nurb, GLint count, GLfloat* data, GLint stride, GLenum type);
 --- skipped decl 41 (not in selfuncs list):
 
- void  gluPwlCurve (GLUnurbs* nurb, GLint count, GLfloat* data, GLint stride, GLenum type);
+ void  gluQuadricCallback (GLUquadric* quad, GLenum which, _GLUfuncptr CallBackFunc);
 --- skipped decl 42 (not in selfuncs list):
 
- void  gluQuadricCallback (GLUquadric* quad, GLenum which, _GLUfuncptr CallBackFunc);
+ void  gluQuadricDrawStyle (GLUquadric* quad, GLenum draw);
 --- skipped decl 43 (not in selfuncs list):
 
- void  gluQuadricDrawStyle (GLUquadric* quad, GLenum draw);
+ void  gluQuadricNormals (GLUquadric* quad, GLenum normal);
 --- skipped decl 44 (not in selfuncs list):
 
- void  gluQuadricNormals (GLUquadric* quad, GLenum normal);
+ void  gluQuadricOrientation (GLUquadric* quad, GLenum orientation);
 --- skipped decl 45 (not in selfuncs list):
 
- void  gluQuadricOrientation (GLUquadric* quad, GLenum orientation);
+ void  gluQuadricTexture (GLUquadric* quad, GLboolean texture);
 --- skipped decl 46 (not in selfuncs list):
 
- void  gluQuadricTexture (GLUquadric* quad, GLboolean texture);
+ GLint  gluScaleImage (GLenum format, GLsizei wIn, GLsizei hIn, GLenum typeIn, const void *dataIn, GLsizei wOut, GLsizei hOut, GLenum typeOut, GLvoid* dataOut);
 --- skipped decl 47 (not in selfuncs list):
 
- GLint  gluScaleImage (GLenum format, GLsizei wIn, GLsizei hIn, GLenum typeIn, const void *dataIn, GLsizei wOut, GLsizei hOut, GLenum typeOut, GLvoid* dataOut);
+ void  gluSphere (GLUquadric* quad, GLdouble radius, GLint slices, GLint stacks);
 --- skipped decl 48 (not in selfuncs list):
 
- void  gluSphere (GLUquadric* quad, GLdouble radius, GLint slices, GLint stacks);
+ void  gluTessBeginContour (GLUtesselator* tess);
 --- skipped decl 49 (not in selfuncs list):
 
- void  gluTessBeginContour (GLUtesselator* tess);
+ void  gluTessBeginPolygon (GLUtesselator* tess, GLvoid* data);
 --- skipped decl 50 (not in selfuncs list):
 
- void  gluTessBeginPolygon (GLUtesselator* tess, GLvoid* data);
+ void  gluTessCallback (GLUtesselator* tess, GLenum which, _GLUfuncptr CallBackFunc);
 --- skipped decl 51 (not in selfuncs list):
 
- void  gluTessCallback (GLUtesselator* tess, GLenum which, _GLUfuncptr CallBackFunc);
+ void  gluTessEndContour (GLUtesselator* tess);
 --- skipped decl 52 (not in selfuncs list):
 
- void  gluTessEndContour (GLUtesselator* tess);
+ void  gluTessEndPolygon (GLUtesselator* tess);
 --- skipped decl 53 (not in selfuncs list):
 
- void  gluTessEndPolygon (GLUtesselator* tess);
+ void  gluTessNormal (GLUtesselator* tess, GLdouble valueX, GLdouble valueY, GLdouble valueZ);
 --- skipped decl 54 (not in selfuncs list):
 
- void  gluTessNormal (GLUtesselator* tess, GLdouble valueX, GLdouble valueY, GLdouble valueZ);
+ void  gluTessProperty (GLUtesselator* tess, GLenum which, GLdouble data);
 --- skipped decl 55 (not in selfuncs list):
 
- void  gluTessProperty (GLUtesselator* tess, GLenum which, GLdouble data);
+ void  gluTessVertex (GLUtesselator* tess, GLdouble *location, GLvoid* data);
 --- skipped decl 56 (not in selfuncs list):
 
- void  gluTessVertex (GLUtesselator* tess, GLdouble *location, GLvoid* data);
---- skipped decl 57 (not in selfuncs list):
-
  GLint  gluUnProject (GLdouble winX, GLdouble winY, GLdouble winZ, const GLdouble *model, const GLdouble *proj, const GLint *view, GLdouble* objX, GLdouble* objY, GLdouble* objZ);
---- skipped decl 58 (not in selfuncs list):
+--- skipped decl 57 (not in selfuncs list):
 
  GLint  gluUnProject4 (GLdouble winX, GLdouble winY, GLdouble winZ, GLdouble clipW, const GLdouble *model, const GLdouble *proj, const GLint *view, GLdouble nearVal, GLdouble farVal, GLdouble* objX, GLdouble* objY, GLdouble* objZ, GLdouble* objW);

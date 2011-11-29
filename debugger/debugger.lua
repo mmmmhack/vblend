@@ -1,4 +1,6 @@
 -- debugger.lua : implements a simple lua debugger
+-- call 'debug_console() from client code to enter debugger
+
 local M = {}
 local modname = ...
 _G[modname] = M
@@ -8,7 +10,7 @@ M._version = "0.1"
 M._first_time = true
 M._break_src = nil
 M._break_line = nil
-M._target_offset = nil -- level of debuggee function when breakpoint hit, relative to bottom of stack
+M._target_offset_from_top = nil -- level of debuggee function when breakpoint hit, relative to top of stack
 
 M.print_help = function ()
   print("--- commands:");
@@ -17,6 +19,7 @@ M.print_help = function ()
   print("  o             :    print all local variables");
   print("  u             :    print all upvalue variables");
   print("  p EXPR        :    print value of expression");
+  print("  s             :    step one instruction");
   print("  t             :    show current location");
   print("  w             :    show backtrace");
   print("  q             :    quit program");
@@ -58,7 +61,7 @@ M.check_breakpoints = function (event, line)
 --print(string.format("checking line[%s:%d]", src_line, line))
   if src_line == M._break_src and info.currentline == M._break_line then
     print("breakpoint hit!")
-    debug_console(true)
+    debug_console()
   end
 end
 
@@ -336,7 +339,7 @@ M.base_name = function(path)
 end
 
 -- returns count of stack levels from bottom up to level with param source file name
-M.count_up_to_src_level = function(src_name)
+M.count_src_levels = function(src_name)
   local cnt = 0
   local bot_level = M.getinfo_bottom()
   local n = bot_level
@@ -402,7 +405,7 @@ end
 
 -- returns the absolute stack level of the target debugging function
 M.target_level = function()
-  return M.getinfo_bottom() - M.target_offset
+  return M.getinfo_bottom() - M._target_offset_from_top
 end
 
 -- prints debug info for the target stack level
@@ -413,38 +416,56 @@ M.print_target_level = function()
   local src = string.sub(info.source, 2)
   local line = info.currentline
   print(string.format("%2d [%s:%d] (%s)", 1, src, line, func))
---print(string.format("bot level: %d, target_offset: %d, target_level: %d", M.getinfo_bottom(), M.target_offset, target_level))
+end
+
+-- entered on 'step' command
+M.instruction_executed = function()
+  local level = 2   -- non-hook lua code is 2 stack levels above this function
+  local info = debug.getinfo(level, 'Sl')
+  if info.source ~= '@./debugger.lua' then
+    debug.sethook()
+    debug_console()
+  end
+end
+
+-- steps a single line of target code
+M.step_instruction = function()
+  debug.sethook(M.instruction_executed, "l")
+end
+
+-- entered on 'next' command
+M.next_instruction_executed = function()
+--traceback(true)
+--  local bot_level = M.getinfo_bottom()
+--  local non_hook_level = bot_level - 2   -- non-hook lua code is 2 stack levels above this function
+--print(string.format("---next_instruction: bot_level: %d, non_hook_level: %d, target_level: %d",
+-- bot_level, non_hook_level, M.target_level()))
+  -- break when target level is at 'top' of stack, not counting the 'hook' levels
+  if M.target_level() == 2 then
+    debug.sethook()
+    debug_console()
+  end
+--local info = debug.getinfo(2, 'Sl')
+--if info.source ~= '@./debugger.lua' then
+--  debug.sethook()
+--  debug_console()
+--end
+end
+
+-- breaks on next line of target code in current function
+M.next_instruction = function()
+  debug.sethook(M.next_instruction_executed, "l")
 end
 
 -- interactive debugging console
-function debug_console(print_traceback)
+function debug_console()
   if M._first_time then
     print("--- lua debug console version " .. M._version)
     M._first_time = false
   end
 
-  M.target_offset = M.count_up_to_src_level('debugger.lua')
-
---[[
-  local print_traceback = false
-  local bot_level = M.getinfo_bottom()
-  local cur_level = M.getinfo_level('debug_console')
-  if cur_level then
-    M.target_offset = bot_level - (cur_level + 2)  -- getinfo() stack level of target function, relative to bottom level (2 levels above debug_consol())
-  else
-    M.target_offset = nil
-  end
---]]
-  -- count stack levels of debugger file, target level will be first non-debugger level
---[[
-  if true or print_traceback then
-    print(string.format("--- BEG debug_console(): bot_level: %s, cur_level: %s, M.target_offset: %s", 
-      tostring(bot_level), tostring(cur_level), tostring(M.target_offset)))
-    traceback()
-    M.print_target_level()
-  end
-]]
-M.print_target_level()
+  M._target_offset_from_top = M.count_src_levels('debugger.lua')
+  M.print_target_level()
 
   local get_input = true
   while get_input do
@@ -458,6 +479,9 @@ M.print_target_level()
         get_input = false;
       elseif c == 'b' then
         M.set_breakpoint(string.sub(ln, 2))
+      elseif c == 'n' then
+        M.next_instruction()
+        get_input = false;
       elseif c == 'o' then
         M.dump_locals()
       elseif c == 'u' then
@@ -465,6 +489,9 @@ M.print_target_level()
       elseif c == 'p' then
         local expr = M.trim(string.sub(ln, 2))
         M.print_expr(expr)
+      elseif c == 's' then
+        M.step_instruction()
+        get_input = false;
       elseif c == 't' then
         M.print_target_level()
       elseif c == 'w' then

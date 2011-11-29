@@ -4326,9 +4326,57 @@ Would be nice to quickly whip out some 3D matrix libs in C and lua.
 Looking here: http://lua-users.org/wiki/LibrariesAndBindinga. Will checkout luamatrix.
 </p>
 
+<h2>2011-11-21</h2>
+
 <p>
 Got openal working on make by skipping openal-soft and linking with openal framework instead.
 Not ideal, but it's progress.
+</p>
+
+<h2>2011-11-22</h2>
+
+<p>
+Up early, at 5 am. But I have to get to work earlier now too. Getting started on audio
+stuff.
+</p>
+
+<p>
+Wrote test prog 'enumdevices', tried it with both openal-soft and openalframework, this
+is enlightening:
+</p>
+<pre>
+mhackslab:enumdevices $ ./enumdevices 
+devices:
+  [No Output]
+mhackslab:enumdevices $ m clean
+rm enumdevices *.o
+mhackslab:enumdevices $ m
+cc -o main.o  -I/Users/williamknight/swtools/audio/openal-soft/include -I/Users/williamknight/swtools/audio/freealut/include -c main.c
+cc -o enumdevices main.o -framework openal
+mhackslab:enumdevices $ ./enumdevices 
+devices:
+  [Built-in Output]
+mhackslab:enumdevices $ 
+</pre>
+
+<p>
+No, I decided instead to look at the cbots vector, matrix and transformer code. Think
+I'll create lua vector3 and matrix3 classes and a camera class.
+</p>
+
+<p>
+Or maybe for now, will just use gluLookAt().
+</p>
+
+<h2>2011-11-28</h2>
+
+<p>
+Yesterday, while debugging grid3d.lua, I finally added the 'step' command to the debugger.
+Now, I'm going to add the 'next' commmand.
+</p>
+
+<p>
+Added it, it works! I finally have a real lua debugger now, and one that I created myself.
 </p>
 
 </body>
