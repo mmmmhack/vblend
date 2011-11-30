@@ -41,3 +41,17 @@ M.tostring = function(v)
   return string.format("%f, %f, %f", v.x, v.y, v.z)
 end
 
+M.dot = function(va, vb)
+	local s = va.x * vb.x + va.y * vb.y + va.z * vb.z
+	return s
+end
+
+M.cross = function(va, vb)
+	local vr = {
+		x = va.y * vb.z - va.z * vb.y,
+		y = va.z * vb.x - va.x * vb.z,
+		z = va.x * vb.y - va.y * vb.x,
+	}
+	return vr
+end
+

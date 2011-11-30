@@ -1,6 +1,7 @@
 -- grid3d.lua	:	demonstrates rendering and view transformation in 3D space
 
 require('gamelib')
+require('geom')
 require('vector3')
 
 require('debugger')
@@ -58,10 +59,6 @@ function set_projection()
 --gl.frustum(l, r, b, t, n, f)
 	glu.perspective(60, w/h, n, f)
 	gl.matrixMode(gl.GL_MODELVIEW)
-end
-
-function deg2rad(deg)
-	return deg * math.pi / 180
 end
 
 -- rotates param vector about the y axis by param degrees

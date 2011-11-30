@@ -132,4 +132,11 @@ M.get_edge_intersect_counts = function (edge_intersects)
 	return counts
 end
 
+M.deg2rad = function(deg)
+	return deg * math.pi / 180
+end
+
+M.rad2deg = function(rad)
+	return rad * 180 / math.pi
+end
 
