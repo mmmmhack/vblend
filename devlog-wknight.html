@@ -4393,6 +4393,29 @@ vector3f.lua.
 Continuing implementation of vector and matrix code to get rotation.
 </p>
 
+<p>
+Finished, looks like it works:
+</p>
+<pre>
+mhackslab:test $ lua test_rot_marix.lua 
+--- create rotation matrix
+enter a rotation vector [1 0 0]: 0 1 0
+enter a rotation angle in degrees [90]: 
+creating a matrix with rotation of 90 degrees about vector 0.000000, 1.000000, 0.000000
+   0.0000    0.0000   -1.0000
+   0.0000    1.0000    0.0000
+   1.0000    0.0000    0.0000
+
+--- test the matrix
+enter a test vector to be rotated [0 0 1]: 
+result vector: 1.000000, 0.000000, 0.000000
+mhackslab:test $ 
+</pre>
+
+<p>
+Rotation is working in grid3d.lua!
+</p>
+
 </body>
 </html>
 

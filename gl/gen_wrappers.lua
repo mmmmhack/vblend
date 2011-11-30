@@ -1,6 +1,6 @@
 -- gen_wrappers.lua  : generates function wrapper code from gl.h, for a subset of functions
 
-package.path=package.path .. ';../test/lua/?.lua'
+package.path=package.path .. ';../gamelib/?.lua'
 require('util')
 
 --local gl_h_fname = "/opt/local/include/GL/gl.h"

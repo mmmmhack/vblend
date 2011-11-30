@@ -3,6 +3,7 @@
 require('gamelib')
 require('geom')
 require('vector3')
+require('matrix3')
 
 require('debugger')
 
@@ -10,7 +11,7 @@ local cam_y_rot = 0			-- rotation about cam y axis, in degrees
 --local cam_z = 0			  -- translation along cam z axis
 --local cam_trans = {x = 0, y = 0, z = 0};
 local cam_trans_rate = 0.1
-local cam_rot_rate = 10
+local cam_rot_rate = 0.1
 
 local init_look_dir = {x = 0, y = 0, z = -1}
 local look_dir = {x = 0, y = 0, z = -1}
@@ -63,6 +64,7 @@ end
 
 -- rotates param vector about the y axis by param degrees
 function rotate_y(v, angle_deg)
+--[[
 --	return vector3.copy(v)
 	local vn = vector3.normalized(v)
 	local theta = deg2rad(angle_deg)
@@ -71,18 +73,22 @@ function rotate_y(v, angle_deg)
 	local z = vn.z * math.cos(theta)
 	local vr = {x = x, y = y, z = z}
 	return vr
+--]]
+	local vy = {x=0, y=1, z=0}
+	local m = geom.create_rot_matrix(vy, angle_deg)
+	local vr = vector3.mul(v, m)
+	return vr
 end
 
 function apply_inputs()
 	-- y rotation
 	local right = glfw.getKey(glfw.GLFW_KEY_RIGHT) == glfw.GLFW_PRESS
 	if right then
-		cam_y_rot = cam_y_rot + cam_rot_rate
+		cam_y_rot = cam_y_rot - cam_rot_rate
 	end
 	local left = glfw.getKey(glfw.GLFW_KEY_LEFT) == glfw.GLFW_PRESS
 	if left then
---debug_console()
-		cam_y_rot = cam_y_rot - cam_rot_rate
+		cam_y_rot = cam_y_rot + cam_rot_rate
 	end
 
 	-- update look dir after y rotation
@@ -143,7 +149,7 @@ function main()
 	while not done do
 		gl.loadIdentity()
 
-debug_print(eye_pos, cen_pos, up_dir, look_dir)
+--debug_print(eye_pos, cen_pos, up_dir, look_dir)
 		glu.lookAt(eye_pos.x, eye_pos.y, eye_pos.z, cen_pos.x, cen_pos.y, cen_pos.z, up_dir.x, up_dir.y, up_dir.z)
 
 		draw_grid()

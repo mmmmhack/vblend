@@ -1,6 +1,6 @@
 -- gen_wrappers.lua  : generates function wrapper code from glfw.h
 
-package.path=package.path .. ';../test/lua/?.lua'
+package.path=package.path .. ';../gamelib/?.lua'
 require('util')
 
 local glfw_dir = os.getenv('glfw_dir')

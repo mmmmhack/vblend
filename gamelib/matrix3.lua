@@ -43,3 +43,11 @@ M.mul = function(ma, mb)
 	return m
 end
 
+M.tostring = function(m)
+	local s = ""
+	for i = 0, 2 do
+		s = s .. string.format("%9.4f %9.4f %9.4f\n", m[i][0],  m[i][1],  m[i][2])
+	end
+	return s
+end
+

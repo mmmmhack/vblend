@@ -14,7 +14,7 @@ M.add = function(va, vb)
   return vr
 end
 
-M.mul = function(v, scalar)
+M.mul_scalar = function(v, scalar)
   local vr = {x = v.x * scalar, y = v.y * scalar, z = v.z * scalar}
   return vr
 end
@@ -53,5 +53,22 @@ M.cross = function(va, vb)
 		z = va.x * vb.y - va.y * vb.x,
 	}
 	return vr
+end
+
+M.mul_matrix = function(v, m)
+	local vr = {
+		x = v.x*m[0][0] + v.y*m[1][0] + v.z*m[2][0],
+		y = v.x*m[0][1] + v.y*m[1][1] + v.z*m[2][1],
+		z = v.x*m[0][2] + v.y*m[1][2] + v.z*m[2][2],
+	}
+	return vr
+end
+
+M.mul = function(v, o)
+	if type(o) == 'table' then
+		return M.mul_matrix(v, o)
+	else
+		return M.mul_scalar(v, o)
+	end
 end
 

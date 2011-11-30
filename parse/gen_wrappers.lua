@@ -1,15 +1,13 @@
 -- gen_wrappers.lua  : generates lua function wrapper code for C header files
 
---package.path=package.path .. ';../parse/?.lua'
---package.path=package.path .. ';../test/lua/?.lua'
 --[[ from now on, do this instead:
 export LUA_PATH=$LUA_PATH;$PROJ_DIR/parse/?.lua
-export LUA_PATH=$LUA_PATH;$PROJ_DIR/test/lua/?.lua
+export LUA_PATH=$LUA_PATH;$PROJ_DIR/gamelib/?.lua
 ]]
 require('util')
 require('getopt')
 require('get_decls')
-require('tf_debug')
+--require('debugger')
 
 -- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
