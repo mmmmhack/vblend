@@ -4,6 +4,17 @@ local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
+M.new = function(x, y, z)
+	x = x or 0
+	y = y or 0
+	z = z or 0
+	return {x = x, y = y, z = z}
+end
+
+M.zero = function()
+	return {x = 0, y = 0, z = 0}
+end
+
 M.copy = function(v)
   local vr = {x = v.x, y = v.y, z = v.z}
   return vr

@@ -6,6 +6,15 @@ local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
+M.new = function(v0, v1, v2)
+	local m = {
+		[0] = { [0] = v0.x, [1] = v0.y, [2] = v0.z, },
+		[1] = { [0] = v1.x, [1] = v1.y, [2] = v1.z, },
+		[2] = { [0] = v2.x, [1] = v2.y, [2] = v2.z, },
+	}
+	return m
+end
+
 M.identity = function()
 	local m = {
 		[0] = { [0] = 1, [1] = 0, [2] = 0, },
@@ -30,6 +39,26 @@ M.rotx = function(angle_deg)
 		[0] = { [0] = 1, [1] = 0, [2] = 0, },
 		[1] = { [0] = 0, [1] = math.cos(theta), [2] = math.sin(theta), },
 		[2] = { [0] = 0, [1] = -math.sin(theta), [2] = math.cos(theta), },
+	}
+	return m
+end
+
+M.roty = function(angle_deg)
+	local theta = geom.deg2rad(angle_deg)
+	local m = {
+		[0] = { [0] = math.cos(theta), [1] = 0, [2] = -math.sin(theta), },
+		[1] = { [0] = 0, [1] = 1, [2] = 0, },
+		[2] = { [0] = math.sin(theta), [1] = 0, [2] = math.cos(theta), },
+	}
+	return m
+end
+
+M.rotz = function(angle_deg)
+	local theta = geom.deg2rad(angle_deg)
+	local m = {
+		[0] = { [0] = math.cos(theta), [1] = math.sin(theta), [2] = 0, },
+		[1] = { [0] = -math.sin(theta), [1] = math.cos(theta), [2] = 0, },
+		[2] = { [0] = 0, [1] = 0, [2] = 1, },
 	}
 	return m
 end

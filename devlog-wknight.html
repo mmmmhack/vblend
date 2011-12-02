@@ -4416,6 +4416,98 @@ mhackslab:test $
 Rotation is working in grid3d.lua!
 </p>
 
+<h2>2011-12-01</h2>
+
+<p>
+Today I want to start on creating a full input transform capability for navigating
+and manipulating in 3D space. I already have C code for a transformer class, as a
+reference (from the cbots project).
+</p>
+
+<p>
+Created the gamelib/camera.lua module. After looking for a bit at the transformer
+code in omd, I came up with a simpler approach.
+</p>
+
+<p>
+After this second reading of chaps 3 and 4 in GTCG, I can now visualize rotations
+of the coordinate axes in my head in a way that allows me to define the 3x3 rotation
+matrices for the x, y and z rotations without having to look them up in a book.
+That's kind of satisfying.
+</p>
+
+<p>
+At first, I considered using a matrix to hold the camera rotation, but then, thinking
+about how to avoid accumulated errors in matrix operations, I tried to think of
+a way to implement camera rotations where the camera orientation is defined only
+in terms of a look dir and up dir (so I can just call gluLookAt()) and came up
+with this nice scheme (which I believe is self-correcting with respect to matrix
+multiplication errors):
+</p>
+<pre>
+	if M.state['rot_x'] ~= 0 then
+		local theta = M.state['rot_x'] * M.rot_rate * dt
+		local vrot = vector3.cross(M.look_dir, M.up_dir)
+		local Mr = geom.create_rot_matrix(vrot, theta)
+		M.look_dir = vector3.mul(M.look_dir, Mr)
+		M.up_dir = vector3.cross(vrot, M.look_dir)
+	end
+</pre>
+
+<p>
+The rot_y and rot_z are simpler of course because these are just 
+rotations around the up dir and look dir respectively.
+</p>
+
+<p>
+I'm sure this must be a common implementation of camera rotation that I've
+stumbled upon independently.
+</p>
+
+<p>
+Next, walking to work, I'm thinking about what key bindings to create for
+3D navigation. After considering some more conventional approaches like
+the aswd and jhkl bindings, I decided on trying an approach that mimics
+the 'move/look' approach of a gamepad controller with 2 joysticks that
+I'll also support at some point. Here is what I will try first:
+</p>
+<ul>
+<li>- trans_x : f
+<li>+ trans_x : g
+<li>- trans_z : e
+<li>+ trans_z : d
+<li>+ rot_y   : h
+<li>- rot_y   : j
+<li>+ rot_x   : i
+<li>- rot_x   : k
+</ul>
+
+<p>
+Advantages of this approach:
+</p>
+<ul>
+<li>move and look are symmetrical
+<li>both axes can be hit simultaneously
+<li>shift/ctrl/alt keys can be hit simultaneously with axis keys
+</ul>
+
+<p>
+After work, on the bus. Starting on cam_control module.
+</p>
+
+<h2>2011-12-02</h2>
+
+<p>
+Friday morning, ho yeah. Worked a little more on the cam_control and
+camera last night, it's almost working, testing in gridcam3d.lua.
+Just need to transform world input trans to camera frame.
+</p>
+
+<p>
+Got it working, sweet. Just need to add projection of tilted camera
+frame to world x-z plane for translation and y-rotation.
+</p>
+
 </body>
 </html>
 
