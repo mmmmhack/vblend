@@ -12,12 +12,19 @@ package.loaded[modname] = M
 M.keymap = {
 	[string.byte('F')] = {state='trans_x', val=-1},
 	[string.byte('G')] = {state='trans_x', val=1},
+	[string.byte('W')] = {state='trans_y', val= 1},
+	[string.byte('S')] = {state='trans_y', val=-1},
 	[string.byte('E')] = {state='trans_z', val=-1},
 	[string.byte('D')] = {state='trans_z', val=1},
 	[string.byte('H')] = {state='rot_y', val= 1},
 	[string.byte('J')] = {state='rot_y', val=-1},
 	[string.byte('I')] = {state='rot_x', val= 1},
 	[string.byte('K')] = {state='rot_x', val=-1},
+	-- secondary bindings
+	[glfw.GLFW_KEY_LEFT] = {state='rot_y', val= 1},
+	[glfw.GLFW_KEY_RIGHT] = {state='rot_y', val=-1},
+	[glfw.GLFW_KEY_UP] = {state='trans_z', val= -1},
+	[glfw.GLFW_KEY_DOWN] = {state='trans_z', val= 1},
 }
 
 M.zero_cam_states = function(cam)

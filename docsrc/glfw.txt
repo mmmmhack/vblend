@@ -20,5 +20,16 @@ Returns:
 	key_state		type:			number
 							descrip:	glfw.GLFW_PRESS if key down, else glfw.GLFW_RELEASE
 
+Notes:
+	- See 'glfw_key.txt' for a list of keycodes
+	- The key codes table doesn't contains codes for the printable keys in the
+		ascii set like 'A-Z', '0-9', and punctuation keys. To specify the codes
+		for these keys, specify the key as a single-character string
+		converted to a number using the lua string.byte() function. 
+		For example:
+				if glfw.getKey(string.byte('A')) == glfw.GLFW_PRESS then
+					-- do something for 'A' key press
+					...
+				end 
 
  vim:tw=78:sw=4:ts=2:ft=help:norl

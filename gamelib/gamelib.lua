@@ -10,6 +10,8 @@ require('lua_glu')
 require('lua_glfw')
 require('lua_sys')
 
+M.NUM_CIRCLE_SLICES = 32
+
 -- game window defaults
 M.win_defaults = {
   title = "Game",
@@ -81,6 +83,22 @@ end
 M.win_height = function()
   local width, height = glfw.getWindowSize()
   return height
+end
+
+M.draw_circle = function (x0, y0, radius)
+  gl.Begin(gl.GL_TRIANGLE_FAN)
+    gl.vertex2f(x0, y0)
+		local nslices = M.NUM_CIRCLE_SLICES
+		local theta = 0
+		local delta_theta = 2*math.pi / nslices
+		local i
+		for i = 0, nslices do
+			local x = x0 + radius * math.cos(theta)
+			local y = y0 + radius * math.sin(theta)
+			theta = theta + delta_theta
+			gl.vertex2f(x, y)
+		end
+  gl.End()
 end
 
 M.draw_rect = function (x, y, w, h)

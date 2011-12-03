@@ -41,6 +41,24 @@ M.basis = function(cam)
 	return Mb
 end
 
+-- returns matrix representing param cam rotation where cam up dir is projected onto alignment with world y axis,
+-- or nil if cam up dir is perpedicular to world y axis
+M.get_projected_frame = function(cam)
+	-- convert translation to adjusted camera frame, where adjustment is projection of look_dir onto xz plane,
+	-- up_dir is aligned with world y axis
+	local proj_look_dir = vector3.copy(cam.look_dir)
+	proj_look_dir.y = 0
+	proj_look_dir = vector3.normalized(proj_look_dir) 
+	if vector3.magnitude(proj_look_dir) == 0 then
+		return nil
+	end
+	local vy = vector3.new(0, 1, 0)
+	local vx = vector3.cross(proj_look_dir, vy)
+	local vz = vector3.mul(proj_look_dir, -1)
+	local Mr = matrix3.new(vx, vy, vz)
+	return Mr
+end
+
 -- updates camera frame by applying translations and rotations for param time interval
 M.update = function(cam, dt)
 	-- TODO: transform trans vector from world frame to cam frame
@@ -55,9 +73,11 @@ M.update = function(cam, dt)
 	vtrans.z = cam.state['trans_z'] * cam.trans_rate * dt
 	if not vector3.equal(vtrans, vector3.zero()) then
 --debug_console()		
-		local Mr = M.basis(cam)
-		vtrans = vector3.mul(vtrans, Mr)
-		cam.center = vector3.add(cam.center, vtrans)
+		local Mr = M.get_projected_frame(cam) 
+		if Mr then
+			vtrans = vector3.mul(vtrans, Mr)
+			cam.center = vector3.add(cam.center, vtrans)
+		end
 	end
 
 	local rotated = false
@@ -71,8 +91,11 @@ M.update = function(cam, dt)
 	end
 	if cam.state['rot_y'] ~= 0 then
 		local theta = cam.state['rot_y'] * cam.rot_rate * dt
-		local Mr = geom.create_rot_matrix(cam.up_dir, theta)
+		-- project both look_dir and up dir rotations onto world y axis
+		local vy = vector3.new(0, 1, 0)
+		local Mr = geom.create_rot_matrix(vy, theta)
 		cam.look_dir = vector3.mul(cam.look_dir, Mr)
+		cam.up_dir = vector3.mul(cam.up_dir, Mr)
 		rotated = true
 	end
 	if cam.state['rot_z'] ~= 0 then

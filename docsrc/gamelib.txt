@@ -27,6 +27,24 @@ for the gamelib framework.
 |win_height|
 |window_closed|
 
+                                                        *draw_circle*
+draw_circle()	
+
+Draws a circle in the screen buffer.
+
+Params:
+	x				type: number, descrip: x position of rectagle lower-left corner
+	y				type: number, descrip: y position of rectagle lower-left corner
+  radius	type: number, descrip: radius of circle
+
+Returns:
+	nil
+
+Notes:
+	Draws a filled 2D circle using the current color. 
+
+	The x,y coordinates are relative to the lower-left corner of the screen.
+
                                                         *draw_rect*
 draw_rect()	
 

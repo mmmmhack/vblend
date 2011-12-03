@@ -114,6 +114,7 @@ function update_ball()
     ball.ydir = -ball.ydir
 	end
 
+	-- new collision code: make ball rebound angle a function of paddle location
 end
 
 function main()
