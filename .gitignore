@@ -32,6 +32,7 @@ test/tf_edit
 test/write_9x15_font_png
 test/test_lua_pcall
 test/tlua_reg
+edit/lua_edit_func_skipped.txt
 util/old
 util/*.i
 util/*.dll

@@ -8,7 +8,8 @@ sys
                                                         *purpose*
 PURPOSE
 
-This module contains general-purpose and utility functions.
+This module contains general-purpose and utility functions, and
+platform-independent operating system functions.
 
                                                         *functions*
 

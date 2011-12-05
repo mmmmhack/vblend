@@ -1,0 +1,160 @@
+==============================================================================
+                                                        *font*
+font
+
+font is a lua module for simple text rendering in the graphics window. Currentl
+the font module only supports a single fixed 9x15 bitmap font, defined in the
+demo/res/9x15_font.png image file.
+
+The font module efficiently renders the character set in this image file using
+an opengl texture.
+
+See the 'hello.lua' program in the demo directory for an example of how to
+use the font module.
+
+LIMITATIONS:
+
+The font module currently renders in only a single color, white, as defined by
+the color of the pixels in the 9x15_font.png image.
+
+
+                                                        *functions*
+FUNCTIONS
+
+Below are the documented public functions in the font module:
+
+|char_width|
+|char_height|
+|cleanup|
+|draw_text_buf|
+|init|
+|num_rows|
+|num_cols|
+|set_text_buf|
+
+|char_width|
+                                                        *char_width*
+char_width()	
+
+Returns width in pixels of a font character.
+
+Params:
+	none
+
+Returns:
+	width		type: number
+
+                                                        *char_height*
+char_height()	
+
+Returns height in pixels of a font character.
+
+Params:
+	none
+
+Returns:
+	height		type: number
+
+|cleanup|
+                                                        *cleanup*
+cleanup()	
+
+Frees resources associated with the font module. This should be called
+when done using the font routines.
+
+Params:
+	none
+
+Returns:
+	none
+
+SeeAlso: |init|
+
+                                                        *draw_text_buf*
+draw_text_buf()	
+
+Renders the text in the font text buffer to the screen. The text is specified
+with |set_text_buf|.
+
+Params:
+	none
+
+Returns:
+	nil
+
+SeeAlso: |set_text_buf|
+
+                                                        *init*
+init()	
+
+Initializes the font module. This function must be called before any of the
+others.
+
+Params:
+	none
+
+Returns:
+	result		type: number, 1 if successfully initialized, else 0
+
+SeeAlso: |cleanup|
+
+Notes:
+
+		- Initialization consists of loading the font image file and creating an 
+		opengl texture for it.
+
+		- If the font module has already been successfully initialized, this function
+		will just return 1 on subsequent calls.
+
+                                                        *num_chars*
+num_chars()	
+
+Returns number of characters in a row in the font text buffer.
+
+Params:
+	none
+
+Returns:
+	num		type: number
+
+                                                        *num_rows*
+num_rows()	
+
+Returns number of rows in the font text buffer.
+
+Params:
+	none
+
+Returns:
+	num		type: number
+
+                                                        *set_text_buf*
+set_text_buf()	
+
+Specifies a single row of text to be placed into the font text buffer.
+The buffer consists of |num_rows| rows, each having |num_chars| characters. 
+
+After the text is entered into the buffer, |draw_text_buf| must be called to
+render it.
+
+Params:
+	row			type: number, descrip: row in text buffer, 0-based index with first
+	        row at the bottom of the screen.
+
+	col			type: number, descrip: starting column of row in text buffer,
+					0-based index with first character at the left of the row.
+
+  text	  type: string, descrip: sequence of characters to be placed in the
+	        row.
+
+Returns:
+	nil
+
+Notes:
+	If the length of the param text exceeds the length of the text buffer row,
+	the excess text will be ignored.
+
+
+
+ vim:tw=78:sw=4:ts=2:ft=help:norl
+

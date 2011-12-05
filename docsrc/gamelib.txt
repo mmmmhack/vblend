@@ -20,6 +20,7 @@ FUNCTIONS
 Function reference for the gamelib module. Below are the documented public functions
 for the gamelib framework.
 
+|draw_circle|
 |draw_rect|
 |open_window|
 |update|

@@ -4517,6 +4517,53 @@ next: adust for x rotation.
 Adjusted it, camera is working.
 </p>
 
+<h2>2011-12-05</h2>
+
+<p>
+Monday morning. I need to get the editor working so I can start on 3D
+model tools.
+</p>
+
+<p>
+I created the documentation for the font module in docsrc/font.txt
+</p>
+
+<p>
+Next, revamping the edit module to create a lua_edit wrapper for it,
+after modifying the font shell and lua scripts, running into a 'return
+pointer param' not handled situation again. I know that I've dealt
+with this before, need to create a freakin wiki to hold my memories.
+</p>
+
+<p>
+Will do that later thought, for now I see I put the info in the help
+for the parser script:
+</p>
+<pre>
+ -r, --ret-params RET_PARAMS_FILE   identify returned values in function params from '[func_name,param_name]=lua_type' table entries in lua file RET_PARAMS_FILE
+</pre>
+
+<p>
+But I never used it?
+</p>
+<pre>
+mhackslab:edit $ find .. -name '*.sh' | xargs grep "ret-param"
+mhackslab:edit $ 
+</pre>
+
+<p>
+Yeah I did:
+</p>
+<pre>
+mhackslab:edit $ find .. -name '*.sh' | xargs grep "\-r"
+../glfw/gen_wrappers.sh:lua ../parse/gen_wrappers.lua -p glfw -r lua_glfw_ret_params.lua $@ glfw.i
+mhackslab:edit $ 
+</pre>
+
+<p>
+Got the lua_edit module working.
+</p>
+
 </body>
 </html>
 

@@ -3,13 +3,19 @@
 
 #include "GL/glfw.h"
 
-#include "util/win.h"
-#include "font/tfont.h"
+//#include "util/win.h"
+#include "tfont.h"
 #include "edit.h"
 
 static int _cursor_row = 0;
 static int _cursor_col = 0;
 static float _cursor_color[4] = {0, 0.75, 0, 0.50};
+
+static int win_height() {
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	return viewport[3];
+}
 
 void edit_set_cursor(int row, int col) {
 	_cursor_row = row;
