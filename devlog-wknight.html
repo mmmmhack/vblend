@@ -4564,6 +4564,170 @@ mhackslab:edit $
 Got the lua_edit module working.
 </p>
 
+<p>
+Next, looking over the old tf_edit.lua code (now moved to demo/edit), the main question is
+whether to add support for key events to the game lib or just do the polling myself. If
+that's all the glfw lib does currently, might just add the polling for now.
+</p>
+
+<p>
+No, looking at the code, it gets key events from the OS, so guess I'll add support
+for key events to the gamelib.
+</p>
+
+<p>
+The glfw function glfwSetKeyCallback() isn't currently wrapped and it takes a 
+function ptr param, so won't be simple to support that in the gen_wrappers scripts.
+I'll just add yet-another-param to the parse/gen_wrapper.lua script to import
+custom wrapper function code.
+</p>
+
+<p>
+Sent out first homework assignment for Sam. While walking to work, more thought
+on the edit program. Also thinking about defining a 3D cursor with graphical
+editing capabilities, in parallel with the text editor. Started work on the 'include_map'
+param in the parse/gen_wrappers.lua script.
+</p>
+
+<p>
+After work, on bus, --include-map is almost working.
+</p>
+
+<p>
+At home, after dinner, finished initial implementation of glfw.setKeyCallback().
+Currently it's crashing, will have to debug in gdb.
+</p>
+
+<h2>2011-12-06</h2>
+
+<p>
+Tuesday morning after a loong night's sleep, not a whole lot of time for programming
+before work, but I'm hopeful I can make a good start on debugging the callback function.
+Need some kind of template debug C file, and a wiki!
+</p>
+
+<p>
+Found 'debug_wrapper.c' in glfw, copying to debugger dir.
+</p>
+
+<p>
+Got the debug app working.
+</p>
+
+<p>
+Ok, see the problem right away:
+</p>
+<pre>
+Breakpoint 1, lw_setKeyCallback (L=0x1096d0) at lua_setKeyCallback.c:22
+22	  const char* cb_name = lua_tostring(L, -1);
+(gdb) w
+Ambiguous command "w": watch, whatis, where, while, while-stepping, ws.
+(gdb) bt
+#0  lw_setKeyCallback (L=0x1096d0) at lua_setKeyCallback.c:22
+#1  0x000091fd in luaD_precall (L=0x1096d0, func=0x825a54, nresults=0) at ldo.c:319
+#2  0x0001814f in luaV_execute (L=0x1096d0, nexeccalls=1) at lvm.c:587
+#3  0x00009473 in luaD_call (L=0x1096d0, func=0x802618, nResults=0) at ldo.c:377
+#4  0x00003b33 in f_call (L=0x1096d0, ud=0xbffff5bc) at lapi.c:800
+#5  0x000086ca in luaD_rawrunprotected (L=0x1096d0, f=0x3b09 &lt;f_call&gt;, ud=0xbffff5bc) at ldo.c:116
+#6  0x00009806 in luaD_pcall (L=0x1096d0, func=0x3b09 &lt;f_call&gt;, u=0xbffff5bc, old_top=24, ef=0) at ldo.c:463
+#7  0x00003bd0 in lua_pcall (L=0x1096d0, nargs=0, nresults=0, errfunc=0) at lapi.c:821
+#8  0x00001f9e in main (argc=1, argv=0xbffff644) at debug_wrapper.c:36
+(gdb) n
+23		strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
+(gdb) p  cb_name
+$1 = 0x0
+(gdb) 
+</pre>
+
+<p>
+Duh, it's kinda what I figured, I'm passing the param as a function and expecting to
+convert to a string:
+</p>
+<pre>
+--- debug_wrapper.lua:
+	...
+	print("BEF setKeyCallback()")
+	glfw.setKeyCallback(key_cb)
+	print("AFT setKeyCallback()")
+	...
+---lw_setKeyCallback.c:
+static int lw_setKeyCallback(lua_State* L) {
+  const char* cb_name = lua_tostring(L, -1);
+	strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
+	LL = L;
+  glfwSetKeyCallback(
+		keyCallback
+  );
+  return 0;
+}
+</pre>
+
+<p>
+Changed param to string, tried again, now it gets into the C
+callback function but getglobal on the lua cb function isn't
+working:
+</p>
+<pre>
+mhackslab:dist $ ./debug_wrapper 
+BEG debug_wrapper.c main()
+BEG debug_wrapper.lua main()
+BEF glfw.init()
+rc: 1
+AFT glfw.init()
+BEF open_window()
+AFT open_window()
+win w: [800], win h: [600]
+BEF setKeyCallback()
+AFT setKeyCallback()
+failed calling lua keydown handler: attempt to call a nil value
+keyCallback: No such file or directory
+mhackslab:dist $ 
+</pre>
+
+<p>
+Next, will probably need to add some lua stack dumps, but now
+gotta get going.
+</p>
+
+<p>
+Little more time, debugging the getglobal, the name is wrong!
+</p>
+<pre>
+Breakpoint 1, keyCallback (key=74, action=1) at lua_setKeyCallback.c:10
+10		lua_getglobal(LL, lua_keyCallbackFuncName);
+(gdb) p lua_keyCallbackFuncName
+$1 = "key_", '\0' &lt;repeats 251 times&gt;
+(gdb) 
+</pre>
+
+<p>
+Duh, found it, I don't know how to give the freaking correct size arg
+to strlen!!!
+</p>
+<pre>
+Breakpoint 1, lw_setKeyCallback (L=0x1096d0) at lua_setKeyCallback.c:23
+23		strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
+(gdb) p cb_name
+$1 = 0x10f9f0 "key_cb"
+(gdb) p lua_keyCallbackFuncName
+$2 = '\0' &lt;repeats 255 times&gt;
+(gdb) n
+24		LL = L;
+(gdb) p lua_keyCallbackFuncName
+$3 = "key_", '\0' &lt;repeats 251 times&gt;
+(gdb) p sizeof(cb_name)
+$4 = 4
+(gdb) 
+</pre>
+
+<p>
+(Should have been sizeof(lua_keyCallbackFuncName) dumbkopf!)
+</p>
+
+<p>
+Victory!
+</p>
+
 </body>
 </html>
 

@@ -20,6 +20,7 @@ local param_type_map = {
 }
 local opt_type_map = nil
 local ret_params_map = nil
+local includes_map = nil
 
 local usage_desc = [[
 Usage: gen_wrappers [options] DECL_FILE
@@ -27,6 +28,13 @@ Reads C header file from DECL_FILE, generates lua function wrappers from functio
 ]]
 
 local opt_defs = {
+  includes_map = {
+    short_opt = 'i',
+    long_opt = 'includes-map',
+    has_arg = true,
+    descrip = "get C file includes for functions from '[func_name]=include_file' table entries in lua file INCLUDES_FILE",
+    arg_descrip = 'INCLUDES_FILE',
+  },
   remove_prefix = {
     short_opt = 'p',
     long_opt = 'remove-prefix',
@@ -150,6 +158,9 @@ function get_params(func_name, param_decls)
       if param.luatype == nil and ret_params_map then
         local rp_luatype = ret_params_map[func_name .. "," .. cident]
         if rp_luatype ~= nil then
+					if opts.verbose then
+						print(string.format("get_params(): setting param %s from ret_params_map", rp_luatype))
+					end
           param.luatype = rp_luatype
           param.is_ret = true
         end
@@ -241,6 +252,19 @@ function gen_func_wrapper(decl)
   if ret_decl == nil or func_name == nil or params_decl == nil then
     error(string.format("failed parsing decl: [%s]", decl))
   end
+  local lw_func_name = get_lw_func_name(func_name)
+
+	-- if func_name specified in includes_map, implement wrapping by custom include
+  if includes_map and includes_map[func_name] ~= nil then
+		local include_file = includes_map[func_name]
+    if opts.verbose then
+      print(string.format("gen_func_wrapper(): func_name: [%s], implementing with include file [%s]", func_name, include_file))
+    end
+		local func_def = string.format('#include "%s"\n', include_file)
+		local func_reg = string.format('  {"%s", lw_%s},\n', lw_func_name, lw_func_name)
+		return func_def, func_reg
+  end
+
   -- if wrapping a subset and function not in subset, skip wrapping this function
   if opts.sel_funcs and not is_sel_func(func_name) then
     if opts.verbose then
@@ -273,7 +297,6 @@ function gen_func_wrapper(decl)
   local func_def = ""
 
   -- emit beg func
-  local lw_func_name = get_lw_func_name(func_name)
   local s = string.format("static int lw_%s(lua_State* L) {\n", lw_func_name)
   func_def = func_def .. s
 
@@ -380,6 +403,10 @@ function main()
   -- read 'return param' type conversions
   if opts.ret_params then
     ret_params_map = dofile(opts.ret_params)
+  end
+  -- read includes file if given
+  if opts.includes_map then
+    includes_map = dofile(opts.includes_map)
   end
 
 --debug_console()

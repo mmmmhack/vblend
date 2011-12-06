@@ -1,7 +1,9 @@
-require "tflua"
+-- test_edit.lua	:	test editor application
+require "gamelib"
+require "lua_edit"
 
-package.path = package.path .. ';./lua/?.lua'
-require "util"
+--package.path = package.path .. ';./lua/?.lua'
+--require "util"
 require "keycodes"
 require "cursor"
 require "win"
@@ -9,7 +11,7 @@ require "buffer"
 require "normal_mode"
 require "insert_mode"
 require "cmd_mode"
-require "tf_debug"
+--require "debugger"
 
 local keydown_time = nil
 local keydown_key = nil

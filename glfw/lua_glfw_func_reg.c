@@ -19,6 +19,7 @@
   {"setMousePos", lw_setMousePos},
   {"getMouseWheel", lw_getMouseWheel},
   {"setMouseWheel", lw_setMouseWheel},
+  {"setKeyCallback", lw_setKeyCallback},
   {"getJoystickParam", lw_getJoystickParam},
   {"getTime", lw_getTime},
   {"setTime", lw_setTime},

@@ -167,6 +167,7 @@ static int lw_setMouseWheel(lua_State* L) {
   );
   return 0;
 }
+#include "lua_setKeyCallback.c"
 static int lw_getJoystickParam(lua_State* L) {
   int joy = lua_tointeger(L, -2);
   int param = lua_tointeger(L, -1);

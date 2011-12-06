@@ -9,7 +9,8 @@ lua_libs=
 
 includes= \
  -I libglfw/include \
- -I $(lua_dir)/include
+ -I $(lua_dir)/include \
+ -I ../util
  
 all: subdirs lua_glfw.$(SO)
 
@@ -17,7 +18,7 @@ subdirs:
 	cd libglfw && make -f Makefile.osx $(MAKECMDGOALS)
 
 lua_glfw.$(SO): lua_glfw.o
-	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< $(lua_libs) libglfw/libglfw.$(SO) -framework Cocoa -framework OpenGL
+	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< ../util/sys.$(SO) $(lua_libs) libglfw/libglfw.$(SO) -framework Cocoa -framework OpenGL
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c

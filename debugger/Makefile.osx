@@ -1,0 +1,21 @@
+# Makefile.osx : Mac OSX makefile for debug_wrapper app
+
+CC=gcc
+CFLAGS += -O0 -g -Wall
+SO=so
+lua_libs=../lua/liblua.a
+EXE=
+
+includes= \
+ -I ../lua/include
+ 
+all: debug_wrapper$(EXE)
+
+debug_wrapper$(EXE): debug_wrapper.o
+	$(CC) -undefined dynamic_lookup -o $@  $< ../util/sys.$(SO) ../glfw/lua_glfw.$(SO) $(lua_libs) -framework Cocoa -framework OpenGL
+
+debug_wrapper.o: debug_wrapper.c
+	$(CC) -o $@ $(CFLAGS) $(includes) -c debug_wrapper.c
+
+clean: 
+	-rm debug_wrapper$(EXE) *.o
