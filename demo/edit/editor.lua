@@ -1,9 +1,15 @@
--- test_edit.lua	:	test editor application
+-- editor.lua	:	test editor application
+local M = {}
+local modname = 'editor'
+_G[modname] = M
+package.loaded[modname] = M
+
+-- gamelib
 require "gamelib"
+require "lua_tfont"
 require "lua_edit"
 
---package.path = package.path .. ';./lua/?.lua'
---require "util"
+-- editor modules
 require "keycodes"
 require "cursor"
 require "win"
@@ -11,8 +17,11 @@ require "buffer"
 require "normal_mode"
 require "insert_mode"
 require "cmd_mode"
---require "debugger"
 
+require "debugger"
+
+local fps = 60
+local frame_time = 1/fps
 local keydown_time = nil
 local keydown_key = nil
 local key_autorepeat_first_delay = 1 / 2
@@ -25,50 +34,54 @@ local mode = 'normal'
 local lshift_key_down = false
 local rshift_key_down = false
 
-local _active_buf = nil
-local _cmd_buf = nil
+--local _active_buf = nil
+--local _cmd_buf = nil
+local _editor = nil
 
 -- TODO: modularize this file
---	M.init_line = string.rep("0123456789", 7) .. "012345"
 local _init_line = string.rep("0123456789", 7) .. "012345678"
 
-function set_mode(m)
+M.set_mode = function(m)
 	mode = m
 end
 
-function set_active_buf(b)
-	_active_buf = b
+M.set_active_buf = function(b)
+	M.editor.active_buf = b
 end
 
-function active_buf()
-	return _active_buf
-end
+--function active_buf()
+--	return M.editor.active_buf
+--end
 
 -- called at module load
-function init()
-	local w = tflua.num_screen_cols()
-	local h = tflua.num_screen_rows()
+M.init = function()
+	local w = tfont.num_cols()
+	local h = tfont.num_rows()
+	M.editor = {}
 
 	-- create first buffer
-	_active_buf = buffer.new({[0]=0, [1]=0}, {[0]=w, [1]=h-1})
+	M.editor.active_buf = buffer.new({[0]=0, [1]=0}, {[0]=w, [1]=h-1})
 	
-	buffer.set(_active_buf, _init_line)
---	line_buf.set(ln)
+	buffer.set(M.editor.active_buf, _init_line)
 
 	-- create cmd-line buffer
-	_cmd_buf = buffer.new({[0]=0, [1]=h-1}, {[0]=w, [1]=1})
-	cmd_mode.buf = _cmd_buf
+	M.editor.cmd_buf = buffer.new({[0]=0, [1]=h-1}, {[0]=w, [1]=1})
+	cmd_mode.buf = M.editor.cmd_buf
+
+	-- set key callback
+traceback()
+	glfw.setKeyCallback('key_event')
 end
 
 -- called periodically by the app
 -- maps the glfw keycode in shift state to the ascii code
-function tick()
+M.tick = function()
 --	print("lua tick!")
 	if keydown_time == nil then
 		return
 	end
 	-- do key autorepeat
-	local cur_time = tflua.get_time()
+	local cur_time = sys.double_time()
 	local diff_time = cur_time - keydown_time
 	if diff_time > key_autorepeat_interval then
 	  key_autorepeat_interval = key_autorepeat_rate
@@ -79,7 +92,7 @@ function tick()
 	end
 end
 
-function shift_key_event(k, state)
+M.shift_key_event = function(k, state)
 	local b = state == GLFW_PRESS and true or false
 	if k == GLFW_KEY_LSHIFT then
 		lshift_key_down = b
@@ -91,12 +104,12 @@ function shift_key_event(k, state)
 	return true
 end
 
-function is_shift_key_down()
+M.is_shift_key_down = function()
 	return lshift_key_down or rshift_key_down
 end
 
 -- combine glfw key code + current shift state to produce ascii value of param key
-function glfw_key_toascii(k)
+M.glfw_key_toascii = function(k)
 
 --print("k: " .. k)
 	-- 'printable' keycodes are mapped with string keys
@@ -135,8 +148,10 @@ function glfw_key_toascii(k)
 end
 
 -- called from the app on key input event
-function key_event(k, state)
---print(string.format("key_event(): k: [%s], state: [%s]", tostring(k), tostring(state)))
+-- wknight 2011-12-07: currently this function needs to be global, because of 
+-- requirements/limitations in glfw.setKeyCallback()
+key_event = function(k, state)
+print(string.format("key_event(): k: [%s], state: [%s]", tostring(k), tostring(state)))
 	
 	-- record shift key state
 	if shift_key_event(k, state) then
@@ -157,7 +172,7 @@ function key_event(k, state)
 
 	-- set new keydown key for autorepat
 	keydown_key = k
-	keydown_time = tflua.get_time()
+	keydown_time = sys.double_time()
   key_autorepeat_interval = key_autorepeat_first_delay
 
 	-- handle keydown action
@@ -167,11 +182,11 @@ function key_event(k, state)
 end
 
 -- char code: just returns param ch for now
-function cc(ch)
+M.cc = function(ch)
 	return ch
 end
 
-function char_pressed(ch)
+M.char_pressed = function(ch)
 	-- ch = keymap(ch)
 	if 		 mode == 'normal' then
 		normal_mode.char_pressed(ch)
@@ -184,17 +199,44 @@ function char_pressed(ch)
 	end
 end
 
-function draw()
+M.draw = function()
 --print("BEG tf_edit.lua draw()")
 --traceback()
-	if _active_buf.redraw then
-		buffer.draw(_active_buf)
+--debug_console()
+	if M.editor.active_buf.redraw then
+		buffer.draw(M.editor.active_buf)
 	end
-	if _cmd_buf.redraw then
-		buffer.draw(_cmd_buf)
+	if M.editor.cmd_buf.redraw then
+		buffer.draw(M.editor.cmd_buf)
 	end
+	tfont.draw_text_buf()
+	edit.draw_cursor()
 --print("END tf_edit.lua draw()")
 end
 
-init()
+M.main = function()
+	M.init()
+	gamelib.open_window("test editor")
+	local run = true
+	while run do
+		-- beg frame
+		local beg_time = sys.double_time()
+		gamelib.update()
+
+		M.tick()
+		M.draw()
+
+		-- end frame
+		if gamelib.window_closed() or glfw.getKey(glfw.GLFW_KEY_ESC)==glfw.GLFW_PRESS then
+			run = false
+		end
+		local end_time = sys.double_time()
+		local wrk_time = end_time - beg_time
+		local slp_time = frame_time - wrk_time
+		slp_time = math.max(0, slp_time)
+		sys.usleep(slp_time * 1e6)
+	end
+end
+
+--M.main()
 

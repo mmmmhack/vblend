@@ -1,0 +1,55 @@
+==============================================================================
+                                                        *edit*
+edit
+
+edit is a lua wrapper module that provides routines for editing text. Currently, 
+this just consists of routines for displaying a text cursor.
+
+
+                                                        *functions*
+FUNCTIONS
+
+Below are the documented public functions in the font module:
+
+|draw_cursor|
+|get_cursor|
+|set_cursor|
+
+                                                        *draw_cursor*
+draw_cursor()	
+
+Draws the cursor at the current cursor position on the screen.
+
+Params:
+	none
+
+Returns:
+	none
+
+                                                        *get_cursor*
+get_cursor()	
+
+Returns the current position of the cursor on the screen.
+
+Params:
+	none
+
+Returns:
+	row		type: number, descrip: 0-based index of screen row, starting at bottom
+	col		type: number, descrip: 0-based index of screen col, starting at left
+
+                                                        *set_cursor*
+set_cursor()	
+
+Sets the current position of the cursor on the screen.
+
+Params:
+	row		type: number, descrip: 0-based index of screen row, starting at bottom
+	col		type: number, descrip: 0-based index of screen col, starting at left
+
+Returns:
+	none
+
+
+ vim:tw=78:sw=4:ts=2:ft=help:norl
+

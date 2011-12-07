@@ -6,7 +6,7 @@ package.loaded[modname] = M
 
 M.op_count_buf = ""
 M.op_count_max = 10
-M.op_count_col = tflua.num_screen_cols() - M.op_count_max
+M.op_count_col = tfont.num_cols() - M.op_count_max
 --M.buf = nil -- TODO: replace with better init
 
 --[[

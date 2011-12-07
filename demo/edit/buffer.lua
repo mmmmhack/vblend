@@ -104,7 +104,7 @@ M.set_cursor = function (b, pos)
   -- set the actual cursor position on the screen
   local scr_pos = M.win2scr(b, win_pos)
 --print(string.format("buffer.set_cursor(): calling tflua.set_cursor(%d, %d)", scr_pos[1], scr_pos[0]))
-  tflua.set_cursor(scr_pos[1], scr_pos[0])
+  edit.set_cursor(scr_pos[1], scr_pos[0])
 end
 
 -- returns buffer text at param row or default 
@@ -191,8 +191,9 @@ M.draw = function (b)
   local scr_row = b.win_pos[1]
   for i = 0, #b.display_lines do
     local ln = b.display_lines[i]
-    tflua.set_screen_buf(scr_row + i, scr_col, ln)
+    tfont.set_text_buf(scr_row + i, scr_col, ln)
   end
   b.redraw = false
   b.scrolled = false
 end
+

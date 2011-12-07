@@ -10,7 +10,8 @@ M.buf = nil   -- TODO: replace with better init (current set in tf_edit.lua init
 
 -- cmd handlers
 M.quit = function()
-  tflua.quit()
+--  tflua.quit()
+	editor.quit()
 end
 
 M.cmd_handler = {
