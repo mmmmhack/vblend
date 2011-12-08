@@ -4737,6 +4737,44 @@ instead of doing manual copy. It's so easy, why didn't I do it a
 long time ago?
 </p>
 
+<p>
+On the bus, debugging glfw.setKeyCallback() after I added it to the
+editor.lua app. The callback isn't getting called and I don't understand
+why. Hmm, maybe because I need to link all the lua libs to the debug_wrapper
+exe instead of dyn_load? No, that doesn't make sense, the breakpoint at
+lua_setKeyCallback.c:22 gets hit, just not the one at lua_setKeyCallback.c:8
+(the C callback function).
+</p>
+
+<p>
+Aha! Stepping into glfwSetKeyCallback() may have just revealed the answer!
+I was calling it before glfwOpenWindow()!
+</p>
+
+<p>
+That was it!
+</p>
+
+<p>
+Got editor line display and cursor movement working again!
+</p>
+
+<h2>2011-12-08</h2>
+
+<p>
+Wow, Thursday already. Yesterday on the way to work, thought a little more
+about text windows and also the need for multiple graphics windows for
+front, side and top views. I think that can be done with a single opengl
+context just using different calls to glViewport? Will need to read up
+on that.
+</p>
+
+<p>
+However, for now, I just might want to try to make progress using a 
+single text and graphics window, just so that I can start doing some
+simple 3D modeling.
+</p>
+
 </body>
 </html>
 

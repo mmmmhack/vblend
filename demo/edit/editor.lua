@@ -8,6 +8,7 @@ package.loaded[modname] = M
 require "gamelib"
 require "lua_tfont"
 require "lua_edit"
+require "util"
 
 -- editor modules
 require "keycodes"
@@ -46,12 +47,12 @@ M.set_mode = function(m)
 end
 
 M.set_active_buf = function(b)
-	M.editor.active_buf = b
+	M.editor._active_buf = b
 end
 
---function active_buf()
---	return M.editor.active_buf
---end
+M.active_buf = function()
+	return M.editor._active_buf
+end
 
 -- called at module load
 M.init = function()
@@ -60,17 +61,14 @@ M.init = function()
 	M.editor = {}
 
 	-- create first buffer
-	M.editor.active_buf = buffer.new({[0]=0, [1]=0}, {[0]=w, [1]=h-1})
+	M.editor._active_buf = buffer.new({[0]=0, [1]=0}, {[0]=w, [1]=h-1})
 	
-	buffer.set(M.editor.active_buf, _init_line)
+	buffer.set(M.editor._active_buf, _init_line)
 
 	-- create cmd-line buffer
-	M.editor.cmd_buf = buffer.new({[0]=0, [1]=h-1}, {[0]=w, [1]=1})
-	cmd_mode.buf = M.editor.cmd_buf
+	M.editor._cmd_buf = buffer.new({[0]=0, [1]=h-1}, {[0]=w, [1]=1})
+	cmd_mode.buf = M.editor._cmd_buf
 
-	-- set key callback
-traceback()
-	glfw.setKeyCallback('key_event')
 end
 
 -- called periodically by the app
@@ -87,8 +85,8 @@ M.tick = function()
 	  key_autorepeat_interval = key_autorepeat_rate
 		keydown_time = cur_time
 
-		local ch = glfw_key_toascii(keydown_key)
-		char_pressed(ch)
+		local ch = M.glfw_key_toascii(keydown_key)
+		M.char_pressed(ch)
 	end
 end
 
@@ -123,7 +121,7 @@ M.glfw_key_toascii = function(k)
 
 	-- get ascii char from keycode and shift state
 	local ascii_ch
-	if is_shift_key_down() then
+	if M.is_shift_key_down() then
 		ascii_ch = shifted_keycode[kc]
 		-- some ascii chars (bs, tab, ret, etc.) only have unshifted mapping
 		if ascii_ch == nil then
@@ -137,7 +135,7 @@ M.glfw_key_toascii = function(k)
 	if false then
 		s = string.format("k: %d, shift: %s, char(k): %s", 
 			k, 
-			tostring(is_shift_key_down()),
+			tostring(M.is_shift_key_down()),
 			string.char(k)
 		)
 		print(s)
@@ -151,14 +149,14 @@ end
 -- wknight 2011-12-07: currently this function needs to be global, because of 
 -- requirements/limitations in glfw.setKeyCallback()
 key_event = function(k, state)
-print(string.format("key_event(): k: [%s], state: [%s]", tostring(k), tostring(state)))
+--print(string.format("key_event(): k: [%s], state: [%s]", tostring(k), tostring(state)))
 	
 	-- record shift key state
-	if shift_key_event(k, state) then
+	if M.shift_key_event(k, state) then
 		return
 	end
 
-	local ch = glfw_key_toascii(k)
+	local ch = M.glfw_key_toascii(k)
 
 	if state == GLFW_RELEASE then
 		-- if current keydown key was released, clear keydown key
@@ -177,7 +175,7 @@ print(string.format("key_event(): k: [%s], state: [%s]", tostring(k), tostring(s
 
 	-- handle keydown action
 	if ch ~= nil then
-		char_pressed(ch)
+		M.char_pressed(ch)
 	end
 end
 
@@ -203,11 +201,11 @@ M.draw = function()
 --print("BEG tf_edit.lua draw()")
 --traceback()
 --debug_console()
-	if M.editor.active_buf.redraw then
-		buffer.draw(M.editor.active_buf)
+	if M.editor._active_buf.redraw then
+		buffer.draw(M.editor._active_buf)
 	end
-	if M.editor.cmd_buf.redraw then
-		buffer.draw(M.editor.cmd_buf)
+	if M.editor._cmd_buf.redraw then
+		buffer.draw(M.editor._cmd_buf)
 	end
 	tfont.draw_text_buf()
 	edit.draw_cursor()
@@ -217,6 +215,8 @@ end
 M.main = function()
 	M.init()
 	gamelib.open_window("test editor")
+	glfw.setKeyCallback('key_event')
+
 	local run = true
 	while run do
 		-- beg frame

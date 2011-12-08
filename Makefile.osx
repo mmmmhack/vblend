@@ -12,11 +12,13 @@ all : subdirs
 
 subdirs:
 	cd lua && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd gl && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd glfw && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
 	cd util && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd gl && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd glu && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd glfw && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
 	cd img && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
 	cd font && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	cd edit && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
 
 $(PREFIX):
 	mkdir $(PREFIX)
@@ -24,6 +26,7 @@ $(PREFIX):
 install : $(PREFIX)
 	$(CP) $(lua_dir)/lua$(EXE) $(lua_libs) $(PREFIX)/
 	$(CP) gl/*.$(SO) $(PREFIX)/
+	$(CP) glu/*.$(SO) $(PREFIX)/
 	$(CP) glfw/*.$(SO) $(PREFIX)/
 	$(CP) glfw/libglfw/*.$(SO) $(PREFIX)/
 	$(CP) util/*.$(SO) $(PREFIX)/
@@ -31,6 +34,7 @@ install : $(PREFIX)
 	$(CP) img/zlib/*.$(SO) $(PREFIX)/
 	$(CP) img/libpng/*.$(SO) $(PREFIX)/
 	$(CP) font/*.$(SO) $(PREFIX)/
+	$(CP) edit/*.$(SO) $(PREFIX)/
 	$(CP) gamelib/*.lua $(PREFIX)/
 	$(CP) -r demo/* $(PREFIX)/
 

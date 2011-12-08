@@ -5,6 +5,40 @@
 glfw is lua wrapper around the glfw C library. See glfwrm.txt and glfwum.txt
 for additional documentation of the C library.
 
+NOTE: all these functions can only be called _after_ glfw.init()
+
+|closeWindow|
+|disable|
+|enable|
+|extensionSupported|
+|getJoystickParam|
+|getKey|
+|getMouseButton|
+|getMouseWheel|
+|getNumberOfProcessors|
+|getTime|
+|getWindowParam|
+|getWindowSize|
+|iconifyWindow|
+|init|
+|loadTexture2D|
+|openWindow|
+|openWindowHint|
+|pollEvents|
+|restoreWindow|
+|setKeyCallback|
+|setMousePos|
+|setMouseWheel|
+|setTime|
+|setWindowSize|
+|setWindowPos|
+|setWindowTitle|
+|sleep|
+|swapBuffers|
+|swapInterval|
+|terminate|
+|waitEvents|
+
 *functions*
 
                                                         *getKey*
