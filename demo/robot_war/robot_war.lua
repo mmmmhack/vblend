@@ -2,6 +2,7 @@
 
 require('gamelib')
 require('world')
+require('api')
 
 local progname = "robot_war"
 local frm_time = 1/60
@@ -19,16 +20,22 @@ function main()
 	local botfile2 = arg[2]
 	local bot_files = {botfile1, botfile2}
 	world.init(bot_files, gamelib.win_width(), gamelib.win_height())
-	local robot1 = dofile(botfile1)
-	local robot2 = dofile(botfile2)
+
+--	local robot1 = dofile(botfile1)
+--	local robot2 = dofile(botfile2)
 
 	-- game main loop
 	local done=false
 	while not done do
 		local beg_time = sys.double_time()
 
-		robot1.update()
-		robot2.update()
+		-- do user bot update
+--	 	robot1.update()
+--	 	robot2.update()
+
+		-- update world
+		local dt = frm_time
+		world.update(dt)
 
 		-- check for quit
 		gamelib.update()

@@ -38,7 +38,7 @@ end
 M.normalized = function(v)
   local mag = M.magnitude(v)
   if mag == 0 then
-    return {0, 0, 0}
+    return {x=0, y=0, z=0}
   end
   local vr = {x = v.x / mag, y = v.y / mag, z = v.z / mag}
   return vr

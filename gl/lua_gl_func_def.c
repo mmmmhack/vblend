@@ -68,8 +68,31 @@ static int lw_frustum(lua_State* L) {
   );
   return 0;
 }
+static int lw_pushMatrix(lua_State* L) {
+  glPushMatrix(
+  );
+  return 0;
+}
+static int lw_popMatrix(lua_State* L) {
+  glPopMatrix(
+  );
+  return 0;
+}
 static int lw_loadIdentity(lua_State* L) {
   glLoadIdentity(
+  );
+  return 0;
+}
+static int lw_rotatef(lua_State* L) {
+  GLfloat angle = lua_tonumber(L, -4);
+  GLfloat x = lua_tonumber(L, -3);
+  GLfloat y = lua_tonumber(L, -2);
+  GLfloat z = lua_tonumber(L, -1);
+  glRotatef(
+    angle,
+    x,
+    y,
+    z
   );
   return 0;
 }

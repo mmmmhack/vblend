@@ -1,0 +1,22 @@
+==============================================================================
+                                                        *robot_war*
+robot_war
+
+                                                        *set_vel*
+bot_set_vel()	
+
+Sets velocity of robot.
+
+Params:
+	name		type: string,  descrip: name of bot
+	vx			type: number, descrip: x position of rectagle lower-left corner
+	vy			type: number, descrip: y position of rectagle lower-left corner
+
+Returns:
+	result	type: boolean, descrip: true if new velocity was set, else false
+
+Notes:
+	The velocity parameters are clamped to maximum and minimum values. The
+	function returns false if clamping was done.
+
+ vim:tw=78:sw=4:ts=2:ft=help:norl

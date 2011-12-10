@@ -7,15 +7,6 @@ package.loaded[modname] = M
 M.op_count_buf = ""
 M.op_count_max = 10
 M.op_count_col = tfont.num_cols() - M.op_count_max
---M.buf = nil -- TODO: replace with better init
-
---[[
-M.update_scr = function()
-	row = cmd_mode.cmd_line_row()
-	col = M.op_count_col
-	tflua.set_screen_buf(row, col, M.op_count_buf)
-end
---]]
 
 M.clear_op_count = function()
 	M.op_count_buf = string.rep(" ", #M.op_count_buf)
@@ -43,17 +34,18 @@ M.update_op_count = function(ch)
 end
 
 -- does cursor movement
-M.move_horiz = function(dir)
+--M.move_horiz = function(dir)
+M.move_horiz = function(count)
 	local b = editor.active_buf()
 
-	local n = dir * M.op_count()
+--	local n = dir * M.op_count()
 	-- clamp to line
 	local ln = buffer.get(b)
 	local final_col = math.max(0, #ln - 1)
 	local cur_pos = b.cursor_pos
 	local cur_col = cur_pos[0]
 	local cur_row = cur_pos[1]
-	local new_col = cur_col + n
+	local new_col = cur_col + count
 	new_col = math.min(final_col, new_col)
 	new_col = math.max(0, new_col)
 --print(string.format("normal_mode.move_horiz(): n: %d, cur_col: %d, new_col: %d", n, cur_col, new_col))
@@ -68,14 +60,18 @@ M.char_pressed = function (ch)
 	local ln = buffer.get(b)
 	-- movement
 	if ch == editor.cc('h') then
-		M.move_horiz(-1)
+		M.move_horiz(-1 * M.op_count())
 	elseif ch == editor.cc('l') then
-		M.move_horiz(1)
+		M.move_horiz(1 * M.op_count())
 	elseif ch == editor.cc('$') then
 		M.move_horiz(#ln)
-	-- count
+	-- count: add to op count _unless_ this is the first digit and 0, in which case move cursor to beg of line
 	elseif util.isdigit(ch) then
-		M.update_op_count(ch)
+		if #M.op_count_buf  == 0 then
+			M.move_horiz(- #ln)
+		else
+			M.update_op_count(ch)
+		end
 	-- insert mode
 	elseif ch == editor.cc('i') or ch == editor.cc('a') then
 		set_mode('insert')

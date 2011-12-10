@@ -221,12 +221,12 @@ M.main = function()
 	while run do
 		-- beg frame
 		local beg_time = sys.double_time()
-		gamelib.update()
 
 		M.tick()
 		M.draw()
 
 		-- end frame
+		gamelib.update()
 		if gamelib.window_closed() or glfw.getKey(glfw.GLFW_KEY_ESC)==glfw.GLFW_PRESS then
 			run = false
 		end
