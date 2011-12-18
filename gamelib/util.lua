@@ -59,6 +59,17 @@ M.split = function (str, delim, maxSplit)
 		return result
 end
 
+M.join = function(toks, delim)
+	local s = ""
+	for i, tok in ipairs(toks) do
+		if i ~= 1 then
+			s = s .. delim
+		end
+		s = s .. tok
+	end
+	return s
+end
+
 M.tolower = function(c)
   local nA = string.byte('A')
   local nZ = string.byte('Z')

@@ -4813,6 +4813,222 @@ Did a tiny bit bit of work on cursor movement in editor.
 Did a tiny bit of work on robot_war.
 </p>
 
+<h2>2011-12-11</h2>
+
+<p>
+Back to work on editor app, think I'll add a trace option to the lua debugger.
+</p>
+
+<p>
+Added it, it works! 
+</p>
+
+<p>
+Hmm, no, not quite, it's reporting wrong source file at times.
+</p>
+
+<p>
+Also getting crash:
+</p>
+<pre>
+breakpoint hit!
+ 1 [./normal_mode.lua:71] (char_pressed)
+ &gt; t
+ instruction tracing is ON, appending to trace.log
+ &gt; c
+ continuing program execution
+
+ Program received signal EXC_BAD_ACCESS, Could not access memory.
+ Reason: KERN_PROTECTION_FAILURE at address: 0x00000006
+ 0x000069f0 in lua_getstack (L=0x1096d0, level=0, ar=0xbfffdea4) at ldebug.c:90
+ 90	    if (f_isLua(ci))  /* Lua function? */
+ (gdb) bt
+ #0  0x000069f0 in lua_getstack (L=0x1096d0, level=0, ar=0xbfffdea4) at ldebug.c:90
+ #1  0x0001c816 in db_getinfo (L=0x1096d0) at ldblib.c:104
+ #2  0x000091fd in luaD_precall (L=0x1096d0, func=0x8c1a64, nresults=1) at ldo.c:319
+ #3  0x0001814f in luaV_execute (L=0x1096d0, nexeccalls=2) at lvm.c:587
+ #4  0x00009473 in luaD_call (L=0x1096d0, func=0x8c19b0, nResults=0) at ldo.c:377
+ #5  0x00003adf in lua_call (L=0x1096d0, nargs=2, nresults=0) at lapi.c:782
+ #6  0x0001cf3e in hookf (L=0x1096d0, ar=0xbfffe330) at ldblib.c:219
+ #7  0x00008b0d in luaD_callhook (L=0x1096d0, event=2, line=155) at ldo.c:198
+ #8  0x00015217 in traceexec (L=0x1096d0, pc=0x111794) at lvm.c:75
+ #9  0x000164e8 in luaV_execute (L=0x1096d0, nexeccalls=1) at lvm.c:390
+ #10 0x00009473 in luaD_call (L=0x1096d0, func=0x8c195c, nResults=0) at ldo.c:377
+ #11 0x00003b33 in f_call (L=0x1096d0, ud=0xbfffe85c) at lapi.c:800
+ #12 0x000086ca in luaD_rawrunprotected (L=0x1096d0, f=0x3b09 &lt;f_call&gt;, ud=0xbfffe85c) at ldo.c:116
+ #13 0x00009806 in luaD_pcall (L=0x1096d0, func=0x3b09 &lt;f_call&gt;, u=0xbfffe85c, old_top=348, ef=0) at ldo.c:463
+ #14 0x00003bd0 in lua_pcall (L=0x1096d0, nargs=2, nresults=0, errfunc=0) at lapi.c:821
+ #15 0x00041d3e in keyCallback (key=323, action=1) at lua_setKeyCallback.c:13
+ #16 0x9139e731 in -[NSWindow sendEvent:] ()
+ #17 0x9136a6a5 in -[NSApplication sendEvent:] ()
+ #18 0x0004ba57 in -[GLFWApplication sendEvent:] (self=0x1410f0, _cmd=0x952cf4b8, event=0x1362e0) at cocoa/cocoa_init.m:62
+ #19 0x0004df2e in _glfwPlatformPollEvents () at cocoa/cocoa_window.m:847
+ #20 0x00041ace in lw_swapBuffers (L=0x1096d0) at lua_glfw_func_def.c:99
+ #21 0x000091fd in luaD_precall (L=0x1096d0, func=0x8c1968, nresults=0) at ldo.c:319
+ #22 0x0001814f in luaV_execute (L=0x1096d0, nexeccalls=3) at lvm.c:587
+ #23 0x00009473 in luaD_call (L=0x1096d0, func=0x80266c, nResults=1) at ldo.c:377
+ #24 0x00003adf in lua_call (L=0x1096d0, nargs=1, nresults=1) at lapi.c:782
+ #25 0x000249be in ll_require (L=0x1096d0) at loadlib.c:484
+ #26 0x000091fd in luaD_precall (L=0x1096d0, func=0x802624, nresults=0) at ldo.c:319
+ #27 0x0001814f in luaV_execute (L=0x1096d0, nexeccalls=1) at lvm.c:587
+ #28 0x00009473 in luaD_call (L=0x1096d0, func=0x802618, nResults=-1) at ldo.c:377
+ #29 0x00003b33 in f_call (L=0x1096d0, ud=0xbffff5bc) at lapi.c:800
+ #30 0x000086ca in luaD_rawrunprotected (L=0x1096d0, f=0x3b09 &lt;f_call&gt;, ud=0xbffff5bc) at ldo.c:116
+ #31 0x00009806 in luaD_pcall (L=0x1096d0, func=0x3b09 &lt;f_call&gt;, u=0xbffff5bc, old_top=24, ef=0) at ldo.c:463
+ #32 0x00003bd0 in lua_pcall (L=0x1096d0, nargs=0, nresults=-1, errfunc=0) at lapi.c:821
+ #33 0x00001ebb in main (argc=1, argv=0xbffff644) at debug_wrapper.c:27
+ (gdb) 
+</pre>
+
+<p>
+Maybe stack size exceeded, will add checks for that.
+</p>
+
+<p>
+Don't see a programmatic way to increase the C lua stack size with the current
+approach (running lua scripts using lua exe instead of C code, so I can't call lua_checkstack(L, extra))
+but since lua is built in the project itself, I can just increase the defined value of LUA_MINSTACK
+which is only 20 and seems clearly way to small from the stack trace above.
+</p>
+
+<p>
+I increased to 200, rebuilt everything, tried again, crashes in the same way, so maybe has nothing
+to do with stack size?
+</p>
+
+<h2>2011-12-12</h2>
+
+<p>
+I must understand Lua internals.
+</p>
+
+<p>
+Started documenting the lua source code in the wiki. While going through luaconf.h, I
+note LUA_USE_APICHECK, which I'll try defining at some point to see if it catches the crash above.
+</p>
+
+<h2>2011-12-13</h2>
+
+<p>
+Tuesday morning. Continuing reading and documenting lua source code.
+</p>
+
+<h2>2011-12-15</h2>
+
+<p>
+Thursday morning. Tuesday morning, I conceived of a nice system for representing and 
+understanding the execution of code - use vim to display multiple windows:
+</p>
+
+<ul>
+<li>Navigator and Narrative windows on top
+<li>Source window in middle
+<li>Data/Detail window(s) on bottom
+</ul>
+
+<p>
+vim scripts would define a sequence of narrative and highlighting actions for each
+step through the source code, showing the effect on various data structures,
+connecting high-level intent with low-level execution. Something analogous to
+the schematic molecular simulations that I developed for ribosome builder.
+</p>
+
+<p>
+However, today I'm starting on a lua program to drive the gserver/gclient tools
+to record a sequence of execution steps through lua code.
+</p>
+
+<h2>2011-12-16</h2>
+
+<p>
+Friday again, Hallelule. Yesterday I started on the gtrace.lua program, which
+will drive the gclient app to step through lua source code. Continuing that
+this morning, beginning with parsing out the .c files from info sources ret:
+</p>
+
+<pre>
+(gdb) info sources
+Source files for which symbols have been read in:
+
+
+
+Source files for which symbols will be read in on demand:
+
+/System/Library/Frameworks/System.framework/PrivateHeaders/i386/cpu_capabilities.h, /System/Library/Frameworks/System.framework/PrivateHeaders/machine/cpu_capabilities.h, <command line>, <built-in>, /SourceCache/Libsystem/Libsystem-111.1.7//, /SourceCache/Libsystem/Libsystem-111.1.7/CommPageSymbols.st, /var/tmp//cc6o3sx0.s, lcode.c, lparser.c, lundump.c, lbaselib.c, ltablib.c, lopcodes.c, ldblib.c, lmem.c, loslib.c, lstrlib.c, lmathlib.c, loadlib.c, liolib.c, lzio.c, llex.c, lgc.c, ldump.c, lvm.c, ltable.c, lstring.c, ldo.c, ltm.c, /usr/include/ctype.h, lobject.c, lfunc.c, ldebug.c, linit.c, lstate.c, lauxlib.c, lapi.c, lua.c
+(gdb) 
+</pre>
+
+<p>
+Finished code to parse source files. Next: parse 'start' response:
+</p>
+<pre>
+(gdb) start
+Breakpoint 1 at 0x2daf: file lua.c, line 380.
+Starting program: /Users/williamknight/proj/git/vblend/dist/lua 
+Reading symbols for shared libraries +++.. done
+
+Breakpoint 1, main (argc=1, argv=0xbffff674) at lua.c:380
+380	  lua_State *L = lua_open();  /* create state */
+(gdb) 
+</pre>
+
+<h2>2011-12-17</h2>
+
+<p>
+Maybe will get some coding time in tonight before going to a party. Nope.
+</p>
+
+<p>
+Next parse tasks:
+</p>
+<pre>
+(gdb) info source
+Current source file is lua.c
+Compilation directory is /Users/williamknight/proj/git/vblend/lua
+Located in /Users/williamknight/proj/git/vblend/lua/lua.c
+Contains 392 lines.
+Source language is c.
+Compiled with DWARF 2 debugging format.
+Does not include preprocessor macro info.
+(gdb)
+</pre>
+
+<pre>
+(gdb) info line
+Line 380 of "lua.c" starts at address 0x2daf <main+13> and ends at 0x2db7 <main+21>.
+(gdb) 
+</pre>
+
+<p>
+Should be easy enough.
+</p>
+
+<p>
+Debugging, adding printout of line code to debugger.lua, makes it much easier to use.
+</p>
+
+<p>
+Crap, must have broken backtrace. Fixed.
+</p>
+
+<p>
+Finally got it working:
+</p>
+<pre>
+mhackslab:dist $ r
+lua.c:380
+lauxlib.c:648
+lstate.c:147
+lauxlib.c:630
+lauxlib.c:635
+lauxlib.c:636
+lstate.c:148
+lstate.c:149
+lstate.c:150
+lstate.c:151
+lstate.c:152
+mhackslab:dist $ 
+</pre>
 </body>
 </html>
 

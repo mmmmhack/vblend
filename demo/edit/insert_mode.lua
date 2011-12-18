@@ -13,7 +13,7 @@ M.insert_beg_pos = nil
 M.begin = function (mode_ch)
 
 	-- inc cursor
-	if mode_ch == cc('a') then
+	if mode_ch == editor.cc('a') then
 		M.inc_cursor(1)
 	end
 
@@ -35,21 +35,21 @@ M.insert_pos = function()
 	col = cursor_pos[2] + hscroll
 	return col
 --]]
-	local pos = active_buf().cursor_pos
+	local pos = editor.active_buf().cursor_pos
 	return {[0]=pos[0], [1]=pos[1]}
 end
 
 M.inc_cursor = function(n)
-	buffer.inc_cursor(active_buf(), n)
+	buffer.inc_cursor(editor.active_buf(), n)
 end
 
 M.get_line = function()
-	local ln = buffer.get(active_buf())
+	local ln = buffer.get(editor.active_buf())
 	return ln
 end
 
 M.set_line = function(ln)
-	buffer.set(active_buf(), ln)
+	buffer.set(editor.active_buf(), ln)
 end
 
 M.char_pressed = function(ch)
@@ -63,7 +63,7 @@ local fname = string.format("insert_mode.char_pressed-beg-%s-%d.buffer-dump.txt"
 		-- cmd-line 'insert' status
 		cmd_mode.set_text("")
 		M.inc_cursor(-1)
-		set_mode("normal")
+		editor.set_mode("normal")
 	-- erase prev input text char, up to insertion pos 
 	elseif ch == ASC_BS then
 		-- dec cursor

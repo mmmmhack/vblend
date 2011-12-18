@@ -67,18 +67,18 @@ M.char_pressed = function (ch)
 		M.move_horiz(#ln)
 	-- count: add to op count _unless_ this is the first digit and 0, in which case move cursor to beg of line
 	elseif util.isdigit(ch) then
-		if #M.op_count_buf  == 0 then
+		if #M.op_count_buf  == 0 and ch=='0' then
 			M.move_horiz(- #ln)
 		else
 			M.update_op_count(ch)
 		end
 	-- insert mode
 	elseif ch == editor.cc('i') or ch == editor.cc('a') then
-		set_mode('insert')
+		editor.set_mode('insert')
 		insert_mode.begin(ch)
 	-- command mode
 	elseif ch == editor.cc(':') then
-		set_mode('command')
+		editor.set_mode('command')
 		cmd_mode.begin()
 		return
 	-- undefined

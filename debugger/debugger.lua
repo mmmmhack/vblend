@@ -11,6 +11,8 @@ M._first_time = true
 M._break_src = nil
 M._break_line = nil
 M._target_offset_from_top = nil -- level of debuggee function when breakpoint hit, relative to top of stack
+M._instruction_tracing = false
+M.trace_file = "trace.log"
 
 M.print_help = function ()
   print("--- commands:");
@@ -20,7 +22,8 @@ M.print_help = function ()
   print("  u             :    print all upvalue variables");
   print("  p EXPR        :    print value of expression");
   print("  s             :    step one instruction");
-  print("  t             :    show current location");
+  print("  t             :    toggle instruction tracing");
+  print("  i             :    show current location");
   print("  w             :    show backtrace");
   print("  q             :    quit program");
   print("  h             :    show this help");
@@ -76,8 +79,31 @@ M.isdigit = function(s)
 end
 
 -- global funcs
+M.get_traceback = function(show_debug)
+--print(string.format("bot level: %d, target_offset: %d, target_level: %d", M.getinfo_bottom(), M.target_offset, M.target_level()))
+	local sret = ""
+  local plevel = 1
+  for level = 1, math.huge do 
+    local info = debug.getinfo(level)   -- get all info
+    if not info then break end 
+    if info.what == "C" then -- is a C function? 
+      sret = sret .. string.format("%2d [C function]\n", plevel)
+      plevel = plevel + 1
+    else -- a Lua function 
+      -- skip lines in debug module TODO: narrow this down if we ever want to debug the debug module itself
+      local internal_level = string.match(info.short_src, "debugger.lua$") ~= nil
+      if not internal_level or show_debug then
+        sret = sret .. string.format("%2d [%s:%d] (%s)\n", plevel, info.short_src, info.currentline, tostring(info.name))
+        plevel = plevel + 1
+      end
+    end 
+  end 
+	return sret
+end
+
 function traceback(show_debug)
 --print(string.format("bot level: %d, target_offset: %d, target_level: %d", M.getinfo_bottom(), M.target_offset, M.target_level()))
+--[[
   local plevel = 1
   for level = 1, math.huge do 
     local info = debug.getinfo(level)   -- get all info
@@ -94,6 +120,10 @@ function traceback(show_debug)
       end
     end 
   end 
+--]]
+	local tb = M.get_traceback(show_debug)
+--	return sret
+	print(tb)
 end
 
 -- expr =    . identifier 
@@ -177,6 +207,9 @@ M.dump_locals = function()
     print(string.format("local %04d: name: [%s], val: [%s]", i, tostring(name), tostring(val)))
     i = i + 1
   end
+	if i == 1 then
+		print("no locals")
+	end
 end
 
 M.dump_debug_info = function(level)
@@ -218,6 +251,9 @@ M.dump_upvalues = function()
     print(string.format("upvalue %04d: name: [%s], val: [%s]", i, tostring(name), tostring(val)))
     i = i + 1
   end
+	if i == 1 then
+		print("no upvalues")
+	end
 end
 
 -- returns name and value of upvalue with param name, if found, else nil
@@ -408,6 +444,18 @@ M.target_level = function()
   return M.getinfo_bottom() - M._target_offset_from_top
 end
 
+M.find_source_line = function(src_file, line_num)
+	local lines = {}
+	for ln in io.lines(src_file) do
+		lines[#lines + 1] = ln
+	end
+	local source_line = ""
+	if lines and #lines >= line_num then
+		source_line = lines[line_num]
+	end
+	return source_line 
+end
+
 -- prints debug info for the target stack level
 M.print_target_level = function()
   local target_level = M.target_level()
@@ -415,7 +463,9 @@ M.print_target_level = function()
   local func = info.name
   local src = string.sub(info.source, 2)
   local line = info.currentline
-  print(string.format("%2d [%s:%d] (%s)", 1, src, line, func))
+	local instruction = " " .. util.trim(M.find_source_line(src, line))
+--  print(string.format("%2d [%s:%d] (%s)%s", 1, src, line, tostring(func), instruction))
+  print(string.format("[%s:%d] (%s)%s", src, line, tostring(func), instruction))
 end
 
 -- entered on 'step' command
@@ -457,6 +507,30 @@ M.next_instruction = function()
   debug.sethook(M.next_instruction_executed, "l")
 end
 
+M.log_next_instruction_executed = function()
+  local info = debug.getinfo(2, 'Snl')
+  local func = info.name
+  local src = string.sub(info.source, 2)
+  local line = info.currentline
+	local fh = io.open(M.trace_file, "a")
+  local ln = string.format("***[%s:%d] (%s)\n", src, line, tostring(func))
+	fh:write(ln)
+	local tb = M.get_traceback(true)
+	fh:write(tb .. "\n")
+	fh:close()
+end
+
+M.toggle_instruction_tracing = function()
+	M.instruction_tracing = not M.instruction_tracing 
+	if M.instruction_tracing then
+		print(string.format("instruction tracing is ON, appending to %s", M.trace_file))
+ 	 debug.sethook(M.log_next_instruction_executed, "l")
+	else
+		print(string.format("instruction tracing is OFF"))
+ 	 debug.sethook()
+	end
+end
+
 -- interactive debugging console
 function debug_console()
   if M._first_time then
@@ -493,6 +567,9 @@ function debug_console()
         M.step_instruction()
         get_input = false;
       elseif c == 't' then
+        M.toggle_instruction_tracing()
+--  			get_input = false;
+      elseif c == 'i' then
         M.print_target_level()
       elseif c == 'w' then
         traceback()

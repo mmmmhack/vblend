@@ -227,7 +227,7 @@ M.main = function()
 
 		-- end frame
 		gamelib.update()
-		if gamelib.window_closed() or glfw.getKey(glfw.GLFW_KEY_ESC)==glfw.GLFW_PRESS then
+		if gamelib.window_closed() then
 			run = false
 		end
 		local end_time = sys.double_time()
@@ -238,5 +238,10 @@ M.main = function()
 	end
 end
 
---M.main()
+M.quit = function()
+	os.exit(0)
+end
+
+debug_console()
+M.main()
 

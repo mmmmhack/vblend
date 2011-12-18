@@ -94,7 +94,7 @@ M.char_pressed = function (ch)
 --print("cmd_line: char_pressed_command(): ch: [" .. ch .. "]")
 
   -- backspace
-  if      ch == cc(ASC_BS) then
+  if      ch == editor.cc(ASC_BS) then
     -- TODO: replace with M.buf, module functions to access single line in buf
 --    if #M.cmd_line_buf <= 1 then
     local cmd_line = M.get_text()
@@ -108,7 +108,7 @@ M.char_pressed = function (ch)
     buffer.inc_cursor(M.buf, -1)
 
   -- enter
-  elseif ch == cc(ASC_RET) then
+  elseif ch == editor.cc(ASC_RET) then
     -- get cmd
     local ln = buffer.get(M.buf)
     local cmd = string.sub(ln, 2) 
@@ -118,13 +118,13 @@ M.char_pressed = function (ch)
 
     -- move cursor back to prev pos
 --    buffer.set_cursor(M.buf, cursor.saved_pos)
-    local b = active_buf()
+    local b = editor.active_buf()
     buffer.set_cursor(b, b.cursor_pos)
 
     -- process command
     M.do_cmd(cmd) 
     
-    set_mode("normal")
+    editor.set_mode("normal")
   else
     -- append ch to cmd-line
     buffer.set(M.buf, buffer.get(M.buf) .. ch)
