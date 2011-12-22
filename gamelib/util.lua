@@ -83,3 +83,12 @@ M.tolower = function(c)
   return cr
 end
 
+M.readlines = function(fname)
+	local fh = io.open(fname)
+	local lines = {}
+	for ln in fh:lines() do
+		lines[#lines + 1] = ln
+	end
+	return lines
+end
+

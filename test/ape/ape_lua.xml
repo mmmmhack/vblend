@@ -1,0 +1,63 @@
+<ape>
+<title>
+Annotated Program Execution for lua interpreter
+</title>
+
+<step location="lua.c:380">
+<narrative>
+Program entry point in function main(). lua state is created.
+</narrative>
+</step>
+
+<step location="lauxlib.c:648">
+<narrative>
+lua lib entry point to new state creation. Calls internal function lua_newstate().
+</narrative>
+</step>
+
+<step location="lstate.c:147">
+<narrative>
+</narrative>
+</step>
+
+<step location="lauxlib.c:630">
+<narrative>
+</narrative>
+</step>
+
+<step location="lauxlib.c:635">
+<narrative>
+</narrative>
+</step>
+
+<step location="lauxlib.c:636">
+<narrative>
+</narrative>
+</step>
+
+<step location="lstate.c:148">
+<narrative>
+</narrative>
+</step>
+
+<step location="lstate.c:149">
+<narrative>
+</narrative>
+</step>
+
+<step location="lstate.c:150">
+<narrative>
+</narrative>
+</step>
+
+<step location="lstate.c:151">
+<narrative>
+</narrative>
+</step>
+
+<step location="lstate.c:152">
+<narrative>
+</narrative>
+</step>
+
+</ape>

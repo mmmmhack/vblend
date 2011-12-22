@@ -5029,6 +5029,89 @@ lstate.c:151
 lstate.c:152
 mhackslab:dist $ 
 </pre>
+
+<h2>2011-12-18</h2>
+
+<p>
+Created test/ape project (annotated program execution), which will contain scripts
+and data to do annotated display of lua program execution in vim. The main annotation
+definitions are in xml format in file ape_lua.xml. Downloaded and tested simple
+xml parser by Roberto Ierusalimschy, it works.
+<ul>
+<li>xml element name: in string with key 'label'
+<li>attributes: in table with key 'xarg'
+<li>text and child nodes: in table with numeric keys 
+</ul>
+</p>
+
+<h2>2011-12-19</h2>
+
+<p>
+This morning, will start learning some vim scripting to setup the narrative windows.
+</p>
+
+<p>
+Started using some basic vim scripting code and functions to open, size and move around
+windows, need to define the 'nav/narrative/source/detail' layout. Need to read
+about 'redefine/detect' existing functions in vim.
+</p>
+
+<h2>2011-12-20</h2>
+
+<p>
+Slept in late, not much time for actual work this morning, so instead, ran 'mkid' on
+lua source dir and using 'gid' to troll around the lua code.
+</p>
+
+<h2>2011-12-21</h2>
+
+<p>
+Up very early, back on vim scripting. Finished creating code to open and close ape
+windows. The vim scripting is starting to sink in and should take my vimitude
+to a whole new level.
+</p>
+
+<p>
+After reading a little about lua 5.2 changes on very interesting corsix.org blog,
+back to vim to see if it provides event hooks for updating ape display. Started
+reading about autocommands and was very please to note 'CursorMoved' event and
+also amazed at the huge unsuspected world of autocommand definitions revealed
+just by typing ':au'.
+</p>
+
+<p>
+Next, I've decided to create a lua script to read the ape xml file and generate
+a vim script that defines the ape data in vim data structures. Next: read
+up on vim data structures.
+</p>
+
+<h2>2011-12-22</h2>
+
+<p>
+It's a Friday Thursday for me, a little time this morning for reading lua and
+working on ape. A brief look at vim data structures yesterday and a 10-second
+test this morning indicates they will be easy to use, I just did:
+</p>
+
+<pre>
+let l1=[1, 2, 3]
+echo l1
+-&gt;[1, 2, 3]
+let t1 = {'name': 'test table', 'content': l1}
+echo t1
+-&gt;{'name': 'test table', 'content': [1, 2, 3]}
+</pre>
+
+<p>
+So now to write some lua code that defines a vim dictionary from a lua table.
+</p>
+
+<p>
+Whipped up a quick function to do that, it appears to work. Next, need to
+re-work the raw lua-from-xml table into something that just has the desired
+xml content (not 'xargs' and 'labels').
+</p>
+
 </body>
 </html>
 
