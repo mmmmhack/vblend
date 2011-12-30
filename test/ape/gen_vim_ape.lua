@@ -41,16 +41,36 @@ function tovimstring(v)
 	end
 end
 
+-- extracts ape info from 'raw' xml-to-lua table
+function get_steps(raw_xlt)
+	local steps = {}
+	local t = raw_xlt[1]
+	-- first item is title element
+	local i = 1
+	local title_xlt = t[i]
+	for i = 2, #t do
+		local step = {}
+		local step_xlt = t[i]
+		assert(step_xlt['label'] == 'step')
+		local attrs = step_xlt['xarg']
+		step.location = attrs.location
+		steps[#steps + 1] = step
+	end
+	return steps
+end
+
 function main()
 	-- read xml
 	local infile = "ape_lua.xml"
 	local s = io.open(infile):read("*a")
 	print(string.format("%d bytes read from %s", #s, infile))
 	local t = collect(s)
+	local steps = get_steps(t)
 
 	-- write vim def
-	local s = tovimstring(t)
+	local s = tovimstring(steps)
 	print(s)
+--	util.ptable(steps)
 
 end
 

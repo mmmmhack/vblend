@@ -11,12 +11,18 @@ Program entry point in function main(). lua state is created.
 
 <step location="lauxlib.c:648">
 <narrative>
-lua lib entry point to new state creation. Calls internal function lua_newstate().
+lua lib entry point to new state creation: function luaL_newstate(). 
+Calls internal function lua_newstate().
+
+TODO: move to step: lauxlib.c:649
+On return from lua_newstate(), all members of lua_State* L are 0 except for L->tt, which
+is initialized to LUA_TTHREAD
 </narrative>
 </step>
 
 <step location="lstate.c:147">
 <narrative>
+Calls lua_Alloc function, params user data ptr 'ud', 0, size of combined state objects lua_State L, global_state G.
 </narrative>
 </step>
 

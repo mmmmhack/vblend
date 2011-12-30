@@ -14,6 +14,9 @@ function ptable(t, level)
 	io.write(string.format("%s},\n", indent))
 end
 
+function get_steps(xml_t)
+end
+
 function main()
 	local infile = "ape_lua.xml"
 	if #arg == 1 then
