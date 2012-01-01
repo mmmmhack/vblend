@@ -64,5 +64,6 @@ lua/luac
 lua/lua.exe
 lua/luac.exe
 lua/lua51.dll
+lua/ID
 dist
 debugger/debug_wrapper

@@ -5184,6 +5184,47 @@ First though, need to add step-driven appending of file:line to nav window and a
 list.
 </p>
 
+<p>
+Got ape Init() working the way I want, and :redraw works as desired!
+</p>
+
+<h2>2012-01-01</h2>
+
+<p>
+A new year dawns. Continuing ape.vim script, saving step info with function
+WriteSteps(). Need to learn vim debugging methods now, there are errors that
+are only briefly display, need to get the script to halt there.
+</p>
+
+<p>
+Got WriteSteps() working, but weird line-ending on narrative text:
+</p>
+<pre>
+<step src_file="/Users/williamknight/proj/git/vblend/lua/lua.c" src_line="380">
+<narrative>
+prog start. 
+</narrative>
+</step>
+</pre>
+
+<p>
+xxd reveals it to be a null byte (0x00). Is this somehow a consequence of the 'get()' return
+value? Will debug to investigate.
+</p>
+
+<p>
+It's the newline, from 'writefile()' docs:
+</p>
+<blockquote>
+...
+		All NL characters are replaced with a NUL character.
+...
+</blockquote>
+
+<p>
+Fixed.
+</p>
+
 </body>
 </html>
 
