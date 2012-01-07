@@ -1,8 +1,10 @@
 -- robot_war.lua	:	combat between robo tanks, driven by lua scripts
 
 require('gamelib')
+require('lua_tfont')
 require('world')
 require('api')
+require('debugger')
 
 local progname = "robot_war"
 local frm_time = 1/60
@@ -24,14 +26,12 @@ function main()
 --	local robot1 = dofile(botfile1)
 --	local robot2 = dofile(botfile2)
 
+	math.randomseed(os.time())
+
 	-- game main loop
 	local done=false
 	while not done do
 		local beg_time = sys.double_time()
-
-		-- do user bot update
---	 	robot1.update()
---	 	robot2.update()
 
 		-- update world
 		local dt = frm_time

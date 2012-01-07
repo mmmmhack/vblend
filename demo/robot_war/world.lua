@@ -13,12 +13,19 @@ local gun_turret_color = {0.1, 0.1, 0.1}
 local gun_barrel_w = 35
 local gun_barrel_h = 10
 local gun_barrel_color = {0.3, 0.3, 0.3}
+local gun_reload_time = 1.5
 
-local bullet_radius = 5
+local bullet_init_radius = 5
 local bullet_color = {0.95, 0.7, 0.4}
+local bullet_max_explode_time = 0.1
+local bullet_explode_rate = 1000
+local bullet_vel = 500
+local bullet_explosion_damage_dt = 1
 
 local bot_w = 50
 local bot_h = 30
+local bot_init_health = 100
+local bot_max_vel = 50
 
 local world_w = nil
 local world_h = nil
@@ -34,6 +41,15 @@ M.bots = {}
 M.bullets = {}
 
 M.init = function(botfiles, world_w_i, world_h_i)
+	-- set world vars from local vars (TODO: fix this)
+	M.gun_reload_time = gun_reload_time 
+	M.running = true
+	M.bullet_init_radius = bullet_init_radius
+	M.bullet_vel = bullet_vel
+	M.bot_init_health = bot_init_health 
+	M.bot_max_vel = bot_max_vel 
+
+	-- create bots
 	world_w = world_w_i
 	world_h = world_h_i
 	local corner = 0
@@ -47,6 +63,7 @@ M.init = function(botfiles, world_w_i, world_h_i)
 		bot.script = dofile(f)
 		bot.vel = {x = 0, y = 0}
 		bot.gun = {dir = 0, reloading = 0}
+		bot.health = M.bot_init_health
 
 		-- calc bot pos
 		local x, y
@@ -69,6 +86,7 @@ M.init = function(botfiles, world_w_i, world_h_i)
 		end
 		corner = corner + 1
 	end
+
 end
 
 M.bot_pos = function(bot_name)
@@ -83,7 +101,7 @@ M.bot_size = function(bot_name)
 	return size
 end
 
-M.draw_bot = function(bot)
+M.draw_bot = function(bot, num_bot)
 	local pos = bot.pos
 	local size = bot.size
 
@@ -118,11 +136,24 @@ M.draw_bot = function(bot)
 	gl.color3f(gun_turret_color[1], gun_turret_color[2], gun_turret_color[3])
 	gamelib.draw_circle(pos.x + bot.size.w/2, pos.y + bot.size.h/2, gun_radius)
 
+	-- draw health
+	local draw_health = true
+	if draw_health then
+--		local start_row = tfont.num_rows() - 1
+		local start_row = 0
+		local row = start_row + num_bot
+		local col = 1
+	--debug_console()
+		local txt = string.format("%s health: %d", bot.name, bot.health)
+		txt = txt .. string.rep(" ", tfont.num_cols() - #txt)
+		tfont.set_text_buf(row, col, txt)
+	end
+
 end
 
 M.draw_bullet = function(bullet)
 	gl.color3f(bullet_color[1], bullet_color[2], bullet_color[3])
-	gamelib.draw_circle(bullet.pos.x, bullet.pos.y, bullet_radius)
+	gamelib.draw_circle(bullet.pos.x, bullet.pos.y, bullet.radius)
 end
 
 M.update_obj_pos = function(obj, dt)
@@ -130,18 +161,17 @@ M.update_obj_pos = function(obj, dt)
 	obj.pos.y = obj.pos.y + obj.vel.y * dt
 end
 
-M.calc_collisions = function()
-	-- calc bot-world collisions
-	local bump = 5
+M.calc_bot_world_collisions = function()
+	local border = 5
 	for name, bot in pairs(M.bots) do
 		if bot.pos.x < 0 or bot.pos.x + bot.size.w > world_w then
 			print(string.format("%s: bonk!", bot.name))
 			bot.vel.x = 0
 			bot.vel.y = 0
 			if bot.pos.x < 0 then
-				bot.pos.x = bump
+				bot.pos.x = border
 			else
-				bot.pos.x = world_w - bot.size.w - bump
+				bot.pos.x = world_w - bot.size.w - border
 			end
 		end
 		if bot.pos.y < 0 or bot.pos.y + bot.size.h > world_h then
@@ -149,42 +179,129 @@ M.calc_collisions = function()
 			bot.vel.x = 0
 			bot.vel.y = 0
 			if bot.pos.y < 0 then
-				bot.pos.y = bump
+				bot.pos.y = border
 			else
-				bot.pos.y = world_h - bot.size.h - bump
+				bot.pos.y = world_h - bot.size.h - border
 			end
 		end
 	end
 	
+end
+
+M.calc_bullet_world_collisions = function()
+	local border = bullet_init_radius
+	for name, bullet in pairs(M.bullets) do
+		-- ignore exploding bullets
+		if not bullet.exploding then
+			if bullet.pos.x < 0 or bullet.pos.x + bullet.radius > world_w then
+	--			print(string.format("%s: bonk!", bullet.name))
+				bullet.vel.x = 0
+				bullet.vel.y = 0
+				if bullet.pos.x < 0 then
+					bullet.pos.x = border
+				else
+					bullet.pos.x = world_w - bullet.radius - border
+				end
+				bullet.exploding = true
+			end
+			if bullet.pos.y < 0 or bullet.pos.y + bullet.radius > world_h then
+	--			print(string.format("%s: bonk!", bullet.name))
+				bullet.vel.x = 0
+				bullet.vel.y = 0
+				if bullet.pos.y < 0 then
+					bullet.pos.y = border
+				else
+					bullet.pos.y = world_h - bullet.radius - border
+				end
+				bullet.exploding = true
+			end
+		end
+	end
+end
+
+M.update_explosions = function(dt)
+	for name, bullet in pairs(M.bullets) do
+		-- update explode state
+		if bullet.exploding then
+			bullet.explode_time = bullet.explode_time + dt
+			bullet.radius = bullet_init_radius + bullet.explode_time * bullet_explode_rate
+			if bullet.explode_time >= bullet_max_explode_time then
+				bullet.exploding = false
+				bullet.radius = 0
+			end
+		end
+	end
+end
+
+M.calc_bullet_bot_collisions = function()
+	for name, bullet in pairs(M.bullets) do
+		local vbul = vector3.new(bullet.pos.x, bullet.pos.y, 0)
+		for bname, bot in pairs(M.bots) do
+			local vbot = vector3.new(bot.pos.x + bot.size.w/2, bot.pos.y + bot.size.h/2, 0)
+			local dist = vector3.dist(vbul, vbot)
+			if dist <= bullet.radius then
+				if not bullet.exploding then
+					bullet.exploding = true
+				end
+				local damage = bullet_explosion_damage_dt
+				bot.health = bot.health - damage
+				bot.health = math.max(0, bot.health)
+--print(string.format("explosion damage to bot %s: health: %d", bot.name, bot.health))
+--M.running = false
+			end
+		end
+	end
+
+end
+
+M.calc_collisions = function()
+
 	-- calc bot-bot collisions
+	M.calc_bot_world_collisions()
+
+	-- calc bullet-world collisions
+	M.calc_bullet_world_collisions()
+
+	-- calc bullet-bot collisions
+	M.calc_bullet_bot_collisions()
+
 end
 
 M.update = function(dt)
-	-- call bot scripts
-	for name, bot in pairs(M.bots) do
-		bot.script.update(name, dt)
-	end
-	
-	-- update bots
-	for name, bot in pairs(M.bots) do
-		-- position
-		M.update_obj_pos(bot, dt)
-		-- gun reload
-		if bot.gun.reloading ~= 0 then
-			bot.gun.reloading = math.max(0, bot.gun.reloading - dt)
+	if M.running then
+		-- call bot scripts
+		for name, bot in pairs(M.bots) do
+			if bot.health > 0 then
+				bot.script.update(name, dt)
+			end
 		end
-	end
-	-- update bullet positions
-	for i, bullet in ipairs(M.bullets) do
-		M.update_obj_pos(bullet, dt)
-	end
+		
+		-- update bots
+		for name, bot in pairs(M.bots) do
+			-- position
+			M.update_obj_pos(bot, dt)
+			-- gun reload
+			if bot.gun.reloading ~= 0 then
+				bot.gun.reloading = math.max(0, bot.gun.reloading - dt)
+			end
+		end
+		-- update bullet positions
+		for i, bullet in ipairs(M.bullets) do
+			M.update_obj_pos(bullet, dt)
+		end
 
-	-- calc collisions
-	M.calc_collisions()
+		-- calc collisions
+		M.calc_collisions()
+
+		-- update bullet explosions
+		M.update_explosions(dt)
+	end
 
 	-- draw bots
+	local num_bot = 0
 	for name, bot in pairs(M.bots) do
-		M.draw_bot(bot)
+		num_bot = num_bot + 1
+		M.draw_bot(bot, num_bot)
 	end
 
 	-- draw bullets
@@ -192,5 +309,12 @@ M.update = function(dt)
 		M.draw_bullet(bullet, dt)
 	end
 
+	-- draw text
+  tfont.draw_text_buf()
+end
+
+M.bot_pos = function(bot)
+ local vpos = vector3.new(bot.pos.x + bot.size.w/2, bot.pos.y + bot.size.h/2, 0)
+ return vpos
 end
 

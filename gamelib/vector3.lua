@@ -25,6 +25,11 @@ M.add = function(va, vb)
   return vr
 end
 
+M.sub = function(va, vb)
+  local vr = {x = va.x - vb.x, y = va.y - vb.y, z = va.z - vb.z}
+  return vr
+end
+
 M.mul_scalar = function(v, scalar)
   local vr = {x = v.x * scalar, y = v.y * scalar, z = v.z * scalar}
   return vr
@@ -81,5 +86,11 @@ M.mul = function(v, o)
 	else
 		return M.mul_scalar(v, o)
 	end
+end
+
+M.dist = function(va, vb)
+	local vab = vector3.sub(vb, va)
+	local dist = vector3.magnitude(vab)
+	return dist
 end
 

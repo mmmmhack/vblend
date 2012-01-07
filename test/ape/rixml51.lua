@@ -3,9 +3,14 @@ xml parser, classic Lua-only version from Roberto Ierusalimschy, updated for Lua
 ]]--
 function parseargs(s)
   local arg = {}
-  string.gsub(s, "(%w+)=([\"'])(.-)%2", function (w, _, a)
-    arg[w] = a
-  end)
+--  string.gsub(s, "(%w+)=([\"'])(.-)%2", function (w, _, a)
+--    arg[w] = a
+--  end)
+	function pa_repl(w, _, a)
+		arg[w] = a
+	end
+
+  string.gsub(s, "([_%w]+)=([\"'])(.-)%2", pa_repl)
   return arg
 end
     

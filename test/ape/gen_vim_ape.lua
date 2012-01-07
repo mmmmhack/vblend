@@ -1,5 +1,6 @@
 -- gen_vim_ape.lua	:	reads ape xml file, generates vim script to load data into vim
 require('rixml51')
+require('debugger')
 
 -- converts lua table to vim list/dict
 function table2vimstring(t)
@@ -35,7 +36,7 @@ function tovimstring(v)
 		return tostring(number)
 	elseif type(v) == "string" then
 		-- TODO: check for single/double quotes
-		return "'" .. v .. "'"
+		return '"' .. v .. '"'
 	elseif type(v) == "table" then
 		return table2vimstring(v)
 	end
@@ -48,12 +49,21 @@ function get_steps(raw_xlt)
 	-- first item is title element
 	local i = 1
 	local title_xlt = t[i]
+--debug_console()
 	for i = 2, #t do
 		local step = {}
 		local step_xlt = t[i]
 		assert(step_xlt['label'] == 'step')
 		local attrs = step_xlt['xarg']
-		step.location = attrs.location
+		step.src_file = attrs.src_file
+		step.src_line = attrs.src_line
+		-- get narrative element
+		local narr_xlt = step_xlt[1]
+		assert(narr_xlt['label'] == 'narrative')
+		local narr_txt = narr_xlt[1] or ''
+		-- replace newlines with '\\n'
+		step.narr = string.gsub(narr_txt, "\n", "\\n")
+
 		steps[#steps + 1] = step
 	end
 	return steps
@@ -61,16 +71,21 @@ end
 
 function main()
 	-- read xml
-	local infile = "ape_lua.xml"
+	local infile = arg[1]
 	local s = io.open(infile):read("*a")
-	print(string.format("%d bytes read from %s", #s, infile))
+--	print(string.format("%d bytes read from %s", #s, infile))
 	local t = collect(s)
 	local steps = get_steps(t)
 
 	-- write vim def
-	local s = tovimstring(steps)
-	print(s)
+	local s = "let g:ape_steps = " .. tovimstring(steps)
+--	print(s)
 --	util.ptable(steps)
+
+	local outfile = string.format("%s.vim", infile)
+	local fout = io.open(outfile, "w")
+	fout:write(s)
+	fout:close()
 
 end
 

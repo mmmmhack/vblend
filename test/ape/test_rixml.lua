@@ -1,4 +1,5 @@
 require('rixml51')
+require('debugger')
 
 function ptable(t, level)
 	local indent = string.rep(" ", level * 2)
@@ -24,6 +25,7 @@ function main()
 	end
 	local s = io.open(infile):read("*a")
 	print(string.format("%d bytes read from %s", #s, infile))
+--debug_console()
 	local t = collect(s)
 	ptable(t, 0)
 end

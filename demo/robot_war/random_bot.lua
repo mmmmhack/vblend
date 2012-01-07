@@ -1,9 +1,10 @@
--- barney_bot.lua
+-- random_bot.lua	:	random movement and firing
 
 local M = {}
 
+local max_v = 50
+
 M.update = function(bot_name, dt)
-	local max_v = bot_max_velocity(bot_name)
 
 	-- set new velocity with random probability
 	if math.random() > 0.99 then
@@ -14,13 +15,10 @@ M.update = function(bot_name, dt)
 		local vy = math.random() * max_v * rnd_dir
 		bot_set_vel(bot_name, vx, vy)
 	end
-
-	-- fire in other robot dir
-	if not bot_reloading(bot_name) then
-		local target_dir, target_dist = bot_scan_first_other_bot(bot_name)
-		bot_fire_gun(bot_name, target_dir)
-	else
---		print(string.format("%s: reloading", bot_name))
+	-- fire new dir
+	if math.random() > 0.99 then
+		local deg = 360 * math.random() 
+		bot_fire_gun(bot_name, deg)
 	end
 end
 

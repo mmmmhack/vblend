@@ -5225,6 +5225,79 @@ It's the newline, from 'writefile()' docs:
 Fixed.
 </p>
 
+<h2>2012-01-02</h2>
+
+<p>
+Starting on reading steps.xml file in vim. Already have lua code to do most of
+the work.
+</p>
+
+<p>
+Grr, keep getting burned on '_' not being a valid xml attribute name, at least 
+according to the lua xml parser code that I'm currently using.
+</p>
+
+<p>
+I fixed it by adding '_' to the attr pattern.
+</p>
+
+<h2>2012-01-03</h2>
+
+<p>
+Vacation sadly at an end, must go to work in minutes. This morning, I've decided
+to keep vim steps data in vim data format, not xml, avoiding need for lua
+script to parse and reconvert. This works for multi-line vim strings:
+</p>
+<pre>
+let g:ape_steps = [
+\	{
+\		'narr' : "Program start.\nCall internal func.",
+\		'src_file' : "/Users/williamknight/proj/git/vblend/lua/lua.c",
+\		'src_line' : "380"
+\	},
+\	{
+\		'narr' : "Internal call.\n",
+\		'src_file' : "/Users/williamknight/proj/git/vblend/lua/lauxlib.c",
+\		'src_line' : "648"
+\	},
+\	{
+\		'narr' : "init state objs",
+\		'src_file' : "/Users/williamknight/proj/git/vblend/lua/lstate.c",
+\		'src_line' : "147"
+\	}
+\]
+</pre>
+
+<p>
+Kinda ugly, but no worse than xml really.
+</p>
+
+<h2>2012-01-04</h2>
+
+<p>
+Got ape_steps.vim export working, next: implement ReadSteps().
+</p>
+
+<h2>2012-01-05</h2>
+
+<p>
+Up early, another day of vim-scripting to learn lua internals to finish
+text editor to use in graphics tool to create 3D game worlds.
+</p>
+
+<p>
+Need to replace s:cur_src_file/s:cur_src_line with s:cur_step_pos
+</p>
+
+<h2>2012-01-07</h2>
+<p>
+Get img and sound libs working.
+</p>
+
+<p>
+Add tanks and Romney robots.
+</p>
+
 </body>
 </html>
 

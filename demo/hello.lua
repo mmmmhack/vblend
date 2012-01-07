@@ -1,8 +1,8 @@
 -- hello.lua	:	hello world demo for gamelib
 
 -- set path to gamelib TODO: find a better way
-package.path = package.path .. ';../gamelib/?.lua'
-package.cpath = package.cpath .. ';../gamelib/?.so'
+--package.path = package.path .. ';../gamelib/?.lua'
+--package.cpath = package.cpath .. ';../gamelib/?.so'
 
 require('gamelib')
 require('lua_tfont')

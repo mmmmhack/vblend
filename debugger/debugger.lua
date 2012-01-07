@@ -1,5 +1,6 @@
 -- debugger.lua : implements a simple lua debugger
 -- call 'debug_console() from client code to enter debugger
+require('util')
 
 local M = {}
 local modname = ...
