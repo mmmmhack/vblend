@@ -67,3 +67,6 @@ lua/lua51.dll
 lua/ID
 dist
 debugger/debug_wrapper
+nav
+narrative
+scratch

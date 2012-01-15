@@ -3,8 +3,6 @@ let s:mid_win_height = 25
 "let s:bot_win_height = 5
 let s:nav_win_width = 20
 
-"let s:cur_src_file = ""
-"let s:cur_src_line = 0
 
 "0-based index of line position of the '>' cursor in the nav window
 let s:nav_pos = 0
@@ -79,6 +77,20 @@ endfunction
 "	call GotoWin(winnr("$"))
 "endfunction
 
+"returns src file of nav pos
+function! GetNavSourceFile()
+	let nav_step = g:ape_steps[s:nav_pos]
+	let nav_src_file = nav_step['src_file']
+	return nav_src_file
+endfunction
+
+"returns src line of nav pos
+function! GetNavSourceLine()
+	let nav_step = g:ape_steps[s:nav_pos]
+	let nav_src_line = nav_step['src_line']
+	return nav_src_line
+endfunction
+
 "get-source-file.vim	:	parses output of gdb 'info source', returns fqp of source file
 function! GetExeSourceFile()
 	:sil new scratch
@@ -96,7 +108,7 @@ endfunction
 "get-current-line.vim	:	parses output of gdb 'bt' command to get the current line number of a running program
 "bt output:
 "#0  main (argc=1, argv=0xbffff444) at main.c:450
-function! GetExeSrcLine()
+function! GetExeSourceLine()
 	:sil new scratch
 	:sil %!gclient gdb_cmd bt
 	:sil 1,$y l
@@ -122,19 +134,11 @@ function! SetupGdb()
 	:sil exe "%!gclient gdb_cmd file lua"
 	:sil exe "%!gclient gdb_cmd start"
 	:sil clo!
-	"get line info
-"	let src = GetSourceFile()
-"	let lnum = GetCurrentLine()
 
 	"fix heights
 	call ResizeWindows()
 
-	"goto line in src file
-"	call GotoSrcLine(src, lnum)
-
 	"save cur file,line for script
-"	let s:cur_src_file = src
-"	let s:cur_src_line = lnum
 	let s:exe_pos = 0
 
 endfunction
@@ -240,19 +244,21 @@ function! UpdateNav()
 	:1,$d
 
 	"build new content
-	let cur_src_file = BaseName(s:cur_src_file)
+	let nav_step = g:ape_steps[s:nav_pos]
+	let nav_src_file = BaseName(nav_step['src_file'])
+	let nav_src_line = nav_step['src_line']
 	let lines = []
 	let num_steps = len(g:ape_steps)
 	for i in range(0, num_steps - 1)
 		let step = g:ape_steps[i]
-			let pref = '  '
+			let prefix = '  '
 			let fname = BaseName(step['src_file'])
 			let lnum = step['src_line']
-			if fname == cur_src_file && lnum == s:cur_src_line
-				let pref = '> '
+			if fname == nav_src_file && lnum == nav_src_line
+				let prefix = '> '
 				let s:ape_cursor_pos = i
 			endif
-			let ln = pref . fname . ":" . lnum
+			let ln = prefix . fname . ":" . lnum
 			call add(lines, ln)
 	endfor
 
@@ -263,6 +269,26 @@ function! UpdateNav()
 	:w
 
 endfunction
+
+"fills content of narrative window with current nav step narrative content
+function! UpdateNar()
+	call GotoNarWin()
+	"delete existing content
+	:1,$d
+
+	"build new content
+	let nav_step = g:ape_steps[s:nav_pos]
+	let narr = nav_step['narr']
+
+	"put to nar buffer
+	let @t = narr
+	exe 'normal "tP'
+
+	"save it
+	:w
+
+endfunction
+
 
 "writes out g:ape_steps list in vim format, allowing for sourcing by ReadSteps()
 function! WriteSteps()
@@ -307,7 +333,9 @@ function! ReadSteps()
 
 	"fill nav window with steps
 	call UpdateNav()
+
 	"fill nar window with narr text for first step
+	call UpdateNar()
 
 	return 1
 endfunction
@@ -328,8 +356,26 @@ function! Init()
 	:%d
 	:w
 
+	let s:nav_pos = 0
+	let s:exe_pos = 0
+
 	"append first file:line to nav window, ape list
-	if !ReadSteps()
+	let have_steps = ReadSteps()
+
+	"if steps were read, make sure first step matches current (beginning) gdb exe location, show location in src window
+	if have_steps
+		let nav_step = g:ape_steps[0]
+		let exe_src_file = GetExeSourceFile()
+		let exe_src_line = GetExeSourceLine()
+		if nav_step['src_file'] != exe_src_file
+			:throw "init nav file != init exe file"
+		end
+		if nav_step['src_line'] != exe_src_line
+			:throw "init nav line != init exe line"
+		end
+		call ResizeWindows()
+		call GotoSrcLine(exe_src_file, exe_src_line)
+	else
 		let g:ape_steps = []
 		call AppendStep()
 
@@ -338,6 +384,9 @@ function! Init()
 		exe "normal dd"
 		:w
 	endif
+
+	"end with cursor in nav win
+	call GotoNavWin()
 
 endfunction
 
@@ -348,12 +397,20 @@ function! SaveNarrative()
 	let step_info['narr'] = @n
 endfunction
 
-"if ape cursor at end of step list, does new step, else increments cursor position
+"if nav pos at end of step list, does new gdb step, else increments nav position
 function!Step(step_type)
 	let num_steps = len(g:ape_steps)
-	if s:ape_cursor_pos < num_steps - 1
-		let s:ape_cursor_pos = s:ape_cursor_pos + 1
+	if s:nav_pos < num_steps - 1
+		let s:nav_pos = s:nav_pos + 1
+
+		"update source win
+		let nav_src_file = GetNavSourceFile()
+		let nav_src_line = GetNavSourceLine()
+		call GotoSrcLine(nav_src_file, nav_src_line)
+
+		"update nav win
 		call UpdateNav()
+
 	else	
 		call NewStep(a:step_type)
 	endif
@@ -370,12 +427,8 @@ function! NewStep(step_type)
 	:sil clo!
 
 	"get line info
-	let src = GetSourceFile()
-	let lnum = GetCurrentLine()
-
-	"save cur file,line for script
-	let s:cur_src_file = src
-	let s:cur_src_line = lnum
+	let src = GetExeSourceFile()
+	let lnum = GetExeSourceLine()
 
 	"fix heights
 	call ResizeWindows()
