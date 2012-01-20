@@ -4445,13 +4445,13 @@ with this nice scheme (which I believe is self-correcting with respect to matrix
 multiplication errors):
 </p>
 <pre>
-	if M.state['rot_x'] ~= 0 then
-		local theta = M.state['rot_x'] * M.rot_rate * dt
-		local vrot = vector3.cross(M.look_dir, M.up_dir)
-		local Mr = geom.create_rot_matrix(vrot, theta)
-		M.look_dir = vector3.mul(M.look_dir, Mr)
-		M.up_dir = vector3.cross(vrot, M.look_dir)
-	end
+if M.state['rot_x'] ~= 0 then
+local theta = M.state['rot_x'] * M.rot_rate * dt
+local vrot = vector3.cross(M.look_dir, M.up_dir)
+local Mr = geom.create_rot_matrix(vrot, theta)
+M.look_dir = vector3.mul(M.look_dir, Mr)
+M.up_dir = vector3.cross(vrot, M.look_dir)
+end
 </pre>
 
 <p>
@@ -4619,7 +4619,7 @@ Ok, see the problem right away:
 </p>
 <pre>
 Breakpoint 1, lw_setKeyCallback (L=0x1096d0) at lua_setKeyCallback.c:22
-22	  const char* cb_name = lua_tostring(L, -1);
+22  const char* cb_name = lua_tostring(L, -1);
 (gdb) w
 Ambiguous command "w": watch, whatis, where, while, while-stepping, ws.
 (gdb) bt
@@ -4633,7 +4633,7 @@ Ambiguous command "w": watch, whatis, where, while, while-stepping, ws.
 #7  0x00003bd0 in lua_pcall (L=0x1096d0, nargs=0, nresults=0, errfunc=0) at lapi.c:821
 #8  0x00001f9e in main (argc=1, argv=0xbffff644) at debug_wrapper.c:36
 (gdb) n
-23		strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
+23strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
 (gdb) p  cb_name
 $1 = 0x0
 (gdb) 
@@ -4645,18 +4645,18 @@ convert to a string:
 </p>
 <pre>
 --- debug_wrapper.lua:
-	...
-	print("BEF setKeyCallback()")
-	glfw.setKeyCallback(key_cb)
-	print("AFT setKeyCallback()")
-	...
+...
+print("BEF setKeyCallback()")
+glfw.setKeyCallback(key_cb)
+print("AFT setKeyCallback()")
+...
 ---lw_setKeyCallback.c:
 static int lw_setKeyCallback(lua_State* L) {
   const char* cb_name = lua_tostring(L, -1);
-	strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
-	LL = L;
+strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
+LL = L;
   glfwSetKeyCallback(
-		keyCallback
+keyCallback
   );
   return 0;
 }
@@ -4694,7 +4694,7 @@ Little more time, debugging the getglobal, the name is wrong!
 </p>
 <pre>
 Breakpoint 1, keyCallback (key=74, action=1) at lua_setKeyCallback.c:10
-10		lua_getglobal(LL, lua_keyCallbackFuncName);
+10lua_getglobal(LL, lua_keyCallbackFuncName);
 (gdb) p lua_keyCallbackFuncName
 $1 = "key_", '\0' &lt;repeats 251 times&gt;
 (gdb) 
@@ -4706,13 +4706,13 @@ to strlen!!!
 </p>
 <pre>
 Breakpoint 1, lw_setKeyCallback (L=0x1096d0) at lua_setKeyCallback.c:23
-23		strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
+23strncpy(lua_keyCallbackFuncName, cb_name, sizeof(cb_name));
 (gdb) p cb_name
 $1 = 0x10f9f0 "key_cb"
 (gdb) p lua_keyCallbackFuncName
 $2 = '\0' &lt;repeats 255 times&gt;
 (gdb) n
-24		LL = L;
+24LL = L;
 (gdb) p lua_keyCallbackFuncName
 $3 = "key_", '\0' &lt;repeats 251 times&gt;
 (gdb) p sizeof(cb_name)
@@ -4841,7 +4841,7 @@ breakpoint hit!
  Program received signal EXC_BAD_ACCESS, Could not access memory.
  Reason: KERN_PROTECTION_FAILURE at address: 0x00000006
  0x000069f0 in lua_getstack (L=0x1096d0, level=0, ar=0xbfffdea4) at ldebug.c:90
- 90	    if (f_isLua(ci))  /* Lua function? */
+ 90    if (f_isLua(ci))  /* Lua function? */
  (gdb) bt
  #0  0x000069f0 in lua_getstack (L=0x1096d0, level=0, ar=0xbfffdea4) at ldebug.c:90
  #1  0x0001c816 in db_getinfo (L=0x1096d0) at ldblib.c:104
@@ -4968,7 +4968,7 @@ Starting program: /Users/williamknight/proj/git/vblend/dist/lua
 Reading symbols for shared libraries +++.. done
 
 Breakpoint 1, main (argc=1, argv=0xbffff674) at lua.c:380
-380	  lua_State *L = lua_open();  /* create state */
+380  lua_State *L = lua_open();  /* create state */
 (gdb) 
 </pre>
 
@@ -5217,7 +5217,7 @@ It's the newline, from 'writefile()' docs:
 </p>
 <blockquote>
 ...
-		All NL characters are replaced with a NUL character.
+All NL characters are replaced with a NUL character.
 ...
 </blockquote>
 
@@ -5250,21 +5250,21 @@ script to parse and reconvert. This works for multi-line vim strings:
 </p>
 <pre>
 let g:ape_steps = [
-\	{
-\		'narr' : "Program start.\nCall internal func.",
-\		'src_file' : "/Users/williamknight/proj/git/vblend/lua/lua.c",
-\		'src_line' : "380"
-\	},
-\	{
-\		'narr' : "Internal call.\n",
-\		'src_file' : "/Users/williamknight/proj/git/vblend/lua/lauxlib.c",
-\		'src_line' : "648"
-\	},
-\	{
-\		'narr' : "init state objs",
-\		'src_file' : "/Users/williamknight/proj/git/vblend/lua/lstate.c",
-\		'src_line' : "147"
-\	}
+\{
+\'narr' : "Program start.\nCall internal func.",
+\'src_file' : "/Users/williamknight/proj/git/vblend/lua/lua.c",
+\'src_line' : "380"
+\},
+\{
+\'narr' : "Internal call.\n",
+\'src_file' : "/Users/williamknight/proj/git/vblend/lua/lauxlib.c",
+\'src_line' : "648"
+\},
+\{
+\'narr' : "init state objs",
+\'src_file' : "/Users/williamknight/proj/git/vblend/lua/lstate.c",
+\'src_line' : "147"
+\}
 \]
 </pre>
 
@@ -5310,7 +5310,96 @@ Did a little more work throughout the day, nav movement is working, but need
 to sync it with exe pos.
 </p>
 
+<h2>2012-01-17</h2>
+
+<p>
+A little more work this morning. I need to clearly define what is intended to
+happen with navigation and execution. When a previously saved file is loaded,
+the execution position is at program start. What determines how the execution
+position is incremented? Should it be linked to the nav position? Or must
+it be incremented with a separate command?
+</p>
+
+<p>
+On the bus, created ape-doc.txt help file, this will help with defining the
+program specifications.
+</p>
+
+<h2>2012-01-18</h2>
+
+<p>
+Will take the car today, so a little more time for work. In writing the
+help doc, I defined a 'continue-execute-type' data member for the saved
+steps, just need a catchy attribute name for it ... Will just go
+with 'continue' for now.
+</p>
+
+<h2>2012-01-19</h2>
+
+<p>
+Another day, another line of code.
+</p>
+
+<p>
+I'm currently confused by the association of the 'nav_pos' variable with the '&gt;' prefix
+in the nav window. Seems like the 'exe' pos should be associated with it instead.
+</p>
+
+<p>
+I'm going to get rid of the nav_pos var, the vim cursor line will represent that position.
+</p>
+
+<p>
+Yeah, the deal is, the '&gt;' ALWAYS shows the current exe position in gdb, that's all.
+Furthermore, f8 and f9 ONLY step the exe position.
+</p>
+
+<h2>2012-01-20</h2>
+
+<p>
+Friday again, hooray.
+</p>
+
+<p>
+Currently working on bug where after the 2nd step in a new run, it doesn't append 3rd line
+in nav window. Instead, it moves cursor to 1st line.
+</p>
+
+<p>
+I would really like to find a way to echo script variables after the script has stopped 
+running. An alternative would be to temporarily change all s:vars to g:vars.
+</p>
+
+<p>
+Based on this in the vim help docs, I conclude you can't access them, so will do the
+alternative for now:
+</p>
+<blockquote>
+                                                *script-variable* *s:var*
+	In a Vim script variables starting with "s:" can be used.  They cannot be
+	accessed from outside of the scripts, thus are local to the script.
+</blockquote>
+
+<p>
+Now, need to carefully define/understand the desired initial state of steps list and exe_pos var
+for a new run:
+</p>
+<ul>
+<li>prog start: steps list empty, exe_pos == -1
+<li>after gdb init: prog 'start' line added to steps list, exe_pos == 0
+</ul>
+
+<p>
+That was the next piece I was missing.
+</p>
+
+<p>
+No, it currently is supposed to do that. I think all that is needed is
+to init exe_pos to -1.
+</p>
+
 </body>
 </html>
+
 
 
