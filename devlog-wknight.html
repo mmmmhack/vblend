@@ -5398,6 +5398,34 @@ No, it currently is supposed to do that. I think all that is needed is
 to init exe_pos to -1.
 </p>
 
+<h2>2012-01-21</h2>
+
+<p>
+Glorious Saturday, off to a slow start. Will add code to set cursor line on step
+and continue, working on file save.
+</p>
+
+<p>
+That works, but now window sizes are wrong and some script line is flashing.
+</p>
+
+<p>
+Fixed window sizes, but screen size is still hopping up and down during stepping.
+</p>
+
+<p>
+Tracked it down to 'GotoSrcLine()' call in NewStep(). Ah, it's because I call
+redraw in there.
+</p>
+
+<p>
+Elminated the redraw call, just need to apply a scroll offset and should be good.
+</p>
+
+<p>
+Got it all displaying nicely again.
+</p>
+
 </body>
 </html>
 

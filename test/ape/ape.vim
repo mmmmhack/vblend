@@ -67,17 +67,17 @@ function! CloseWindows()
 endfunction
 
 function! WinMoveUp()
-	exe "normal \<c-w>k"
+	sil exe "normal \<c-w>k"
 	"can also do:  :wincmd k
 endfunction
 
 function! WinMoveDown()
-	exe "normal \<c-w>j"
+	sil exe "normal \<c-w>j"
 	"can also do:  :wincmd j
 endfunction
 
 function! GotoWin(nr)
-	exe ":" a:nr "wincmd w"
+	sil exe ":" a:nr "wincmd w"
 endfunction
 
 function! GotoNavWin()
@@ -164,7 +164,7 @@ function! SetupGdb()
 	:sil clo!
 
 	"fix heights
-	call ResizeWindows()
+"	call ResizeWindows()
 
 	"set exe pos after first (start) step
 	let g:exe_pos = 0
@@ -175,17 +175,23 @@ endfunction
 "that create new temporary windows
 function! ResizeWindows()
 	call GotoNavWin()
-	exe "res" g:top_win_height
+	sil exe "res" g:top_win_height
 "	call GotoDetailWin()
 "	exe "res" g:bot_win_height
 endfunction
 
-function! GotoSrcLine(src, lnum)
+function! OldGotoSrcLine(src, lnum)
 	call GotoSrcWin()
 	:sil exe ":e " a:src
 	:sil exe ":" a:lnum
 	:sil set cursorline
 	:sil redraw
+endfunction
+
+function! GotoSrcLine(src, lnum)
+	call GotoSrcWin()
+	:sil exe ":e " a:src
+	call cursor(a:lnum, 1)
 endfunction
 
 function! BaseName(fname)
@@ -228,7 +234,8 @@ function! NewNavNarStep()
 "	call AppendNavLine()
 	call UpdateNav()
 
-	"TODO: set cursorline to final nav line
+	"set cursorline to final nav line
+	sil call cursor('$', 1)
 
 	" goto nar win for new entry
 	call GotoNarWin()
@@ -428,8 +435,9 @@ function! Init()
 	endif
 
 	"show initial location in src window
-	call ResizeWindows()
 	call GotoSrcLine(exe_src_file, exe_src_line)
+
+	call ResizeWindows()
 
 	"end with cursor in nav win
 	call GotoNavWin()
@@ -478,6 +486,12 @@ function! Step(step_type)
 
 	endif
 
+	"get everything all positioned nicely and such at the end
+	call ResizeWindows()
+	call GotoSrcWin()
+	:sil redraw
+	call GotoNavWin()
+
 endfunction
 
 "does a new step in gdb, appends to step list
@@ -503,7 +517,7 @@ function! NewStep(step_type)
 	let lnum = GetExeSourceLine()
 
 	"update src win
-	call ResizeWindows()
+"	call ResizeWindows()
 	call GotoSrcLine(src, lnum)
 
 	"add current pos to steps list
