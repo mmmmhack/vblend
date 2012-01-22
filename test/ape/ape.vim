@@ -159,6 +159,18 @@ function! SetupGdb()
 		:throw 'gdb not running'
 	endif
 
+	"check gdb failed to start
+	if result == "503 Gdb Failed To Start"
+		:throw 'gdb failed to start'
+	endif
+
+	"check gdb init response
+	let exp_result = "GNU gdb"
+	let result_pre = strpart(result, 0, 7)
+	if result_pre != exp_result
+		:throw 'gdb start result: expected: [' . exp_result . ']... . got: [' . result_pre . ']'
+	endif
+
 	:sil exe "%!gclient gdb_cmd file lua"
 	:sil exe "%!gclient gdb_cmd start"
 	:sil clo!
@@ -231,7 +243,6 @@ function! NewNavNarStep()
 	endif
 
 	"update nav window
-"	call AppendNavLine()
 	call UpdateNav()
 
 	"set cursorline to final nav line
@@ -243,42 +254,6 @@ function! NewNavNarStep()
 	:%d
 	:w
 
-endfunction
-
-"obsolete, replaced by WriteSteps()
-function! WriteStepsXml()
-	let lines = []
-	call add(lines, "<ape>")
-	call add(lines, "<title>")
-	call add(lines, "Annotated Program Execution for lua interpreter")
-	call add(lines, "</title>")
-
-	let num_steps = len(g:ape_steps)
-	for i in range(0, num_steps - 1)
-		let step = g:ape_steps[i]
-		let ln = '<step src_file="' . step['src_file'] . '" src_line="' . step['src_line'] . '">'
-		call add(lines, ln)
-
-		let ln = '<narrative>'
-		call add(lines, ln)
-
-		let narr = get(step, 'narr', '')
-		"must get narr lines into list because writefile() will write null for newlines
-		let narr_lines = split(narr, '\n')
-"		call add(lines, ln)
-		call extend(lines, narr_lines)
-
-		let ln = '</narrative>'
-		call add(lines, ln)
-
-		let ln = '</step>'
-		call add(lines, ln)
-	endfor
-
-	call add(lines, "</ape>")
-
-	let fname = g:ape_steps_file
-	call writefile(lines, fname)
 endfunction
 
 "fills content of nav window with step lines, sets exe cursor at exe line
@@ -315,15 +290,26 @@ function! UpdateNav()
 
 endfunction
 
+"returns position of cursor in nav window.
+"NOTE: currently, sets the focus to the nav window.
+"TODO: add save/restore of current window
+function! GetNavPos()
+	call GotoNavWin()
+	let cursor_pos = line(".")
+	return cursor_pos
+endfunction
+
 "fills content of narrative window with current nav step narrative content
 function! UpdateNar()
+	let cursor_pos = GetNavPos()
+
 	call GotoNarWin()
 	"delete existing content
 	:1,$d
 
 	"build new content
-	let cursor_pos = line(".")
-	let nav_step = g:ape_steps[cursor_pos]
+"	let cursor_pos = line(".")
+	let nav_step = g:ape_steps[cursor_pos - 1]
 	let narr = nav_step['narr']
 
 	"put to nar buffer
@@ -334,7 +320,6 @@ function! UpdateNar()
 	:w
 
 endfunction
-
 
 "writes out g:ape_steps list in vim format, allowing for sourcing by ReadSteps()
 function! WriteSteps()
@@ -380,12 +365,6 @@ function! ReadSteps()
 	endif
 	exe "so " fname
 
-	"fill nav window with steps
-	call UpdateNav()
-
-	"fill nar window with narr text for first step
-	call UpdateNar()
-
 	return 1
 endfunction
 
@@ -411,10 +390,12 @@ function! Init()
 	"get exe info
 	let exe_src_file = GetExeSourceFile()
 	let exe_src_line = GetExeSourceLine()
-
-	"if steps were read, make sure first step matches current (beginning) gdb exe location
+	
+	"set nav/narr to content of first step
 	if have_steps
 		let g:exe_pos = 0
+
+		"make sure first step matches current (beginning) gdb exe location
 		let nav_step = g:ape_steps[g:exe_pos]
 		if nav_step['src_file'] != exe_src_file
 			:throw "init nav file != init exe file"
@@ -422,6 +403,16 @@ function! Init()
 		if nav_step['src_line'] != exe_src_line
 			:throw "init nav line != init exe line"
 		end
+
+		"fill nav window with steps
+		call UpdateNav()
+
+		"set the nav cursor pos to exe pos, so the narr for the correct step will be set
+		"TODO: replace with function SetNavPos()
+		call cursor(g:exe_pos + 1, 1)
+		
+		"fill nar window with narr text for first step
+		call UpdateNar()
 	else
 		let g:ape_steps = []
 
@@ -439,8 +430,8 @@ function! Init()
 
 	call ResizeWindows()
 
-	"end with cursor in nav win
-	call GotoNavWin()
+	"end with cursor in narr win
+	call GotoNarWin()
 
 endfunction
 
@@ -480,6 +471,13 @@ function! Step(step_type)
 		"update nav win
 		call UpdateNav()
 
+		"set nav cursor pos to exe pos
+		"TODO: replace with function SetNavPos()
+		call cursor(g:exe_pos + 1, 1)
+
+		"update nar win
+		call UpdateNar()
+
 	else
 		"do new step in gdb
 		call NewStep(step_type)
@@ -489,8 +487,8 @@ function! Step(step_type)
 	"get everything all positioned nicely and such at the end
 	call ResizeWindows()
 	call GotoSrcWin()
+	call GotoNarWin()
 	:sil redraw
-	call GotoNavWin()
 
 endfunction
 
@@ -517,7 +515,6 @@ function! NewStep(step_type)
 	let lnum = GetExeSourceLine()
 
 	"update src win
-"	call ResizeWindows()
 	call GotoSrcLine(src, lnum)
 
 	"add current pos to steps list

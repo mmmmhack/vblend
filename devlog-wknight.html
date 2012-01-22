@@ -5426,6 +5426,58 @@ Elminated the redraw call, just need to apply a scroll offset and should be good
 Got it all displaying nicely again.
 </p>
 
+<p>
+WriteSteps() appears to be working as expected, next will see how logic 
+works after ReadSteps().
+</p>
+
+<h2>2012-01-22</h2>
+
+<p>
+Sunday morning. Continuing, reading steps, there is a bug where the 2nd step
+is displayed on load instead of the first.
+</p>
+
+<p>
+Set breakpoint in Init, stepped through vim debugger, it's happening in
+ReadSteps(). Love being able to debug vim scripts.
+</p>
+
+<p>
+Found the bug, UpdateNar() relies on an ill-defined cursor pos in some 
+current window:
+</p>
+<pre>
+	"build new content
+	let cursor_pos = line(".")
+	let nav_step = g:ape_steps[cursor_pos]
+	let narr = nav_step['narr']
+</pre>
+
+<p>
+To fix this, I must determine if anything changes the cursor pos in
+the nav window.
+</p>
+
+<p>
+For now, I will just fix it by setting the nav cursor pos to the
+exe pos on init and step.
+</p>
+
+<p>
+Duh, code above shows that the cursor_pos is in narr window and
+will always be 1. Need some function like GetNavPos().
+</p>
+
+<p>
+Ok, finally fixed that trivial bug. Next: add update of cursor
+pos with exe pos on step.
+</p>
+
+<p>
+Ok, did it. Exe playback appears to finally be working as expected.
+</p>
+
 </body>
 </html>
 
