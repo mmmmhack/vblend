@@ -5478,6 +5478,286 @@ pos with exe pos on step.
 Ok, did it. Exe playback appears to finally be working as expected.
 </p>
 
+<h2>2012-01-23</h2>
+
+<p>
+A little time before leaving for work today, I will try to start using
+ape to actually annotate for reals now.
+</p>
+
+<p>
+Need to add updating of step info from modified narrative content.
+</p>
+
+<p>
+Not working, here is current definition of SaveNarrative():
+</p>
+<pre>
+function! SaveNarrative()
+	let step_info = g:ape_steps[len(g:ape_steps) - 1]
+	call GotoNarWin()
+	:sil 1,$y n
+	let step_info['narr'] = @n
+endfunction
+</pre>
+
+<p>
+After step, and presumably call to above function, the modified narrative
+isn't in g:ape_steps. I'm guessing it's because step_info is not
+actually a reference to the list item in g:ape_steps but instead
+is a copy.
+</p>
+
+<p>
+No, duh, it's the pos that is wrong.
+</p>
+
+<p>
+Fixed, that's all for now! :P  Next: add save of narr of current step
+in WriteSteps().
+</p>
+
+<h2>2012-01-24</h2>
+
+<p>
+On the bus, almost no time to code. Next tasks include:
+</p>
+<ul>
+<li>define an autocmd to update narr window with cursor movement in nav win
+<li>create 'run to final step' function to automatically step through a loaded steps list
+</ul>
+
+<h2>2012-01-25</h2>
+
+<p>
+To bed too late last night, up too late this morning, only a little time. Starting
+on DefineAutoNav() function.
+</p>
+
+<p>
+Did it, it works. Next, need to add saving of edited Narr window to steps.
+</p>
+
+<p>
+There is a problem with current method of determining the current nav position.
+I believe I fixed a previous bug by using the g:exe_pos, but of course that
+isn't always correct.
+</p>
+
+<p>
+Will try this now:
+</p>
+<pre>
+function! SaveNarrative()
+"	let pos = g:exe_pos
+	let pos = GetNavPos()
+	let step_info = g:ape_steps[pos]
+	call GotoNarWin()
+	:sil 1,$y n
+	let step_info['narr'] = @n		
+endfunction
+</pre>
+
+<p>
+Nope, that doesn't work, I suspect current nav pos is lost updating the nav win.
+We will actually need an explicit var to hold the current cursor pos in nav win
+I think.
+</p>
+
+<p>
+Another thing I'll determine first is if the autocommand firing is recursive,
+that would naturally mess things up.
+</p>
+
+<p>
+Added recursion check, doesn't appear to be happening. More debugging 
+needed. I might add a debug output window to better track what's going on.
+</p>
+
+<p>
+Will resurrect the details window for this purpose.
+</p>
+
+<p>
+Did it, there doesn't appear to be any vim function to load content into
+a buffer that isn't the current buffer. This is little unfortunate as
+it means I must make the debug window 'current' in order to append text
+to it, which may change the behavior of the script. Hopefully won't matter
+too much. Anyhow, my time is up this morning, must begin work at final
+days at Modwest.
+</p>
+
+<h2>2012-01-27</h2>
+
+<p>
+Starting a new project, but I _will_ keep working on this one as well, it
+will certainly be complementary.
+</p>
+
+<p>
+Added DbOut(), it works. Using it to debug the OnNavCursorMoved() problem.
+</p>
+
+<p>
+The DbOut() calls show the bug:
+</p>
+<pre>
+BEG OnNavCursorMoved()
+---g:ape_steps: [{'src_file': '/Users/williamknight/proj/git/vblend/lua/lua.c', 'continue': 'step', 'narr': 'Lua entry point. Creates new lua_State.     ', 'src_line': '380'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': 'Calls internal func to create new lua_State. ', 'src_line': '648'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lstate.c', 'continue': 'step', 'narr': 'Allocates memory for lua_State struct. ', 'src_line': '147'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': 'if empty alloc, just free.  ', 'src_line': '630'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': 'Allocates through call to Clib func. ', 'src_line': '635'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': ' ', 'src_line': '636'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lstate.c', 'continue': 'step', 'narr': 'If no mem avail, return NULL. ', 'src_line': '148'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lstate.c', 'continue': '', 'narr': ' ', 'src_line': '149'}
+]
+BEF SaveNarrative()
+BEF UpdateNar()
+---g:ape_steps: [{'src_file': '/Users/williamknight/proj/git/vblend/lua/lua.c', 'continue': 'step', 'narr': 'Lua entry point. Creates new lua_State.     ', 'src_line': '380'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': 'Calls internal func to create new lua_State. ', 'src_line': '648'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lstate.c', 'continue': 'step', 'narr': 'Lua entry point. Creates new lua_State.      ', 'src_line': '147'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': 'if empty alloc, just free.  ', 'src_line': '630'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': 'Allocates through call to Clib func. ', 'src_line': '635'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lauxlib.c', 'continue': 'step', 'narr': ' ', 'src_line': '636'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lstate.c', 'continue': 'step', 'narr': 'If no mem avail, return NULL. ', 'src_line': '148'}
+, {'src_file': '/Users/williamknight/proj/git/vblend/lua/lstate.c', 'continue': '', 'narr': ' ', 'src_line': '149'}
+]
+BEF GotoNavWin()
+END OnNavCursorMoved()
+</pre>
+
+<p>
+Will have a clear starting point next time, now it's time to walk to work.
+</p>
+
+<h2>2012-02-01</h2>
+
+<p>
+A little more work on this today, fit in among other projects.
+</p>
+
+<p>
+The debug output allows me to clearly describe the actual current buggy behavior,
+which I will then contrast with the desired one. The process begins with the
+cursor on the first line in the nav window, and the associated first narrative
+in the narrative window.
+</p>
+
+<p>
+When the 'down' key is hit, the cursor moves to the second line. Then the OnNavCursorMoved()
+function is called. In this function, the SaveNarrative() function is called. In that function,
+the GetNavPos() function is called, which returns the value '2', because the cursor is on
+the 2nd line.
+</p>
+
+<p>
+Next in SaveNarrative(), the value '2' is incorrectly used as an index to the
+current nav pos, because the index is 0-based. This causes the narrative value
+of the 3rd step in the array to be overwritten with the current narrative text,
+which is actually the narrative text of the first step.
+</p>
+
+<p>
+The desired behavior is to get the correct 0-based index of the nav
+cursor position _before_ the move and save the current narrative text
+in that step, before it gets updated with the text of the new position.
+</p>
+
+<p>
+So the first question is, how do we get the previous cursor position when 
+execution lands in OnNavCursorMoved()? Also, the SaveNarrative() function
+is currently called in other places and is intended to save for the current
+cursor position in the nav window. This is at odds with the behavior
+of the cursor event-handling, which only fires after the cursor has moved.
+</p>
+
+<p>
+One possibility, which I like, is to pass the position to be saved to 
+SaveNarrative() instead, because this reduces mysterious behavior/dependence
+of the function on implicit program state. The simpler and more predictable
+functions are, the better. So that is how I will proceed.
+</p>
+
+<p>
+Did that, but still need a variable to track the nav cursor position.
+Adding it.
+</p>
+
+<p>
+Made the changes, test it, there are still problems with the steps content
+when it's saved. I think it's because the narr content isn't being updated
+correct after cursor moved.
+</p>
+
+<p>
+Made some more changes, think I'm close, but still not there. Now the
+narrative content is being emptied on cursor move. I suspect one more
+debugging run will fix it, but I'm done for now.
+</p>
+
+<h2>2012-02-02</h2>
+
+<p>
+Up early, have other things to do, but would really like to get this
+project to the point of being usable, I think it's close.
+</p>
+
+<p>
+Found the problem, cursor(".") appears to return -1 at beginning of
+OnNavCursorMoved(). Omg, that's because cursor() is a setter, not
+a getter dumbkopf!
+</p>
+
+<p>
+Ok, that works. Continuing.
+</p>
+
+<p>
+Still fixing off-by-one errors in mismatch between the 0-based indices
+of the arrays and the 1-based indices of line nums. Source win is
+now tracking nav pos, but losing syntax highlighting, and 2nd narr
+pos still gets messed up, overwritten by 1st one.
+</p>
+
+<p>
+No, that 2nd prob is because the ape_steps.vim file got overwritten
+somehow.
+</p>
+
+<p>
+Grrr, another bug, now it's dumping detail output into the source win!
+</p>
+
+<p>
+Hmm, that bug isn't repro, but disturbing. Now everything seems to
+work except for losing syntax highlighting in the source win, wtf
+is up with that?
+</p>
+
+<p>
+I'm guessing it's because I'm calling redraw() to update the cursor
+pos in src win. All this wrangling is making me weary. Love vim and
+feel I'm close, but also feel like I'm trying to force it to be
+a special-purpose gui which might be easier to implement with some
+other code/tool. But of course, that would set back my progress
+even further.
+</p>
+
+<p>
+Since one of my goals is to have a built-in vim-style debugger in
+vblend anyway, I may consider just trying to bootstrap it from there.
+</p>
+
+<p>
+Hmm, spotted the source-win overwrite bug, wasn't checking for
+enabled DetailWin in DbOut(), will fix that and see what happens.
+</p>
+
+<p>
+Naw, I was currently showing the detail win anyway.
+</p>
+
 </body>
 </html>
 

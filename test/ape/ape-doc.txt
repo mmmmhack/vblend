@@ -1,0 +1,29 @@
+Ape (Annotated Program Execution) Documentation
+
+== Overview ==
+
+TODO
+
+== Steps File ==
+
+If the WriteSteps() function is called, it will create a file that records
+the current program execution sequence and associated annotations. This
+'steps' file is in vim script format and defines a list that contains
+step data.
+
+Data for each step consists of:
+	* source filename for program step
+	* source line number for program step
+	* narrative text for program step
+	* [continue-execution type: {'step', 'next'}]	  (later, will add 'breakpoint' types)
+
+== Mappings ==
+
+f1	show this help
+f8  'step' the program in gdb if at end, else step['continue'] the program in gdb
+f9  'next' the program in gdb if at end, else step['continue'] the program in gdb
+
+== Development Mappings ==
+
+f5	call Init()
+f6  call CloseWindows()

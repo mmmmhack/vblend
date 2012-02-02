@@ -2,20 +2,37 @@
 
 let g:top_win_height = 5
 let g:mid_win_height = 25
-"let g:bot_win_height = 5
+let g:bot_win_height = 5
 let g:nav_win_width = 20
 
 let g:ape_dir = "test/ape"
 let g:help_file = g:ape_dir . "/" . "ape-doc.txt"
 
-"0-based index of line position of the '>' cursor in the nav window
-"let g:nav_pos = 0
-
 "0-based index of current program step in 'ape_steps' array, indicated by '>' cursor in the nav window
 let g:ape_steps = []
-let g:exe_pos = -1
+
+"0-based index of step in steps array that corresponds to current exe pos in gdb
+let g:exe_pos = -1	
+
+"0-based index of line position of the '>' cursor in the nav window, need this variable to track prev cursor pos in nav window for 'CursorMoved' event-handling
+let g:nav_pos = -1	
 
 let g:ape_steps_file = "ape_steps.vim"
+let g:in_autonav = 0
+
+let g:show_detail_win = 1
+
+function! DbOut(s)
+	if !g:show_detail_win 
+		return
+	endif
+	"get cur win
+	let cur_win = winnr()
+	call GotoDetailWin()	
+	call append('$', a:s)
+	:w
+	call GotoWin(cur_win)
+endfunction
 
 function! SetMappings()
 	"debug mappings
@@ -50,9 +67,12 @@ function! SetupWindows()
 	:set cursorline
 
 	"create detail window below source window
-"	call WinMoveDown()
-"	exe g:bot_win_height "new"
-"	:e detail
+	if g:show_detail_win 
+		call WinMoveDown()
+		exe g:bot_win_height "new"
+		:e detail
+	endif 
+
 endfunction
 
 function! CloseWindows()
@@ -92,23 +112,26 @@ function! GotoSrcWin()
 	call GotoWin(3)
 endfunction
 
-"function! GotoDetailWin()
-"	call GotoWin(winnr("$"))
-"endfunction
+function! GotoDetailWin()
+	call GotoWin(winnr("$"))
+endfunction
 
 "returns src file of vim cursor line in nav window
-function! GetCursorSourceFile()
-	call GotoNavWin()
-	let pos = line(".")
+function! GetNavSourceFile()
+"	call GotoNavWin()
+"	let pos = line(".")
+	let pos = GetNavPos()
 	let step = g:ape_steps[pos]
 	let src_file = step['src_file']
 	return src_file
 endfunction
 
 "returns src line of vim cursor line in nav window
-function! GetCursorSourceLine()
-	call GotoNavWin()
-	let pos = line(".")
+function! GetNavSourceLine()
+"	call GotoNavWin()
+"	let pos = line(".")
+	let pos = GetNavPos()
+	let step = g:ape_steps[pos]
 	let step = g:ape_steps[pos]
 	let src_line = step['src_line']
 	return src_line
@@ -188,16 +211,10 @@ endfunction
 function! ResizeWindows()
 	call GotoNavWin()
 	sil exe "res" g:top_win_height
-"	call GotoDetailWin()
-"	exe "res" g:bot_win_height
-endfunction
-
-function! OldGotoSrcLine(src, lnum)
-	call GotoSrcWin()
-	:sil exe ":e " a:src
-	:sil exe ":" a:lnum
-	:sil set cursorline
-	:sil redraw
+	if g:show_detail_win 
+		call GotoDetailWin()
+		exe "res" g:bot_win_height
+	endif
 endfunction
 
 function! GotoSrcLine(src, lnum)
@@ -288,15 +305,25 @@ function! UpdateNav()
 	"save it
 	:w
 
+	"init nav cursor pos
+	if g:nav_pos == -1
+		let g:nav_pos = 0
+	end
+
+	"set cursor to nav cursor pos
+	call GotoNavWin()
+	call cursor(g:nav_pos + 1, 1)
+
 endfunction
 
-"returns position of cursor in nav window.
+"returns 0-based index of line position of cursor in nav window.
 "NOTE: currently, sets the focus to the nav window.
 "TODO: add save/restore of current window
 function! GetNavPos()
-	call GotoNavWin()
-	let cursor_pos = line(".")
-	return cursor_pos
+"	call GotoNavWin()
+"	let cursor_pos = line(".")
+"	return cursor_pos
+	return g:nav_pos
 endfunction
 
 "fills content of narrative window with current nav step narrative content
@@ -308,8 +335,7 @@ function! UpdateNar()
 	:1,$d
 
 	"build new content
-"	let cursor_pos = line(".")
-	let nav_step = g:ape_steps[cursor_pos - 1]
+	let nav_step = g:ape_steps[cursor_pos]
 	let narr = nav_step['narr']
 
 	"put to nar buffer
@@ -318,11 +344,15 @@ function! UpdateNar()
 
 	"save it
 	:w
-
 endfunction
 
 "writes out g:ape_steps list in vim format, allowing for sourcing by ReadSteps()
 function! WriteSteps()
+
+	"save narr in current step
+	let pos = GetNavPos()
+	call SaveNarrative(pos)
+
 	let lines = []
 	let ln = "let g:ape_steps = ["
 	call add(lines, ln)
@@ -368,7 +398,66 @@ function! ReadSteps()
 	return 1
 endfunction
 
+function! OnNavCursorMoved()
+	"recursion check
+	if g:in_autonav 
+		throw "already in OnNavCursorMoved()!"
+	endif
+	let g:in_autonav = 1
+
+call DbOut("BEG OnNavCursorMoved()")
+"call DbOut("---g:ape_steps:\n" . string(g:ape_steps))
+
+	"don't do anything if no content yet
+	if g:exe_pos < 0
+		return
+	endif
+
+	"get the actual cursor pos in nav window, not the one returned by GetNavPos()
+"	call GotoNavWin()	"this shouldn't be needed as focus should already be in nav window
+	let actual_pos = line(".") - 1
+call DbOut("actual_pos: " . actual_pos)
+	
+	"save current nar content if any, first
+"call DbOut("---g:ape_steps:\n" . string(g:ape_steps))
+	let prev_pos = g:nav_pos
+call DbOut("prev_pos: " . prev_pos)
+"call DbOut("BEF SaveNarrative()")
+	call SaveNarrative(prev_pos)
+
+"call DbOut("BEF UpdateNar()")
+"call DbOut("---g:ape_steps:\n" . string(g:ape_steps))
+
+	"set new nav cursor pos to actual pos
+	let g:nav_pos = actual_pos
+
+	"update narrative window to correspond to nav pos
+"call DbOut("BEF UpdateNar()")
+	call UpdateNar()
+
+	"update cursor pos in source win to correspond to nav pos
+	let src_file = GetNavSourceFile()
+	let src_line = GetNavSourceLine()
+	call GotoSrcLine(src_file, src_line)
+	:sil redraw
+
+"call DbOut("BEF GotoNavWin()")
+	"make sure focus is back in nav win at end
+	call GotoNavWin()
+
+	let g:in_autonav = 0
+call DbOut("END OnNavCursorMoved()")
+endfunction
+
+function! DefineAutoNav()
+	:au! CursorMoved nav
+	:au CursorMoved nav :call OnNavCursorMoved()
+endfunction
+
 function! Init()
+	"clear global vars
+	let g:in_autonav = 0
+
 	call CloseWindows()
 	call SetupWindows()
 	call SetupGdb()
@@ -381,6 +470,11 @@ function! Init()
 
 	"erase any existing nar window content
 	call GotoNarWin()
+	:%d
+	:w
+
+	"erase any existing detail window content
+	call GotoDetailWin()
 	:%d
 	:w
 
@@ -433,19 +527,32 @@ function! Init()
 	"end with cursor in narr win
 	call GotoNarWin()
 
+	"define autocmd for nav cursor
+	call DefineAutoNav()
+
+	call DbOut("End Init()")
 endfunction
 
-function! SaveNarrative()
-	let step_info = g:ape_steps[len(g:ape_steps) - 1]
+"saves content of narrative window to 'narr' member of step at param 0-based index in steps array
+function! SaveNarrative(step_pos)
+"	let pos = g:exe_pos
+"	let pos = GetNavPos()
+	let pos = a:step_pos
+"call DbOut("SaveNarrative(): saving narrative to nav pos: " . pos)
+	let step_info = g:ape_steps[pos]
 	call GotoNarWin()
 	:sil 1,$y n
-	let step_info['narr'] = @n
+	let step_info['narr'] = @n		
 endfunction
 
 "if exe pos at end of step list, does new gdb step_type, else does gdb step['continue']
 function! Step(step_type)
-	let step_type = a:step_type
 
+	"save current narrative
+	let pos = GetNavPos()
+	call SaveNarrative(pos)
+
+	let step_type = a:step_type
 	let num_steps = len(g:ape_steps)
 
 	"if before final recorded step, get 'continue' type
@@ -494,9 +601,6 @@ endfunction
 
 "does a new step in gdb, appends to step list
 function! NewStep(step_type)
-
-	"save current narrative
-	call SaveNarrative()
 
 	"save continue type for current step
 	let cur_step = g:ape_steps[g:exe_pos]
