@@ -34,6 +34,9 @@ M.dump_debug_info = function (info, label)
 	end
 end
 
+-- this function doesn't appear to work correctly to tokenize
+-- strings delimited by multiple spaces or varied whitespace. See the 'tokenize()' function below for an
+-- alternative
 M.split = function (str, delim, maxSplit)
 		-- Eliminate bad cases...
 		if string.find(str, delim) == nil then
@@ -70,6 +73,79 @@ M.join = function(toks, delim)
 	return s
 end
 
+M.tokenize = function(s, delim_pat)
+  delim_pat = delim_pat or "%s+"
+  local toks = {}
+  local head_pos = 1
+  local beg_pos, end_pos = string.find(s, delim_pat, 1)
+  while beg_pos ~= nil do
+    if head_pos < beg_pos then
+      local tok = string.sub(s, head_pos, beg_pos - 1)
+      toks[#toks + 1] = tok
+    end
+    head_pos = end_pos + 1
+    beg_pos, end_pos = string.find(s, delim_pat, head_pos)
+  end
+  if head_pos <= #s then
+    local tok = string.sub(s, head_pos, #s)
+    toks[#toks + 1] = tok
+  end
+  return toks
+end
+
+M.test_tokenize = function()
+  local tests = {
+   [1] = {
+    s = "", exp_toks = {},
+   },
+   [2] = {
+    s = " ", exp_toks = {},
+   },
+   [3] = {
+    s = "1", exp_toks = {'1',},
+   },
+   [4] = {
+    s = " 1", exp_toks = {'1',},
+   },
+   [5] = {
+    s = "1 ", exp_toks = {'1',},
+   },
+   [6] = {
+    s = " 1 ", exp_toks = {'1',},
+   },
+   [7] = {
+    s = "1 2", exp_toks = {'1', '2'},
+   },
+   [8] = {
+    s = " 1 2", exp_toks = {'1', '2'},
+   },
+   [9] = {
+    s = "1 2 ", exp_toks = {'1', '2'},
+   },
+   [10] = {
+    s = " 1 2 ", exp_toks = {'1', '2'},
+   },
+   [11] = {
+    s = " 11 22  ", exp_toks = {'11', '22'},
+   },
+   [12] = {
+    s = " 11 22  333", exp_toks = {'11', '22', '333'},
+   },
+  }
+  for i, t in ipairs(tests) do
+    local toks = M.tokenize(t.s)
+    assert(toks)
+    assert(#toks == #t.exp_toks)
+    for j = 1, #toks do
+      if toks[j] ~= t.exp_toks[j] then
+        print(string.format("test %d: toks[%d] = [%s], exp_toks[%d] = [%s]", i, j, toks[j], j, t.exp_toks[j]))
+      end
+      assert(toks[j] == t.exp_toks[j])
+    end
+  end
+end
+
+-- function below seems irrelevant because of builtin string.lower()
 M.tolower = function(c)
   local nA = string.byte('A')
   local nZ = string.byte('Z')
