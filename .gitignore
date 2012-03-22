@@ -65,6 +65,7 @@ lua/lua.exe
 lua/luac.exe
 lua/lua51.dll
 lua/ID
+demo/robot_war/dev
 dist
 debugger/debug_wrapper
 nav
