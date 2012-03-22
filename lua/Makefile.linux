@@ -1,0 +1,8 @@
+# Makefile.linux	: linux makefile for lua
+
+all:
+	make -f Makefile.all linux
+
+clean:
+	make -f Makefile.all clean
+

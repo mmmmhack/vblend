@@ -1,0 +1,36 @@
+# Makefile.linux 	:	linux makefile for libpng
+
+CC=gcc
+
+CFLAGS= -DHAVE_CONFIG_H -DPNG_CONFIGURE_LIBPNG -g -O2 -I. -I include -fno-common -DPIC -c
+
+objs= \
+ png.o \
+ pngerror.o \
+ pnggccrd.o \
+ pngget.o \
+ pngmem.o \
+ pngpread.o \
+ pngread.o \
+ pngrio.o \
+ pngrtran.o \
+ pngrutil.o \
+ pngset.o \
+ pngtest.o \
+ pngtrans.o \
+ pngvcrd.o \
+ pngwio.o \
+ pngwrite.o \
+ pngwtran.o \
+ pngwutil.o
+
+all : libpng.so
+
+libpng.so : $(objs)
+	$(CC) -o $@ -shared $(objs) ../zlib/libz.so
+
+%.o : %.c
+	$(CC) -o $@ $(CFLAGS) $<
+
+clean :
+	-rm *.o *.so

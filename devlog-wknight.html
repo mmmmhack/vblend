@@ -5478,6 +5478,79 @@ pos with exe pos on step.
 Ok, did it. Exe playback appears to finally be working as expected.
 </p>
 
+<h2>2012-03-17</h2>
+
+<p>
+Hiatus. But time is coming.
+</p>
+
+<p>
+Starting porting to linux. Need to find the lua script that converts Makefile.osx to mingw and
+add similar for linux. Why, it looks like this is the one:
+</p>
+<pre>
+./util/gen_mingw_from_osx_makefile.lua:  ['SO=so'] = 'SO=dll',
+</pre>
+
+<h2>2012-03-18</h2>
+
+<p>
+Resume linux port of vblend. Working on Makefile.linux for libglfw, it's not as straightforward
+because the distributed Makefiles are complicated and ugly. I'll just redo largely from scratch,
+adding stuff as needed.
+</p>
+
+<p>
+Finished, it built. Now must test.
+</p>
+
+<h2>2012-03-19</h2>
+
+<p>
+Early Monday morning, back for a little testing of libglfw. Built the test app and now trying
+to link it, I want to find some reference docs on the undefined X functions it's reporting:
+</p>
+<pre>
+wknight@johnny:~/proj/git/vblend/test/glfw$ m
+cc -o howdy howdy.o -L../../glfw/libglfw -lglfw
+../../glfw/libglfw/libglfw.so: undefined reference to `glXMakeCurrent'
+../../glfw/libglfw/libglfw.so: undefined reference to `XFree'
+../../glfw/libglfw/libglfw.so: undefined reference to `XMoveWindow'
+../../glfw/libglfw/libglfw.so: undefined reference to `XFreeCursor'
+../../glfw/libglfw/libglfw.so: undefined reference to `glXGetConfig'
+../../glfw/libglfw/libglfw.so: undefined reference to `XStoreName'
+../../glfw/libglfw/libglfw.so: undefined reference to `XFreeColormap'
+...
+</pre>
+
+
+<h2>2012-03-21</h2>
+
+<p>
+Got the test program linked yesterday (just needed to add -lX11). Adding
+the rest of the test code.
+</p>
+
+<p>
+In trying to get it to run, I learned how to use the '$ORIGIN' link option:
+<p>
+<pre>
+howdy: howdy.o
+	$(CC) -o $@ howdy.o $(libs) -Wl,-rpath='$$ORIGIN'/$(libglfw_dir)
+</pre>
+
+<h2>2012-03-22</h2>
+
+<p>
+Continue porting to linux. Will call the libglfw build good for now,
+even though I haven't fully tested it because I can't open a remote
+X display from my macbook and don't feel like walking over to my
+linux box right now.
+</p>
+
+
+
+
 </body>
 </html>
 

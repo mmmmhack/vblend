@@ -44,7 +44,7 @@
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <GL/glx.h>
-#include "../../include/GL/glfw.h"
+#include "../include/GL/glfw.h"
 
 // Do we have pthread support?
 #ifdef _GLFW_HAS_PTHREAD

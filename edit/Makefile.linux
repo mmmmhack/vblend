@@ -1,0 +1,33 @@
+# Makefile.linux  : linux makefile for edit module (routines to support editing text in graphics window)
+
+libglfw_dir=../glfw/libglfw
+lua_dir=../lua
+
+CC= gcc
+CFLAGS+= -g -Wall
+SO=so
+lua_libs=
+
+edit_includes=-I$(libglfw_dir)/include -I../font
+lua_edit_includes=-I$(libglfw_dir)/include -I$(lua_dir)
+
+objs = \
+ edit.o 
+
+all: edit.$(SO) lua_edit.$(SO)
+edit.$(SO): $(objs)
+	$(CC) -o $@ -shared $(objs) ../font/tfont.$(SO) -lGL -lGLU
+
+edit.o: edit.c
+	$(CC) -o $@ $(CFLAGS) $(edit_includes) -c $<
+
+lua_edit.$(SO): edit.$(SO) lua_edit.o
+	$(CC) -o $@ -shared lua_edit.o edit.$(SO) $(lua_libs)
+
+lua_edit.o: lua_edit_func_def.c lua_edit_func_reg.c lua_edit.c 
+	$(CC) -o $@ $(CFLAGS) $(lua_edit_includes) -c lua_edit.c
+
+clean:
+	-rm *.o *.$(SO)
+
+

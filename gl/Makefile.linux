@@ -1,4 +1,4 @@
-# Mac OSX makefile for gl lua wrapper
+# linux makefile for gl lua wrapper
 
 lua_dir = ../lua
 glfw_dir = ../glfw/libglfw
@@ -15,11 +15,12 @@ includes= \
 all: lua_gl.$(SO)
 
 lua_gl.$(SO): lua_gl.o
-	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $< $(lua_libs) -framework Cocoa -framework OpenGL
+	$(CC) -o $@ -shared $< $(lua_libs) -lGL -lGLU
 
 lua_gl.o: constant_defs.c lua_gl_func_def.c lua_gl_func_reg.c lua_gl.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_gl.c
 
 clean:
 	rm -f *.o *.$(SO)
+
 

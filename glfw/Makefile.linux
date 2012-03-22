@@ -1,0 +1,31 @@
+# Makefile.linux : linux makefile for glfw lua wrapper
+
+lua_dir = ../lua
+
+CC=gcc
+CFLAGS += -O0 -g -Wall
+SO=so
+lua_libs=
+
+includes= \
+ -I libglfw/include \
+ -I $(lua_dir)/include \
+ -I ../util
+ 
+all: subdirs lua_glfw.$(SO)
+
+subdirs:
+	cd libglfw && make -f Makefile.linux $(MAKECMDGOALS)
+
+lua_glfw.$(SO): lua_glfw.o
+	$(CC) -o $@ -shared $< ../util/sys.$(SO) $(lua_libs) libglfw/libglfw.$(SO) -lGL -lGLU
+
+lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
+	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $(includes) -o $@ $<
+
+clean: subdirs
+	-rm *.$(SO) *.o
+

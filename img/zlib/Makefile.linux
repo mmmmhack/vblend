@@ -1,0 +1,34 @@
+# linux Makefile for zlib
+
+CC=gcc
+CFLAGS=-O3
+SFLAGS=-O3 -fPIC
+LDSHARED=gcc -shared
+SHAREDLIB=libz.so
+AR=ar rc
+RANLIB=ranlib
+LDSHAREDLIBC=-lc
+TAR=tar
+SHELL=/bin/sh
+EXE=
+
+PIC_OBJS = adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o \
+	gzwrite.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o
+
+all: $(SHAREDLIB)
+
+%.o: %.c
+	$(CC) $(SFLAGS) -DPIC -c -o $*.o $<
+
+$(SHAREDLIB): $(PIC_OBJS)
+	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+
+example$(EXE): example.o $(SHAREDLIB)
+	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDLIB)
+
+check: example$(EXE)
+	./example$(EXE)
+
+clean:
+	rm -f *.o *.so example$(EXE)
+

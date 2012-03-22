@@ -139,7 +139,6 @@ zlibrc.o: win32/zlib1.rc
 #	-$(RM) $(LIBRARY_PATH)/$(STATICLIB)
 
 clean:
-	-$(RM) $(STATICLIB)
 	-$(RM) $(SHAREDLIB)
 	-$(RM) $(IMPLIB)
 	-$(RM) *.o
