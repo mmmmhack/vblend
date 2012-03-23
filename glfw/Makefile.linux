@@ -17,8 +17,9 @@ all: subdirs lua_glfw.$(SO)
 subdirs:
 	cd libglfw && make -f Makefile.linux $(MAKECMDGOALS)
 
+# ../util/sys.$(SO) libglfw/libglfw.$(SO) 
 lua_glfw.$(SO): lua_glfw.o
-	$(CC) -o $@ -shared $< ../util/sys.$(SO) $(lua_libs) libglfw/libglfw.$(SO) -lGL -lGLU
+	$(CC) -o $@ -shared $< $(lua_libs) -lGL -lGLU -Wl,-rpath=/home/wknight/proj/git/vblend/dist
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c

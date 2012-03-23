@@ -5376,8 +5376,8 @@ alternative for now:
 </p>
 <blockquote>
                                                 *script-variable* *s:var*
-	In a Vim script variables starting with "s:" can be used.  They cannot be
-	accessed from outside of the scripts, thus are local to the script.
+  In a Vim script variables starting with "s:" can be used.  They cannot be
+  accessed from outside of the scripts, thus are local to the script.
 </blockquote>
 
 <p>
@@ -5448,10 +5448,10 @@ Found the bug, UpdateNar() relies on an ill-defined cursor pos in some
 current window:
 </p>
 <pre>
-	"build new content
-	let cursor_pos = line(".")
-	let nav_step = g:ape_steps[cursor_pos]
-	let narr = nav_step['narr']
+  "build new content
+  let cursor_pos = line(".")
+  let nav_step = g:ape_steps[cursor_pos]
+  let narr = nav_step['narr']
 </pre>
 
 <p>
@@ -5536,7 +5536,7 @@ In trying to get it to run, I learned how to use the '$ORIGIN' link option:
 <p>
 <pre>
 howdy: howdy.o
-	$(CC) -o $@ howdy.o $(libs) -Wl,-rpath='$$ORIGIN'/$(libglfw_dir)
+  $(CC) -o $@ howdy.o $(libs) -Wl,-rpath='$$ORIGIN'/$(libglfw_dir)
 </pre>
 
 <h2>2012-03-22</h2>
@@ -5548,8 +5548,85 @@ X display from my macbook and don't feel like walking over to my
 linux box right now.
 </p>
 
+<p>
+Finished creating all linux makefiles, committed, tried to push,
+got error:
+</p>
+<pre>
+wknight@johnny:~/proj/git/vblend$ git push
+Enter passphrase for key '/home/wknight/.ssh/id_rsa': 
+Password:
+To ssh://williamknight@mhackslab/~/proj/git/vblend
+ ! [rejected]        master -&gt; master (non-fast-forward)
+ error: failed to push some refs to 'ssh://williamknight@mhackslab/~/proj/git/vblend'
+ To prevent you from losing history, non-fast-forward updates were rejected
+ Merge the remote changes before pushing again.  See the 'Note about
+ fast-forwards' section of 'git push --help' for details.
+ wknight@johnny:~/proj/git/vblend$ 
+</pre>
 
+<p>
+Time to learn more about git.
+</p>
 
+<p>
+Attempted to run howdy demo, got error:
+</p>
+<pre>
+  wknight@johnny:~/proj/git/vblend/dist$ ./hello 
+  ./lua: error loading module 'lua_glfw' from file './lua_glfw.so':
+  ../util/sys.so: cannot open shared object file: No such file or directory
+  stack traceback:
+  [C]: ?
+  [C]: in function 'require'
+  ./gamelib.lua:9: in main chunk
+  [C]: in function 'require'
+  hello.lua:7: in main chunk
+  [C]: ?
+  wknight@johnny:~/proj/git/vblend/dist$ ls
+</pre>
+
+<p>
+So, looks like I should build with fixed so paths.
+</p>
+<pre>
+  wknight@johnny:~/proj/git/vblend/dist$ ldd lua_glfw.so
+  linux-gate.so.1 =&gt;  (0x001e8000)
+  ../util/sys.so =&gt; not found
+  libglfw/libglfw.so =&gt; not found
+  libGL.so.1 =&gt; /usr/lib/nvidia-current/libGL.so.1 (0x004c9000)
+  libGLU.so.1 =&gt; /usr/lib/libGLU.so.1 (0x002ba000)
+  libc.so.6 =&gt; /lib/tls/i686/cmov/libc.so.6 (0x00ccb000)
+  libGLcore.so.1 =&gt; /usr/lib/nvidia-current/libGLcore.so.1 (0x00e24000)
+  libnvidia-tls.so.1 =&gt; /usr/lib/nvidia-current/tls/libnvidia-tls.so.1 (0x00275000)
+  libm.so.6 =&gt; /lib/tls/i686/cmov/libm.so.6 (0x00110000)
+  libXext.so.6 =&gt; /usr/lib/libXext.so.6 (0x00206000)
+  libX11.so.6 =&gt; /usr/lib/libX11.so.6 (0x0058e000)
+  libdl.so.2 =&gt; /lib/tls/i686/cmov/libdl.so.2 (0x009e4000)
+  libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x0032b000)
+  libgcc_s.so.1 =&gt; /lib/libgcc_s.so.1 (0x00136000)
+  /lib/ld-linux.so.2 (0x00424000)
+  libxcb.so.1 =&gt; /usr/lib/libxcb.so.1 (0x00b25000)
+  libXau.so.6 =&gt; /usr/lib/libXau.so.6 (0x0021c000)
+  libXdmcp.so.6 =&gt; /usr/lib/libXdmcp.so.6 (0x0083d000)
+  wknight@johnny:~/proj/git/vblend/dist$ 
+</pre>
+
+<h2>2012-03-23</h2>
+
+<p>
+Friday! And a good Friday it is. Read a little of the ld man page on the bus yesterday
+and a little this morning and I decided to just remove the referenced shared 
+libraries from the link line for lua_glfw.so and it builds just fine and ldd reports
+they are no longer referenced. So unlike osx, apparently you don't even need to
+mention these when producing shared libraries in GNU/Linux. We'll see, after 
+creating the final executables.
+</p>
+
+<p>
+But before going through and removing all those in the Makefiles, I need to get the
+current code checked in, so a little more reading of git.
+</p>
 
 </body>
 </html>
