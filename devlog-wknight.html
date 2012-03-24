@@ -5478,156 +5478,6 @@ pos with exe pos on step.
 Ok, did it. Exe playback appears to finally be working as expected.
 </p>
 
-    <-- git conflict HEAD -->
-<h2>2012-03-17</h2>
-
-<p>
-Hiatus. But time is coming.
-</p>
-
-<p>
-Starting porting to linux. Need to find the lua script that converts Makefile.osx to mingw and
-add similar for linux. Why, it looks like this is the one:
-</p>
-<pre>
-./util/gen_mingw_from_osx_makefile.lua:  ['SO=so'] = 'SO=dll',
-</pre>
-
-<h2>2012-03-18</h2>
-
-<p>
-Resume linux port of vblend. Working on Makefile.linux for libglfw, it's not as straightforward
-because the distributed Makefiles are complicated and ugly. I'll just redo largely from scratch,
-adding stuff as needed.
-</p>
-
-<p>
-Finished, it built. Now must test.
-</p>
-
-<h2>2012-03-19</h2>
-
-<p>
-Early Monday morning, back for a little testing of libglfw. Built the test app and now trying
-to link it, I want to find some reference docs on the undefined X functions it's reporting:
-</p>
-<pre>
-wknight@johnny:~/proj/git/vblend/test/glfw$ m
-cc -o howdy howdy.o -L../../glfw/libglfw -lglfw
-../../glfw/libglfw/libglfw.so: undefined reference to `glXMakeCurrent'
-../../glfw/libglfw/libglfw.so: undefined reference to `XFree'
-../../glfw/libglfw/libglfw.so: undefined reference to `XMoveWindow'
-../../glfw/libglfw/libglfw.so: undefined reference to `XFreeCursor'
-../../glfw/libglfw/libglfw.so: undefined reference to `glXGetConfig'
-../../glfw/libglfw/libglfw.so: undefined reference to `XStoreName'
-../../glfw/libglfw/libglfw.so: undefined reference to `XFreeColormap'
-...
-</pre>
-
-
-<h2>2012-03-21</h2>
-
-<p>
-Got the test program linked yesterday (just needed to add -lX11). Adding
-the rest of the test code.
-</p>
-
-<p>
-In trying to get it to run, I learned how to use the '$ORIGIN' link option:
-<p>
-<pre>
-howdy: howdy.o
-  $(CC) -o $@ howdy.o $(libs) -Wl,-rpath='$$ORIGIN'/$(libglfw_dir)
-</pre>
-
-<h2>2012-03-22</h2>
-
-<p>
-Continue porting to linux. Will call the libglfw build good for now,
-even though I haven't fully tested it because I can't open a remote
-X display from my macbook and don't feel like walking over to my
-linux box right now.
-</p>
-
-<p>
-Finished creating all linux makefiles, committed, tried to push,
-got error:
-</p>
-<pre>
-wknight@johnny:~/proj/git/vblend$ git push
-Enter passphrase for key '/home/wknight/.ssh/id_rsa': 
-Password:
-To ssh://williamknight@mhackslab/~/proj/git/vblend
- ! [rejected]        master -&gt; master (non-fast-forward)
- error: failed to push some refs to 'ssh://williamknight@mhackslab/~/proj/git/vblend'
- To prevent you from losing history, non-fast-forward updates were rejected
- Merge the remote changes before pushing again.  See the 'Note about
- fast-forwards' section of 'git push --help' for details.
- wknight@johnny:~/proj/git/vblend$ 
-</pre>
-
-<p>
-Time to learn more about git.
-</p>
-
-<p>
-Attempted to run howdy demo, got error:
-</p>
-<pre>
-  wknight@johnny:~/proj/git/vblend/dist$ ./hello 
-  ./lua: error loading module 'lua_glfw' from file './lua_glfw.so':
-  ../util/sys.so: cannot open shared object file: No such file or directory
-  stack traceback:
-  [C]: ?
-  [C]: in function 'require'
-  ./gamelib.lua:9: in main chunk
-  [C]: in function 'require'
-  hello.lua:7: in main chunk
-  [C]: ?
-  wknight@johnny:~/proj/git/vblend/dist$ ls
-</pre>
-
-<p>
-So, looks like I should build with fixed so paths.
-</p>
-<pre>
-  wknight@johnny:~/proj/git/vblend/dist$ ldd lua_glfw.so
-  linux-gate.so.1 =&gt;  (0x001e8000)
-  ../util/sys.so =&gt; not found
-  libglfw/libglfw.so =&gt; not found
-  libGL.so.1 =&gt; /usr/lib/nvidia-current/libGL.so.1 (0x004c9000)
-  libGLU.so.1 =&gt; /usr/lib/libGLU.so.1 (0x002ba000)
-  libc.so.6 =&gt; /lib/tls/i686/cmov/libc.so.6 (0x00ccb000)
-  libGLcore.so.1 =&gt; /usr/lib/nvidia-current/libGLcore.so.1 (0x00e24000)
-  libnvidia-tls.so.1 =&gt; /usr/lib/nvidia-current/tls/libnvidia-tls.so.1 (0x00275000)
-  libm.so.6 =&gt; /lib/tls/i686/cmov/libm.so.6 (0x00110000)
-  libXext.so.6 =&gt; /usr/lib/libXext.so.6 (0x00206000)
-  libX11.so.6 =&gt; /usr/lib/libX11.so.6 (0x0058e000)
-  libdl.so.2 =&gt; /lib/tls/i686/cmov/libdl.so.2 (0x009e4000)
-  libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x0032b000)
-  libgcc_s.so.1 =&gt; /lib/libgcc_s.so.1 (0x00136000)
-  /lib/ld-linux.so.2 (0x00424000)
-  libxcb.so.1 =&gt; /usr/lib/libxcb.so.1 (0x00b25000)
-  libXau.so.6 =&gt; /usr/lib/libXau.so.6 (0x0021c000)
-  libXdmcp.so.6 =&gt; /usr/lib/libXdmcp.so.6 (0x0083d000)
-  wknight@johnny:~/proj/git/vblend/dist$ 
-</pre>
-
-<h2>2012-03-23</h2>
-
-<p>
-Friday! And a good Friday it is. Read a little of the ld man page on the bus yesterday
-and a little this morning and I decided to just remove the referenced shared 
-libraries from the link line for lua_glfw.so and it builds just fine and ldd reports
-they are no longer referenced. So unlike osx, apparently you don't even need to
-mention these when producing shared libraries in GNU/Linux. We'll see, after 
-creating the final executables.
-</p>
-
-<p>
-But before going through and removing all those in the Makefiles, I need to get the
-current code checked in, so a little more reading of git.
- <-- git conflict -->
 <h2>2012-01-23</h2>
 
 <p>
@@ -5906,7 +5756,176 @@ enabled DetailWin in DbOut(), will fix that and see what happens.
 
 <p>
 Naw, I was currently showing the detail win anyway.
-<-- git conflict 878e1178a994dad4f075d7d0b3f3d7c6d54d6507 -->
+</p>
+
+<h2>2012-03-17</h2>
+
+<p>
+Hiatus. But time is coming.
+</p>
+
+<p>
+Starting porting to linux. Need to find the lua script that converts Makefile.osx to mingw and
+add similar for linux. Why, it looks like this is the one:
+</p>
+<pre>
+./util/gen_mingw_from_osx_makefile.lua:  ['SO=so'] = 'SO=dll',
+</pre>
+
+<h2>2012-03-18</h2>
+
+<p>
+Resume linux port of vblend. Working on Makefile.linux for libglfw, it's not as straightforward
+because the distributed Makefiles are complicated and ugly. I'll just redo largely from scratch,
+adding stuff as needed.
+</p>
+
+<p>
+Finished, it built. Now must test.
+</p>
+
+<h2>2012-03-19</h2>
+
+<p>
+Early Monday morning, back for a little testing of libglfw. Built the test app and now trying
+to link it, I want to find some reference docs on the undefined X functions it's reporting:
+</p>
+<pre>
+wknight@johnny:~/proj/git/vblend/test/glfw$ m
+cc -o howdy howdy.o -L../../glfw/libglfw -lglfw
+../../glfw/libglfw/libglfw.so: undefined reference to `glXMakeCurrent'
+../../glfw/libglfw/libglfw.so: undefined reference to `XFree'
+../../glfw/libglfw/libglfw.so: undefined reference to `XMoveWindow'
+../../glfw/libglfw/libglfw.so: undefined reference to `XFreeCursor'
+../../glfw/libglfw/libglfw.so: undefined reference to `glXGetConfig'
+../../glfw/libglfw/libglfw.so: undefined reference to `XStoreName'
+../../glfw/libglfw/libglfw.so: undefined reference to `XFreeColormap'
+...
+</pre>
+
+
+<h2>2012-03-21</h2>
+
+<p>
+Got the test program linked yesterday (just needed to add -lX11). Adding
+the rest of the test code.
+</p>
+
+<p>
+In trying to get it to run, I learned how to use the '$ORIGIN' link option:
+<p>
+<pre>
+howdy: howdy.o
+  $(CC) -o $@ howdy.o $(libs) -Wl,-rpath='$$ORIGIN'/$(libglfw_dir)
+</pre>
+
+<h2>2012-03-22</h2>
+
+<p>
+Continue porting to linux. Will call the libglfw build good for now,
+even though I haven't fully tested it because I can't open a remote
+X display from my macbook and don't feel like walking over to my
+linux box right now.
+</p>
+
+<p>
+Finished creating all linux makefiles, committed, tried to push,
+got error:
+</p>
+<pre>
+wknight@johnny:~/proj/git/vblend$ git push
+Enter passphrase for key '/home/wknight/.ssh/id_rsa': 
+Password:
+To ssh://williamknight@mhackslab/~/proj/git/vblend
+ ! [rejected]        master -&gt; master (non-fast-forward)
+ error: failed to push some refs to 'ssh://williamknight@mhackslab/~/proj/git/vblend'
+ To prevent you from losing history, non-fast-forward updates were rejected
+ Merge the remote changes before pushing again.  See the 'Note about
+ fast-forwards' section of 'git push --help' for details.
+ wknight@johnny:~/proj/git/vblend$ 
+</pre>
+
+<p>
+Time to learn more about git.
+</p>
+
+<p>
+Attempted to run howdy demo, got error:
+</p>
+<pre>
+  wknight@johnny:~/proj/git/vblend/dist$ ./hello 
+  ./lua: error loading module 'lua_glfw' from file './lua_glfw.so':
+  ../util/sys.so: cannot open shared object file: No such file or directory
+  stack traceback:
+  [C]: ?
+  [C]: in function 'require'
+  ./gamelib.lua:9: in main chunk
+  [C]: in function 'require'
+  hello.lua:7: in main chunk
+  [C]: ?
+  wknight@johnny:~/proj/git/vblend/dist$ ls
+</pre>
+
+<p>
+So, looks like I should build with fixed so paths.
+</p>
+<pre>
+  wknight@johnny:~/proj/git/vblend/dist$ ldd lua_glfw.so
+  linux-gate.so.1 =&gt;  (0x001e8000)
+  ../util/sys.so =&gt; not found
+  libglfw/libglfw.so =&gt; not found
+  libGL.so.1 =&gt; /usr/lib/nvidia-current/libGL.so.1 (0x004c9000)
+  libGLU.so.1 =&gt; /usr/lib/libGLU.so.1 (0x002ba000)
+  libc.so.6 =&gt; /lib/tls/i686/cmov/libc.so.6 (0x00ccb000)
+  libGLcore.so.1 =&gt; /usr/lib/nvidia-current/libGLcore.so.1 (0x00e24000)
+  libnvidia-tls.so.1 =&gt; /usr/lib/nvidia-current/tls/libnvidia-tls.so.1 (0x00275000)
+  libm.so.6 =&gt; /lib/tls/i686/cmov/libm.so.6 (0x00110000)
+  libXext.so.6 =&gt; /usr/lib/libXext.so.6 (0x00206000)
+  libX11.so.6 =&gt; /usr/lib/libX11.so.6 (0x0058e000)
+  libdl.so.2 =&gt; /lib/tls/i686/cmov/libdl.so.2 (0x009e4000)
+  libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x0032b000)
+  libgcc_s.so.1 =&gt; /lib/libgcc_s.so.1 (0x00136000)
+  /lib/ld-linux.so.2 (0x00424000)
+  libxcb.so.1 =&gt; /usr/lib/libxcb.so.1 (0x00b25000)
+  libXau.so.6 =&gt; /usr/lib/libXau.so.6 (0x0021c000)
+  libXdmcp.so.6 =&gt; /usr/lib/libXdmcp.so.6 (0x0083d000)
+  wknight@johnny:~/proj/git/vblend/dist$ 
+</pre>
+
+<h2>2012-03-23</h2>
+
+<p>
+Friday! And a good Friday it is. Read a little of the ld man page on the bus yesterday
+and a little this morning and I decided to just remove the referenced shared 
+libraries from the link line for lua_glfw.so and it builds just fine and ldd reports
+they are no longer referenced. So unlike osx, apparently you don't even need to
+mention these when producing shared libraries in GNU/Linux. We'll see, after 
+creating the final executables.
+</p>
+
+<p>
+But before going through and removing all those in the Makefiles, I need to get the
+current code checked in, so a little more reading of git.
+</p>
+
+<h2>2012-03-24</h2>
+
+<p>
+More reading about git, I learned to use the git diff
+tool with -t vimdiff to display the diffs of a file
+between two commits in vim, this is something I've
+been wanting to figure out for a while. It's a lot
+more convenient than what I've had to do with svn
+in the past, where I had to export a file from an
+older revision and then compare the diffs in vim 
+manually.
+</p>
+
+<p>
+Now, just need to read a little more about branches
+and repositories in order to figure out how to commit
+these changes from my johnny repository to either
+mhackslab or the modwest remote.
 </p>
 
 </body>
