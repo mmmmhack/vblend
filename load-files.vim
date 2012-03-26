@@ -6,5 +6,5 @@
 ":arga lua/*.h
 ":arga lua/*.c
 :arga docsrc/lua-manual.txt
-:arga test/ape/ape.vim
+":arga test/ape/ape.vim
 :b3

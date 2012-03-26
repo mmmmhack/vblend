@@ -5928,7 +5928,151 @@ these changes from my johnny repository to either
 mhackslab or the modwest remote.
 </p>
 
+<p>
+Added remote repository modwest, finally pushed:
+</p>
+<pre>
+$ git remote add modwest mmmmhack@shell.modwest.com:git/vblend
+$ git push modwest
+</pre>
+
+<p>
+Now, on to removing dependent libs from link lines of linux makefiles.
+</p>
+
+<p>
+I need to generate 2 lists: 
+<ul>
+<li>linux makefiles generated from Makefile.osx
+<li>hand-crafted linux makefiles
+</ul>
+
+<p>
+Ok, removed all shared lib refs from shared lib link lines, but now
+get:
+</p>
+<pre>
+wknight@johnny:~/proj/git/vblend/dist$ ./hello
+./lua: error loading module 'lua_glfw' from file './lua_glfw.so':
+./lua_glfw.so: undefined symbol: glfwInit
+stack traceback:
+[C]: ?
+[C]: in function 'require'
+./gamelib.lua:9: in main chunk
+[C]: in function 'require'
+hello.lua:7: in main chunk
+[C]: ?
+wknight@johnny:~/proj/git/vblend/dist$ 
+</pre>
+
+<p>
+So, looks like you must provide a ref to routines in other shared libs after
+all? Or maybe just need to specify them all when linking the executable?
+No, because we aren't producing an executable!
+</p>
+
+<p>
+Need to read about rpath again...
+</p>
+
+<p>
+--rpath-link works IF the shared lib already exists, but gives an error if it 
+doesn't (contrary to what the man page says):
+</p>
+<pre>
+make[1]: Leaving directory `/home/wknight/proj/git/vblend/glfw/libglfw'
+gcc -o lua_glfw.so -shared lua_glfw.o   -Wl,--rpath-link /home/wknight/proj/git/vblend/dist/libglfw.so  -lGL -lGLU
+gcc: /home/wknight/proj/git/vblend/dist/libglfw.so: No such file or directory
+make: *** [lua_glfw.so] Error 1
+wknight@johnny:~/proj/git/vblend/glfw$ 
+</pre>
+
+<p>
+A little SO reading, next I'll try using this in conjunction with the build location and
+see what happens.
+</p>
+
+<p>
+No, it still bitches about the missing file.
+</p>
+
+<p>
+Ok, I think I have one way that works. May not be the best but also not the worst,
+which was to install the dependent shared lib in PREFIX dir before linking
+the depender lib. By setting 'soname' of dependent lib to PREFIX dir,
+I can then build depender lib with just '-L dependent_lib_build_dir' -ldependent_lib'
+and after copying both of them to the PREFIX dir, the dependency resolves
+according to ldd.
+</p>
+
+<h2>2012-03-25</h2>
+
+<p>
+I will apply the solution found yesterday to try to get the linux build working.
+<p>
+
+<h2>2012-03-26</h2>
+
+<p>
+Made a start on Makefile work yesterday, created script to systematically
+generate all the generated linux Makefiles, continuing.
+</p>
+
+<p>
+grr, running into a problem where I'm defining an env variable, but
+make isn't seeing it, wtf?
+</p>
+<pre>
+--- in Makefile:
+$(info bef error: PREFIX: [$(PREFIX)])
+ifndef $(PREFIX)
+$(error "PREFIX env var not defined")
+endif
+$(info aft error: PREFIX: [$(PREFIX)])
+
+--- make:
+wknight@johnny:~/proj/git/vblend/util$ PREFIX=~/proj/git/vblend/dist make -f Makefile.linux 
+bef error: PREFIX: [/home/wknight/proj/git/vblend/dist]
+Makefile.linux:7: *** "PREFIX env var not defined".  Stop.
+wknight@johnny:~/proj/git/vblend/util$ 
+</pre>
+
+<p>
+I'm thinking that the 'ifndef' conditional isn't working the way I think it should.
+</p>
+
+<p>
+Ok, reading the docs always helps:
+</p>
+<pre>
+`ifdef VARIABLE-NAME'
+     The `ifdef' form takes the _name_ of a variable as its argument,
+      not a reference to a variable.  The value of that variable has a
+     non-empty value, the TEXT-IF-TRUE is effective; otherwise, the
+      TEXT-IF-FALSE, if any, is effective.  Variables that have never
+     been defined have an empty value.  The text VARIABLE-NAME is
+      expanded, so it could be a variable or function that expands to
+     the name of a variable.  For example:
+
+           bar = true
+           foo = bar
+           ifdef $(foo)
+           frobozz = yes
+           endif
+</pre>
+
+<p>
+Ok, drop the '$()' around it, back on track.
+</p>
+
+<p>
+Finished makefile work, after new build, no shared lib issues running
+'hello' demo, but it fails in call to gamelib.open_window()
+</p>
+
+
 </body>
+
 </html>
 
 

@@ -1,8 +1,14 @@
+### auto-generated from ../Makefile.osx by gen_linux_from_osx_makefile.lua
+
 # Makefile.linux  : top-level linux makefile for gamelib project
 
 lua_dir=lua
 
-PREFIX=dist
+ifndef $(PREFIX)
+PREFIX=$(CURDIR)/dist
+endif
+export PREFIX
+
 SO=so
 EXE=
 CP=cp

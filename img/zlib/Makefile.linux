@@ -1,5 +1,9 @@
 # linux Makefile for zlib
 
+ifndef PREFIX
+$(error "PREFIX env var not defined")
+endif
+
 CC=gcc
 CFLAGS=-O3
 SFLAGS=-O3 -fPIC
@@ -21,7 +25,7 @@ all: $(SHAREDLIB)
 	$(CC) $(SFLAGS) -DPIC -c -o $*.o $<
 
 $(SHAREDLIB): $(PIC_OBJS)
-	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS) -Wl,-soname,$(PREFIX)/$(notdir $@)
 
 example$(EXE): example.o $(SHAREDLIB)
 	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDLIB)

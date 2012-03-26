@@ -1,4 +1,8 @@
 
+ifndef PREFIX
+$(error "PREFIX env var not defined")
+endif
+
 ##########################################################################
 # Makefile for GLFW on Cocoa on Mac OS X using Apple GCC
 #-------------------------------------------------------------------------
@@ -61,8 +65,12 @@ OBJS = \
 ##########################################################################
 # Rule for building shared library
 ##########################################################################
+#	$(CC) -o $@ $(LFLAGS) $(OBJS) -Wl,-soname,libglfw.so
+#	$(CC) -o $@ $(LFLAGS) $(OBJS)
+#	$(CC) -o $@ $(LFLAGS) $(OBJS) -Wl,-soname,$(PREFIX)/libglfw.so
+#	$(CC) -o $@ $(LFLAGS) $(OBJS) -Wl,-soname,libglfw.so
 libglfw.so: $(OBJS)
-	$(CC) -o $@ $(LFLAGS) $(OBJS)
+	$(CC) -o $@ $(LFLAGS) $(OBJS) -Wl,-soname,$(PREFIX)/libglfw.so
 
 
 ##########################################################################

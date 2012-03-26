@@ -1,5 +1,9 @@
 # Makefile.linux 	:	linux makefile for libpng
 
+ifndef PREFIX
+$(error "PREFIX env var not defined")
+endif
+
 CC=gcc
 
 CFLAGS= -DHAVE_CONFIG_H -DPNG_CONFIGURE_LIBPNG -g -O2 -I. -I include -fno-common -DPIC -c
@@ -27,7 +31,7 @@ objs= \
 all : libpng.so
 
 libpng.so : $(objs)
-	$(CC) -o $@ -shared $(objs) ../zlib/libz.so
+	$(CC) -o $@ -shared $(objs) ../zlib/libz.so -Wl,-soname,$(PREFIX)/$(notdir $@)
 
 %.o : %.c
 	$(CC) -o $@ $(CFLAGS) $<

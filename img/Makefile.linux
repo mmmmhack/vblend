@@ -1,3 +1,5 @@
+### auto-generated from ../img/Makefile.osx by gen_linux_from_osx_makefile.lua
+
 # Makefile.linux: linux makefile for img lib
 
 CC=gcc
@@ -7,7 +9,7 @@ SO=so
 all: subdirs img.$(SO)
 
 img.$(SO): img.o
-	$(CC) -o $@ -shared img.o libpng/libpng.$(SO)
+	$(CC) -o $@ -shared -Wl,-soname,$(PREFIX)/$(notdir $@) img.o libpng/libpng.$(SO)
 
 img.o: img.c
 	$(CC) -o $@ $(CFLAGS) -c $<

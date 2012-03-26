@@ -1,3 +1,5 @@
+### auto-generated from ../gl/Makefile.osx by gen_linux_from_osx_makefile.lua
+
 # linux makefile for gl lua wrapper
 
 lua_dir = ../lua
@@ -15,7 +17,7 @@ includes= \
 all: lua_gl.$(SO)
 
 lua_gl.$(SO): lua_gl.o
-	$(CC) -o $@ -shared $< $(lua_libs) -lGL -lGLU
+	$(CC) -o $@ -shared -Wl,-soname,$(PREFIX)/$(notdir $@) $< $(lua_libs)  -lGL -lGLU
 
 lua_gl.o: constant_defs.c lua_gl_func_def.c lua_gl_func_reg.c lua_gl.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_gl.c

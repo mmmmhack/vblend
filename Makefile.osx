@@ -2,7 +2,11 @@
 
 lua_dir=lua
 
-PREFIX=dist
+ifndef $(PREFIX)
+PREFIX=$(CURDIR)/dist
+endif
+export PREFIX
+
 SO=so
 EXE=
 CP=cp

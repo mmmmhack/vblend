@@ -1,5 +1,9 @@
 # Makefile.osx	:	 Mac OSX makefile for util shared libs
 
+ifndef PREFIX
+$(error "PREFIX env var not defined")
+endif
+
 SO=so
 
 lua_dir=../lua

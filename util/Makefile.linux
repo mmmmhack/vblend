@@ -1,4 +1,10 @@
+### auto-generated from ../util/Makefile.osx by gen_linux_from_osx_makefile.lua
+
 # Makefile.linux	:	 linux makefile for util shared libs
+
+ifndef PREFIX
+$(error "PREFIX env var not defined")
+endif
 
 SO=so
 
@@ -12,13 +18,13 @@ CFLAGS += -g -Wall
 all: sys.$(SO) lua_sys.$(SO)
 
 sys.$(SO): sys.o
-	$(CC) -o $@ -shared sys.o
+	$(CC) -o $@ -shared -Wl,-soname,$(PREFIX)/$(notdir $@) sys.o
 
 sys.o: sys.c
 	$(CC) -o $@ $(CFLAGS) -c $<
 
 lua_sys.$(SO): sys.$(SO) lua_sys.o
-	$(CC) -o $@ -shared lua_sys.o sys.$(SO) $(lua_libs)
+	$(CC) -o $@ -shared -Wl,-soname,$(PREFIX)/$(notdir $@) lua_sys.o sys.$(SO) $(lua_libs)
 
 lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c 
 	$(CC) -o $@ $(CFLAGS) $(lua_includes) -c lua_sys.c
