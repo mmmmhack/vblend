@@ -6070,10 +6070,38 @@ Finished makefile work, after new build, no shared lib issues running
 'hello' demo, but it fails in call to gamelib.open_window()
 </p>
 
+<h2>2012-03-27</h2>
+
+<p>
+A little more debugging this morning, stepped through in gdb: '$ gdb --args lua hello'
+and set breakpoint in lw_openWindow() (don't know why I never did that before, instead
+of weird C wrapper funcs, totally not necessary) and found it failing here, in
+glfw/libglfw/window.c:
+</p>
+<pre>
+    if( _glfwWin.glMajor &gt; 2 )
+    {
+        _glfwWin.GetStringi = (PFNGLGETSTRINGIPROC) glfwGetProcAddress( "glGetStringi" );
+        if( !_glfwWin.GetStringi )
+        {
+            // This is a very common problem among people who compile GLFW
+            // on X11/GLX using custom build systems, as it needs explicit
+            // configuration in order to work
+            //
+            // See readme.html section 2.2 for details
+
+            glfwCloseWindow();
+            return GL_FALSE;
+        }
+    }
+</pre>
+
+<p>
+That looks promising. One other thing: need to recompile with -O0 because stepping in
+gdb showed weird sequences.
+</p>
+
 
 </body>
 
 </html>
-
-
-
