@@ -3,6 +3,34 @@ ifndef PREFIX
 $(error "PREFIX env var not defined")
 endif
 
+# extra flags gleaned from compile.sh
+CFLAGS += \
+ -D_GLFW_HAS_XRANDR \
+ -D_GLFW_USE_LINUX_JOYSTICKS \
+ -D_GLFW_HAS_XRANDR \
+ -D_GLFW_HAS_PTHREAD \
+ -D_GLFW_HAS_SCHED_YIELD \
+ -D_GLFW_HAS_GLXGETPROCADDRESS \
+ -D_GLFW_HAS_SYSCONF  \
+ -pthread
+
+CFLAGS += -O0
+#CFLAGS += -O2
+CFLAGS += -Wall
+
+# extra flags gleaned from compile.sh
+LFLAGS += \
+ -lXrandr \
+ -lXrandr \
+ -lX11 \
+ -lGL \
+ -pthread \
+ -lm
+
+LFLAGS += -shared
+
+#SOFLAGS      = -shared -Wl,-soname,libglfw.so
+
 ##########################################################################
 # Makefile for GLFW on Cocoa on Mac OS X using Apple GCC
 #-------------------------------------------------------------------------
@@ -17,7 +45,7 @@ all: libglfw.so
 # Compiler settings
 ##########################################################################
 CC     ?= cc
-CFLAGS = -c -I. -Iinclude -Ix11 -Wall -O2 -fno-common -g -DPLATFORM_X11 -fPIC
+CFLAGS += -c -I. -Iinclude -Ix11 -Wall -fno-common -g -DPLATFORM_X11 -fPIC
 
 
 ##########################################################################
@@ -29,7 +57,7 @@ SED      = sed
 INSTALL  = install
 ARFLAGS  = -rcs
 HEADERS  = include/GL/glfw.h internal.h x11/platform_x11.h
-LFLAGS   = -shared
+#LFLAGS   = -shared
 
 
 

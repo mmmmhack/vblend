@@ -6101,6 +6101,83 @@ That looks promising. One other thing: need to recompile with -O0 because steppi
 gdb showed weird sequences.
 </p>
 
+<
+<h2>2012-03-28</h2>
+
+<p>
+Another day, another line of code. I looked at the Makefile for glfw and noted to
+my consteration that it was already compiling with -O0. ???
+</p>
+
+<p>
+Duh, that's for glfw, not libglfw.
+</p>
+
+<p>
+Checked out the glfw readme, then I started looking at compile.sh, and then did:
+</p>
+<pre>
+wknight@johnny:~/proj/git/vblend/dev/glfw-2.7.2$ ./compile.sh 
+Checking what kind of system this is... Linux
+Checking for X11 libraries location... unknown (assuming linker will find them)
+Checking whether we are using GNU C... yes
+Checking for X11 RandR support... yes
+Checking for pthread support... yes
+Checking for sched_yield... yes
+Checking for glXGetProcAddress variants... glXGetProcAddress
+Checking for sysconf... yes
+Checking for sysctl support... no
+Creating ./lib/x11/Makefile.x11
+Creating ./examples/Makefile.x11
+Creating ./tests/Makefile.x11
+Creating ./lib/x11/libglfw.pc.in
+wknight@johnny:~/proj/git/vblend/dev/glfw-2.7.2$ 
+</pre>
+
+<p>
+Added the CFLAGS and LFLAGS from the compile.sh script, built again, got error
+</p>
+<pre>
+cc -o libglfw.so -lXrandr -lXrandr -lX11 -lGL -pthread -lm enable.o fullscreen.o glext.o image.o init.o input.o joystick.o stream.o tga.o thread.o time.o window.o x11_enable.o x11_fullscreen.o x11_glext.o x11_init.o x11_joystick.o x11_keysym2unicode.o x11_thread.o x11_time.o x11_window.o -Wl,-soname,/home/wknight/proj/git/vblend/dist/libglfw.so
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 0 has invalid symbol index 12
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 1 has invalid symbol index 13
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 2 has invalid symbol index 2
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 3 has invalid symbol index 2
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 4 has invalid symbol index 12
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 5 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 6 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 7 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 8 has invalid symbol index 2
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 9 has invalid symbol index 2
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 10 has invalid symbol index 13
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 11 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 12 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 13 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 14 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 15 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 16 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 17 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 18 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 19 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 20 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 21 has invalid symbol index 14
+/usr/bin/ld: /usr/lib/debug/usr/lib/crt1.o(.debug_info): relocation 22 has invalid symbol index 22
+/usr/lib/gcc/i486-linux-gnu/4.4.3/../../../../lib/crt1.o: In function `_start':
+(.text+0x18): undefined reference to `main'
+collect2: ld returned 1 exit status
+make: *** [libglfw.so] Error 1
+wknight@johnny:~/proj/git/vblend/glfw/libglfw$ 
+</pre>
+
+<p>
+Ah, I had left off the -shared flag. Rebuilt everything, trying hello demo again...
+</p>
+
+<p>
+It works! We have achieved triple platform!! Finally!!!
+</p>
+
+
 
 </body>
 
