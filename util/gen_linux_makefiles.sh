@@ -20,6 +20,7 @@ while [ -n "$infile" ]; do
 	in_make="../$infile.osx"
 	out_make="../$infile.linux"
 	$LUA $convert $in_make > $out_make
+	echo $out_make
 	if [ $? -ne 0 ]; then
 		echo "error: failed converting $in_make: $?"
 		exit 1

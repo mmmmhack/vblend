@@ -14,8 +14,13 @@ all: libglfw.dll
 # Compiler settings
 ##########################################################################
 CC         = gcc
-CFLAGS     = -c -I. -Iinclude -Wall -O2 -DPLATFORM_MINGW
+CFLAGS     = -c -I. -Iinclude -Wall -DPLATFORM_MINGW
 CFLAGS_DLL = $(CFLAGS) -mdll -DGLFW_BUILD_DLL -D_GLFW_NO_DLOAD_GDI32 -D_GLFW_NO_DLOAD_WINMM
+ifdef NO_OPTIMIZE
+CFLAGS += -O0
+else
+CFLAGS += -O2
+endif
 
 ##########################################################################
 # Library builder settings

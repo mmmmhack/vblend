@@ -3,7 +3,12 @@
 lua_dir = ../lua
 
 CC=gcc
-CFLAGS += -O0 -g -Wall
+CFLAGS += -g -Wall
+ifdef NO_OPTIMIZE
+CFLAGS += -O0
+else
+CFLAGS += -O2
+endif
 SO=so
 lua_libs=
 

@@ -14,9 +14,12 @@ CFLAGS += \
  -D_GLFW_HAS_SYSCONF  \
  -pthread
 
+ifdef NO_OPTIMIZE
 CFLAGS += -O0
-#CFLAGS += -O2
-CFLAGS += -Wall
+else
+CFLAGS += -O2
+endif
+CFLAGS += -g -Wall
 
 # extra flags gleaned from compile.sh
 LFLAGS += \

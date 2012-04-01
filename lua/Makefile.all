@@ -8,8 +8,12 @@
 PLAT= none
 
 CC= gcc
-#CFLAGS= -O2 -Wall $(MYCFLAGS)
-CFLAGS= -O0 -g -Wall $(MYCFLAGS)
+CFLAGS= -g -Wall $(MYCFLAGS)
+ifdef NO_OPTIMIZE
+CFLAGS += -O0
+else
+CFLAGS += -O2
+endif
 AR= ar rcu
 RANLIB= ranlib
 RM= rm -f

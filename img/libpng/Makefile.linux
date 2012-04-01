@@ -6,7 +6,12 @@ endif
 
 CC=gcc
 
-CFLAGS= -DHAVE_CONFIG_H -DPNG_CONFIGURE_LIBPNG -g -O2 -I. -I include -fno-common -DPIC -c
+CFLAGS= -DHAVE_CONFIG_H -DPNG_CONFIGURE_LIBPNG -g -Wall -I. -I include -fno-common -DPIC -c
+ifdef NO_OPTIMIZE
+CFLAGS += -O0
+else
+CFLAGS += -O2
+endif
 
 objs= \
  png.o \
