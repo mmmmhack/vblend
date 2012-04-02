@@ -242,6 +242,6 @@ M.quit = function()
 	os.exit(0)
 end
 
-debug_console()
+--debug_console()
 M.main()
 

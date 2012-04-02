@@ -1,0 +1,13 @@
+README for vblend
+
+See INSTALL for installation instructions.
+
+* What is vblend?
+  --------------
+	vblend is a game library written in C and lua that aims to include a built-in 3D graphics editor
+	with a vim/blender-like interface. 
+
+	It is open source and cross-platform. It relies on OpenGL and the glfw framework and is intended
+	to run on GNU/Linux, Mac OSX and Windows platforms.
+
+  It is licensed under the GNU public license, version 3.

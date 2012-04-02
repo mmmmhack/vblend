@@ -39,7 +39,7 @@ install : $(PREFIX)
 	$(CP) img/libpng/*.$(SO) $(PREFIX)/
 	$(CP) font/*.$(SO) $(PREFIX)/
 	$(CP) edit/*.$(SO) $(PREFIX)/
-	$(CP) gamelib/*.lua $(PREFIX)/
+	$(CP) -v gamelib/*.lua $(PREFIX)/
 	$(CP) -r demo/* $(PREFIX)/
 
 # clean demo

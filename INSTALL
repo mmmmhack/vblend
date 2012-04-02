@@ -1,0 +1,14 @@
+Installation instructions for vblend
+
+Vblend aims to have minimal external dependencies and a simple build process. Consequently,
+it currently provides explicit Makefiles for mingw, osx and unix platforms. So, to build
+the project under one of those platforms, you can just do:
+
+'make -f Makefile.XXX' where 'XXX' is one of: 'mingw', 'osx', 'linux'
+
+Because of the large degree of redundancies in these makefiles, most of the mingw and
+linux ones are generated programatically from the osx ones using lua scripts in the 
+'util' subdirectory. 
+
+At some point, autoconf 'configure'-style build support may be added, for better porting,
+but only in addition to the existing Makefiles, not replacing them.
