@@ -59,7 +59,9 @@ M.char_pressed = function (ch)
 	local b = editor.active_buf()
 	local ln = buffer.get(b)
 	-- movement
-	if ch == editor.cc('h') then
+	if ch == nil then
+		-- holding down the 'command' key in osx can produce this, so just ignore it		
+	elseif ch == editor.cc('h') then
 		M.move_horiz(-1 * M.op_count())
 	elseif ch == editor.cc('l') then
 		M.move_horiz(1 * M.op_count())

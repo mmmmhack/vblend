@@ -11,13 +11,14 @@ vblend aims to have minimal external dependencies and a simple build process. Co
 it currently provides explicit Makefiles for mingw, osx and unix platforms. So, to build
 the project under one of those platforms, you can just do:
 
-	:vblend $ make -f Makefile.XXX' where 'XXX' is one of: 'mingw', 'osx', 'linux'
-
-then, if that succeeds, install it in the subdir 'dist' by doing:
+	:vblend $ make -f Makefile.XXX 
+	
+Where 'XXX' is one of: 'mingw', 'osx', 'linux'. Then, if that succeeds, you can install 
+it in the 'dist' subdir by doing:
 
 	:vblend $ make -f Makefile.XXX' install
 
-Then test it by going into the dist subdir and running the 'hello' demo:
+Then you can test it by going into the dist subdir and running the 'hello' demo:
 
 	:vblend $ cd dist
 	:dist $ ./hello
