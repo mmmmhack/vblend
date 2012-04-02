@@ -1,14 +1,31 @@
 Installation instructions for vblend
+------------------------------------
 
-Vblend aims to have minimal external dependencies and a simple build process. Consequently,
+Build tool requirements:
+	bash, make, gcc
+
+Library dependencies:
+	OpenGL
+
+vblend aims to have minimal external dependencies and a simple build process. Consequently,
 it currently provides explicit Makefiles for mingw, osx and unix platforms. So, to build
 the project under one of those platforms, you can just do:
 
-'make -f Makefile.XXX' where 'XXX' is one of: 'mingw', 'osx', 'linux'
+	:vblend $ make -f Makefile.XXX' where 'XXX' is one of: 'mingw', 'osx', 'linux'
 
-Because of the large degree of redundancies in these makefiles, most of the mingw and
+then, if that succeeds, install it in the subdir 'dist' by doing:
+
+	:vblend $ make -f Makefile.XXX' install
+
+Then test it by going into the dist subdir and running the 'hello' demo:
+
+	:vblend $ cd dist
+	:dist $ ./hello
+	
+Because of the large amount of redundancy in the makefiles, most of the mingw and
 linux ones are generated programatically from the osx ones using lua scripts in the 
 'util' subdirectory. 
 
-At some point, autoconf 'configure'-style build support may be added, for better porting,
+At some point, autoconf 'configure'-style support may be added, for better porting,
 but only in addition to the existing Makefiles, not replacing them.
+
