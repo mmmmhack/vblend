@@ -6206,6 +6206,42 @@ to a bug tracking system, so I'm moving the project to github.
 Added to git hub, and also added README, INSTALL and LICENSE files.
 </p>
 
+<p>
+Creating issues in github and fixing them! I had a feeling that would help.
+</p>
+
+<p>
+Finally working again on h-scroll bug, just doing printfs for now, here is win_pos before
+auto-scroll calc (at buffer.lua:82):
+</p>
+<pre>
+before scroll calc:
+	buffer.set_cursor(): cursor_pos[0]: 0, win_pos[0]: -1, b.scroll_pos[0]: 1
+after:
+	b.scroll_pos[0]: 2
+</pre>
+
+<p>
+So, how the hell is buffer.scroll_pos used again? Ok, used in buf2win
+</p>
+
+<pre>
+buffer.set_cursor(): cursor_pos[0]: 0, win_pos[0]: -1, b.scroll_pos[0]: 1
+after calc scroll: b.scroll_pos[0]: 2
+after buf2win(): win_pos[0]: -2
+</pre>
+
+<h2>2012-04-03</h2>
+
+<p>
+Another day, time to get on this freakin scroll problem, don't know why
+I'm having such a hard time with it.
+</p>
+
+<p>
+Holy smokes, finally got the lil beyotch working.
+</p>
+
 </body>
 
 </html>

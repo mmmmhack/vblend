@@ -61,12 +61,12 @@ M.init = function()
 	M.editor = {}
 
 	-- create first buffer
-	M.editor._active_buf = buffer.new({[0]=0, [1]=0}, {[0]=w, [1]=h-1})
+	M.editor._active_buf = buffer.new("active", {[0]=0, [1]=0}, {[0]=w, [1]=h-1})
 	
 	buffer.set(M.editor._active_buf, _init_line)
 
 	-- create cmd-line buffer
-	M.editor._cmd_buf = buffer.new({[0]=0, [1]=h-1}, {[0]=w, [1]=1})
+	M.editor._cmd_buf = buffer.new("cmd", {[0]=0, [1]=h-1}, {[0]=w, [1]=1})
 	cmd_mode.buf = M.editor._cmd_buf
 
 end

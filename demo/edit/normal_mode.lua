@@ -51,6 +51,7 @@ M.move_horiz = function(count)
 --print(string.format("normal_mode.move_horiz(): n: %d, cur_col: %d, new_col: %d", n, cur_col, new_col))
 	local new_pos = { [0]=new_col, [1]=cur_row}
 	buffer.set_cursor(b, new_pos)
+--print(string.format("normal_mode.move_horiz(): set new cursor pos: %d, %d", new_pos[0], new_pos[1]))
 	M.clear_op_count()
 end
 
