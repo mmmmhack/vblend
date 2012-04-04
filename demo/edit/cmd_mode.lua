@@ -73,7 +73,7 @@ M.set_text = function(s)
 end
 
 M.get_text = function()
-  return buffer.get(M.buf)
+  return buffer.get(M.buf).text
 end
 
 -- handles cmd entered from cmd-line
@@ -110,7 +110,7 @@ M.char_pressed = function (ch)
   -- enter
   elseif ch == editor.cc(ASC_RET) then
     -- get cmd
-    local ln = buffer.get(M.buf)
+    local ln = buffer.get(M.buf).text
     local cmd = string.sub(ln, 2) 
 
     -- erase cmd-line
@@ -127,7 +127,7 @@ M.char_pressed = function (ch)
     editor.set_mode("normal")
   else
     -- append ch to cmd-line
-    buffer.set(M.buf, buffer.get(M.buf) .. ch)
+    buffer.set(M.buf, buffer.get(M.buf).text .. ch)
 
     -- update cursor
     buffer.inc_cursor(M.buf, 1)

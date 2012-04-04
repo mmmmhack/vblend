@@ -40,7 +40,7 @@ M.move_horiz = function(count)
 
 --	local n = dir * M.op_count()
 	-- clamp to line
-	local ln = buffer.get(b)
+	local ln = buffer.get(b).text
 	local final_col = math.max(0, #ln - 1)
 	local cur_pos = b.cursor_pos
 	local cur_col = cur_pos[0]
@@ -58,7 +58,7 @@ end
 -- handles key input for normal mode
 M.char_pressed = function (ch)
 	local b = editor.active_buf()
-	local ln = buffer.get(b)
+	local ln = buffer.get(b).text
 	-- movement
 	if ch == nil then
 		-- holding down the 'command' key in osx can produce this, so just ignore it		
@@ -76,7 +76,7 @@ M.char_pressed = function (ch)
 			M.update_op_count(ch)
 		end
 	-- insert mode
-	elseif ch == editor.cc('i') or ch == editor.cc('a') then
+	elseif ch == editor.cc('i') or ch == editor.cc('a') or ch == editor.cc('o') then
 		editor.set_mode('insert')
 		insert_mode.begin(ch)
 	-- command mode

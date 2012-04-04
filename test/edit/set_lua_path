@@ -1,0 +1,1 @@
+export LUA_PATH="/Users/williamknight/proj/git/vblend/demo/edit/?.lua;/Users/williamknight/proj/git/vblend/debugger/?.lua;/Users/williamknight/proj/git/vblend/gamelib/?.lua"

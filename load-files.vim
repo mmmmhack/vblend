@@ -7,4 +7,5 @@
 ":arga lua/*.c
 :arga docsrc/lua-manual.txt
 ":arga test/ape/ape.vim
+:arga demo/edit/*.lua
 :b3

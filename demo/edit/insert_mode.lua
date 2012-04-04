@@ -15,6 +15,9 @@ M.begin = function (mode_ch)
 	-- inc cursor
 	if mode_ch == editor.cc('a') then
 		M.inc_cursor(1)
+	-- insert line
+	elseif mode_ch == editor.cc('o') then
+		M.open_line()
 	end
 
 	-- get insert pos
@@ -26,25 +29,29 @@ end
 
 -- returns pos in line_buf under cursor
 M.insert_pos = function()
---[[
-	local cursor_pos = cursor.get_pos()
---print("M.insert_pos() BEG")
---util.ptable(cursor_pos)
-	scroll_pos = win.scroll_pos()
-	hscroll = scroll_pos[2]
-	col = cursor_pos[2] + hscroll
-	return col
---]]
 	local pos = editor.active_buf().cursor_pos
 	return {[0]=pos[0], [1]=pos[1]}
 end
 
+-- increments cursor in horiz dir by one char
 M.inc_cursor = function(n)
 	buffer.inc_cursor(editor.active_buf(), n)
 end
 
+M.open_line = function(n)
+--	buffer.inc_cursor(editor.active_buf(), n)
+
+  local cursor_pos = buffer.get_cursor(editor.active_buf())
+	buffer.insert_line(editor.active_buf(), "", cursor_pos[1] + 1)
+
+	-- update cursor
+	cursor_pos[0] = 0
+	cursor_pos[1] = cursor_pos[1] + 1
+	buffer.set_cursor(editor.active_buf(), cursor_pos)
+end
+
 M.get_line = function()
-	local ln = buffer.get(editor.active_buf())
+	local ln = buffer.get(editor.active_buf()).text
 	return ln
 end
 

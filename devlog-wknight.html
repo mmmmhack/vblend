@@ -6242,6 +6242,39 @@ I'm having such a hard time with it.
 Holy smokes, finally got the lil beyotch working.
 </p>
 
+<p>
+Next: get 'o' command working (open new line)
+</p>
+
+<p>
+Hmm, for row insertion, maybe need to change buffer lines from array to
+linked list?
+</p>
+
+<p>
+Yeah, shouldn't be a big deal at this point, not many refs to b.lines yet.
+Will probably start by creating a buf_line module.
+</p>
+
+<h2>2012-04-04</h2>
+
+<p>
+Up later, not much time to program this morning but got buffer.lines replaced
+with linked list without too much trouble, it's working. Next will finish
+'open new line' command.
+</p>
+
+<p>
+Continuing work at the UC, got the buffer.insert_line() function working,
+but display still isn't right, cursor moves to new lower line, but text
+is still getting written in line above.
+</p>
+
+<p>
+Created another test in test/edit/buffer_insert_line.lua, it shows 
+expected behavior, so need to debug the editor app directly again.
+</p>
+
 </body>
 
 </html>
