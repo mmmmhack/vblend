@@ -1,0 +1,16 @@
+# makefile for test_pcall.c
+
+CFLAGS = -g -O0 
+includes=-I$(VBLEND_DIR)/lua/include
+libs=-L$(VBLEND_DIR)/lua -llua
+objs=test_pcall.o
+
+test_pcall: $(objs)
+	$(CC) -o $@ -O0 $(objs) $(libs)
+
+test_pcall.o: test_pcall.c
+	$(CC) -o $@ -c $(CFLAGS) $(includes) $<
+
+clean:
+	-rm *.o
+	-rm test_pcall

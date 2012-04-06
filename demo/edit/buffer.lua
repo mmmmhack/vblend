@@ -34,7 +34,7 @@ M.new = function(buffer_name, win_pos, win_size)
   b.win_pos = {[0]=win_pos[0], [1]=win_pos[1]}
   b.win_size = {[0]=win_size[0], [1]=win_size[1]}
   b.redraw = false
-  b.update_all = true	-- optimization flag, triggers update of all lines in display_lines buffer if (v)scroll
+--  b.update_all = true	-- optimization flag, triggers update of all lines in display_lines buffer if (v)scroll
   b.display_lines = {}
   local blank_ln = string.rep(' ', b.win_size[0])
 	local num_lines = b.win_size[1]
@@ -47,7 +47,7 @@ end
 M.tostring = function(b)
 	local s = ""
   s = s .. string.format("b.name: %s\n", b.name)
-  s = s .. string.format("b.lines: len: %d\n", #b.lines)
+  s = s .. string.format("b.lines: len: %d\n", M.count_lines(b))
 --  for i = 0, #b.lines do
 	local line = b.lines_head
 	local i = 0
@@ -62,11 +62,10 @@ M.tostring = function(b)
   s = s .. string.format("b.win_pos: (%d, %d)\n", b.win_pos[0], b.win_pos[1])
   s = s .. string.format("b.win_size: (%d, %d)\n", b.win_size[0], b.win_size[1])
   s = s .. string.format("b.redraw: %s\n", tostring(b.redraw))
-  s = s .. string.format("b.update_all: %s\n", tostring(b.update_all))
+--  s = s .. string.format("b.update_all: %s\n", tostring(b.update_all))
   s = s .. string.format("b.display_lines: len: %d\n", #b.display_lines)
   for i = 0, #b.display_lines do
     s = s .. string.format("  [%2d]: '%s'\n", i, b.display_lines[i])
-break
   end
 	return s
 end
@@ -228,12 +227,12 @@ end
 		if line_num == num_lines, line is appended at end
 ]]
 M.insert_line = function(b, line_text, line_num)
-	local num_lines = buffer.count_lines(b)
+	local num_lines = M.count_lines(b)
 	if line_num < 0 or line_num > num_lines then
 		return nil
 	end
 	local new_line = buf_line.new(line_text)
-	local prev_line = buffer.get(b, line_num - 1)
+	local prev_line = M.get(b, line_num - 1)
 	if line_num == 0 or prev_line == nil then
 		local old_head = b.lines_head
 		b.lines_head = new_line
@@ -242,6 +241,7 @@ M.insert_line = function(b, line_text, line_num)
 		new_line.next_line = prev_line.next_line
 		prev_line.next_line = new_line
 	end
+--	b.update_all = true
 	b.redraw = true
 	return new_line
 end
@@ -256,15 +256,15 @@ M.update_display_lines = function(b)
   local beg_col = b.scroll_pos[0]
 
   -- default: only draw cursor line
-  local beg_row = --[[ b.scroll_pos[1] + --]] b.cursor_pos[1]
-  local end_row = beg_row
+--  local beg_row = --[[ b.scroll_pos[1] + --]] b.cursor_pos[1]
+--  local end_row = beg_row
   -- update all lines in window if scrolled
 	local num_lines = M.count_lines(b)
-  if b.update_all then
-    beg_row = b.scroll_pos[1]
+--  if b.update_all then
+	local beg_row = b.scroll_pos[1]
 --    end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
-    end_row = math.max(num_lines - 1, beg_row + b.win_size[1] - 1)
-  end
+	local end_row = math.max(num_lines - 1, beg_row + b.win_size[1] - 1)
+--  end
   local blank_ln = "~" .. string.rep(" ", b.win_size[1]-1)
   local j = 0
   for i = beg_row, end_row do
@@ -296,7 +296,23 @@ M.draw = function (b)
 --if(b.name == "active") then
 --	print("beg buffer.draw()")
 --end
+
+--[[
+--if editor.debug_state == "blines > 1, char_pressed" then
+if buffer.count_lines(b) > 1 then
+print("--- buffer.draw(), bef update_display_lines")
+print(string.format("buffer.tostring(b): %s", buffer.tostring(b)))
+end
+]]
   M.update_display_lines(b)
+
+--[[
+if buffer.count_lines(b) > 1 then
+print("--- buffer.draw(), aft update_display_lines")
+print(string.format("buffer.tostring(b): %s", buffer.tostring(b)))
+end
+]]
+
   -- copy display_lines buffer to screen buffer
   local scr_col = b.win_pos[0]
   local scr_row = b.win_pos[1]
@@ -305,7 +321,7 @@ M.draw = function (b)
     tfont.set_text_buf(scr_row + i, scr_col, ln)
   end
   b.redraw = false
-  b.update_all = false
+--  b.update_all = false
 --print(string.format("buffer after at end of draw():\n%s", M.tostring(b)))
 --if(b.name == "active") then
 --	print("end buffer.draw()")

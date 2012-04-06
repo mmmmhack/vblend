@@ -48,6 +48,10 @@ M.open_line = function(n)
 	cursor_pos[0] = 0
 	cursor_pos[1] = cursor_pos[1] + 1
 	buffer.set_cursor(editor.active_buf(), cursor_pos)
+
+--local b = editor.active_buf()	
+--print(string.format("  at end insert_mode.open_line(): buffer.tostring(b):\n%s", buffer.tostring(b)))
+--print(string.format("end insert_mode.open_line()"))
 end
 
 M.get_line = function()
@@ -60,6 +64,13 @@ M.set_line = function(ln)
 end
 
 M.char_pressed = function(ch)
+
+local b = editor.active_buf()	
+--if buffer.count_lines(b) > 1 then
+--print(string.format("beg insert_mode.char_pressed(): b: %s", buffer.tostring(b)))
+--	editor.debug_state = "blines > 1, char_pressed"
+--end
+
 --tflua.set_debug()
 local fname = string.format("insert_mode.char_pressed-beg-%s-%d.buffer-dump.txt", ch, debug_count)
 --debug_count = debug_count + 1

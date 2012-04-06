@@ -12,8 +12,13 @@ all: libglfw.so
 # Compiler settings
 ##########################################################################
 CC     ?= cc
-CFLAGS = -c -I. -Iinclude -Icocoa -Wall -O2 -fno-common -g -DPLATFORM_OSX
+CFLAGS = -c -I. -Iinclude -Icocoa -Wall -fno-common -g -DPLATFORM_OSX
 
+ifdef NO_OPTIMIZE
+CFLAGS += -O0
+else
+CFLAGS += -O2
+endif
 
 ##########################################################################
 # Library builder settings

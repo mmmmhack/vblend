@@ -5494,10 +5494,10 @@ Not working, here is current definition of SaveNarrative():
 </p>
 <pre>
 function! SaveNarrative()
-	let step_info = g:ape_steps[len(g:ape_steps) - 1]
-	call GotoNarWin()
-	:sil 1,$y n
-	let step_info['narr'] = @n
+let step_info = g:ape_steps[len(g:ape_steps) - 1]
+call GotoNarWin()
+:sil 1,$y n
+let step_info['narr'] = @n
 endfunction
 </pre>
 
@@ -5549,12 +5549,12 @@ Will try this now:
 </p>
 <pre>
 function! SaveNarrative()
-"	let pos = g:exe_pos
-	let pos = GetNavPos()
-	let step_info = g:ape_steps[pos]
-	call GotoNarWin()
-	:sil 1,$y n
-	let step_info['narr'] = @n		
+"let pos = g:exe_pos
+let pos = GetNavPos()
+let step_info = g:ape_steps[pos]
+call GotoNarWin()
+:sil 1,$y n
+let step_info['narr'] = @n
 endfunction
 </pre>
 
@@ -6216,9 +6216,9 @@ auto-scroll calc (at buffer.lua:82):
 </p>
 <pre>
 before scroll calc:
-	buffer.set_cursor(): cursor_pos[0]: 0, win_pos[0]: -1, b.scroll_pos[0]: 1
+buffer.set_cursor(): cursor_pos[0]: 0, win_pos[0]: -1, b.scroll_pos[0]: 1
 after:
-	b.scroll_pos[0]: 2
+b.scroll_pos[0]: 2
 </pre>
 
 <p>
@@ -6273,6 +6273,286 @@ is still getting written in line above.
 <p>
 Created another test in test/edit/buffer_insert_line.lua, it shows 
 expected behavior, so need to debug the editor app directly again.
+</p>
+
+<p>
+At home, a little more printf-debugging, I've found the flaw:
+if b.update_all isn't set, then the first row of the display buffer
+is set to the cursor_pos row of the text buffer, which obviously is
+not correct. For simplicity, I might just ditch that optimization for
+now and consider it later after the editor is more functional.
+</p>
+
+<p>
+Ok, did that, finally can enter multiple lines, but after entering
+4 lines, lua segfaulted! :(
+</p>
+
+<p>
+Actually, crash appears to happen by just fast char input in insert mode,
+so this is presumably not a new bug.
+</p>
+
+<p>
+repro'd in gdb:
+</p>
+<pre>
+
+Program received signal EXC_BAD_ACCESS, Could not access memory.
+Reason: KERN_INVALID_ADDRESS at address: 0x6b65657a
+luaH_getstr (t=0x6b656573, key=0x1006c0) at ltable.c:456
+456  Node *n = hashstr(t, key);
+(gdb) 
+</pre>
+
+<p>
+Guess we're back to diving into lua internals.... :O
+</p>
+
+<pre>
+gdb) bt
+#0  luaH_getstr (t=0x6b656573, key=0x1006c0) at ltable.c:456
+#1  0x000123e3 in call_binTM (L=0x100180, p1=0x800198, p2=0x8001a4, res=0x800198, event=TM_CONCAT) at lvm.c:163
+#2  0x00012817 in luaV_concat (L=0x100180, total=3, last=5) at lvm.c:283
+#3  0x000134a1 in luaV_execute (L=0x100180, nexeccalls=1) at lvm.c:533
+#4  0x00008d60 in luaD_call (L=0x100180, func=0x80015c, nResults=1) at ldo.c:377
+#5  0x0001201f in callTMres (L=0x1, res=<value temporarily unavailable, due to optimizations>, f=<value temporarily unavailable, due to optimizations>, p1=0xbffff2e4, p2=0x106214) at lvm.c:88
+#6  0x00012e92 in luaV_execute (L=0x100180, nexeccalls=3) at lvm.c:433
+#7  0x00008d60 in luaD_call (L=0x100180, func=0x800030, nResults=-1) at ldo.c:377
+#8  0x000047c1 in f_call (L=0x1, ud=0x6b656573) at lapi.c:800
+#9  0x0000823b in luaD_rawrunprotected (L=0x100180, f=0x47a0 <f_call>, ud=0xbffff438) at ldo.c:116
+#10 0x00009082 in luaD_pcall (L=0x100180, func=0x1, u=0x1, old_top=48, ef=1) at ldo.c:463
+#11 0x00004835 in lua_pcall (L=0x100180, nargs=0, nresults=-1, errfunc=2) at lapi.c:821
+#12 0x000026b3 in docall (L=0x24, narg=0, clear=0) at lua.c:102
+#13 0x00002e67 in handle_script [inlined] () at lua.c:250
+#14 0x00002e67 in pmain (L=0x100180) at lua.c:362
+#15 0x00008923 in luaD_precall (L=0x100180, func=0x80000c, nresults=0) at ldo.c:319
+#16 0x00008d03 in luaD_call (L=0x100180, func=0x80000c, nResults=0) at ldo.c:376
+#17 0x00004900 in f_Ccall (L=0x100180, ud=0x0) at lapi.c:846
+#18 0x0000823b in luaD_rawrunprotected (L=0x100180, f=0x4890 <f_Ccall>, ud=0xbffff6b8) at ldo.c:116
+#19 0x00009082 in luaD_pcall (L=0x100180, func=0x1, u=0x1, old_top=12, ef=1) at ldo.c:463
+#20 0x00004957 in lua_cpcall (L=0x6b656573, func=0x1, ud=0x1) at lapi.c:856
+#21 0x00003235 in main (argc=2, argv=0xbffff734) at lua.c:387
+(gdb) 
+</pre>
+
+<p>
+Rebuilt w/o optimizations, still crashes:
+</p>
+
+<pre>
+rogram received signal EXC_BAD_ACCESS, Could not access memory.
+Reason: KERN_INVALID_ADDRESS at address: 0x6b656583
+0x00014d37 in luaH_getstr (t=0x6b656573, key=0x1006c0) at ltable.c:456
+456  Node *n = hashstr(t, key);
+(gdb) bt
+#0  0x00014d37 in luaH_getstr (t=0x6b656573, key=0x1006c0) at ltable.c:456
+#1  0x00015359 in luaT_gettmbyobj (L=0x100180, o=0x800198, event=TM_CONCAT) at ltm.c:73
+#2  0x00016664 in call_binTM (L=0x100180, p1=0x800198, p2=0x8001a4, res=0x800198, event=TM_CONCAT) at lvm.c:163
+#3  0x00016e30 in luaV_concat (L=0x100180, total=3, last=5) at lvm.c:283
+#4  0x000188f7 in luaV_execute (L=0x100180, nexeccalls=1) at lvm.c:533
+#5  0x0000a2bf in luaD_call (L=0x100180, func=0x80015c, nResults=1) at ldo.c:377
+#6  0x00016167 in callTMres (L=0x100180, res=0x80012c, f=0x10a154, p1=0xbffff068, p2=0x106214) at lvm.c:88
+#7  0x00016428 in luaV_gettable (L=0x100180, t=0xbffff068, key=0x106214, val=0x80012c) at lvm.c:125
+#8  0x000176a0 in luaV_execute (L=0x100180, nexeccalls=3) at lvm.c:433
+#9  0x0000a2bf in luaD_call (L=0x100180, func=0x800030, nResults=-1) at ldo.c:377
+#10 0x0000497f in f_call (L=0x100180, ud=0xbffff3ec) at lapi.c:800
+#11 0x00009516 in luaD_rawrunprotected (L=0x100180, f=0x4955 <f_call>, ud=0xbffff3ec) at ldo.c:116
+#12 0x0000a652 in luaD_pcall (L=0x100180, func=0x4955 <f_call>, u=0xbffff3ec, old_top=48, ef=36) at ldo.c:463
+#13 0x00004a1c in lua_pcall (L=0x100180, nargs=0, nresults=-1, errfunc=2) at lapi.c:821
+#14 0x00001f18 in docall (L=0x100180, narg=0, clear=0) at lua.c:102
+#15 0x0000282e in handle_script (L=0x100180, argv=0xbffff710, n=1) at lua.c:250
+#16 0x00002d1a in pmain (L=0x100180) at lua.c:362
+#17 0x0000a049 in luaD_precall (L=0x100180, func=0x80000c, nresults=0) at ldo.c:319
+#18 0x0000a2a8 in luaD_call (L=0x100180, func=0x80000c, nResults=0) at ldo.c:376
+#19 0x00004b03 in f_Ccall (L=0x100180, ud=0xbffff684) at lapi.c:846
+#20 0x00009516 in luaD_rawrunprotected (L=0x100180, f=0x4a50 <f_Ccall>, ud=0xbffff684) at ldo.c:116
+#21 0x0000a652 in luaD_pcall (L=0x100180, func=0x4a50 <f_Ccall>, u=0xbffff684, old_top=12, ef=0) at ldo.c:463
+#22 0x00004b5a in lua_cpcall (L=0x100180, func=0x2b86 <pmain>, ud=0xbffff6cc) at lapi.c:856
+#23 0x00002e05 in main (argc=2, argv=0xbffff710) at lua.c:387
+(gdb) 
+</pre>
+
+<h2>2012-04-05</h2>
+
+<p>
+Up in the morning at the normal time before work, started reading lua src code again.
+It's going to take a little while.
+</p>
+
+<p>
+Looking through luaconf.h, I saw LUA_USE_APICHECK and recompiled with it, then on
+running again, happens right after 'o' command:
+</p>
+<pre>
+mhackslab:dist $ r
+Assertion failed: (-(idx+1) &lt;= (L-&gt;top - L-&gt;base)), function lua_settop, file lapi.c, line 173.
+Abort trap
+mhackslab:dist
+</pre>
+
+<p>
+Will try with hello.lua app to see if it's more general.
+</p>
+
+<p>
+Doesn't happen with hello.lua. Or pong.lua. So that's hopeful.
+</p>
+
+<p>
+In gdb:
+</p>
+<pre>
+Assertion failed: (-(idx+1) &lt;= (L-&gt;top - L-&gt;base)), function lua_settop, file lapi.c, line 173.
+
+Program received signal SIGABRT, Aborted.
+0x93339d52 in __kill ()
+(gdb) bt
+#0  0x93339d52 in __kill ()
+#1  0x93339d44 in kill$UNIX2003 ()
+#2  0x933ac242 in raise ()
+#3  0x933b8681 in abort ()
+#4  0x933ad3e3 in __assert_rtn ()
+#5  0x00003d23 in lua_settop (L=0x100180, idx=-2) at lapi.c:173
+#6  0x0008fdb3 in keyCallback (key=79, action=1) at lua_setKeyCallback.c:19
+#7  0x0009dadf in _glfwInputKey (key=79, action=1) at window.c:167
+#8  0x000a0a89 in -[GLFWContentView keyDown:] (self=0x1715f0, _cmd=0x95368590, event=0x16900b40) at cocoa/cocoa_window.m:361
+#9  0x9139e731 in -[NSWindow sendEvent:] ()
+#10 0x9136a6a5 in -[NSApplication sendEvent:] ()
+#11 0x0009f25c in -[GLFWApplication sendEvent:] (self=0x13ccc0, _cmd=0x952cf4b8, event=0x16900b40) at cocoa/cocoa_init.m:62
+#12 0x000a20b7 in _glfwPlatformPollEvents () at cocoa/cocoa_window.m:847
+#13 0x0009edf8 in glfwPollEvents () at window.c:987
+#14 0x0009ea07 in glfwSwapBuffers () at window.c:822
+#15 0x0008face in lw_swapBuffers (L=0x100180) at lua_glfw_func_def.c:99
+#16 0x0000bbc9 in luaD_precall (L=0x100180, func=0x800120, nresults=0) at ldo.c:319
+#17 0x0001ab1f in luaV_execute (L=0x100180, nexeccalls=3) at lvm.c:587
+#18 0x0000be3f in luaD_call (L=0x100180, func=0x800030, nResults=-1) at ldo.c:377
+#19 0x00006046 in f_call (L=0x100180, ud=0xbffff3ec) at lapi.c:800
+#20 0x0000b096 in luaD_rawrunprotected (L=0x100180, f=0x601c &lt;f_call&gt;, ud=0xbffff3ec) at ldo.c:116
+#21 0x0000c1d2 in luaD_pcall (L=0x100180, func=0x601c &lt;f_call&gt;, u=0xbffff3ec, old_top=48, ef=36) at ldo.c:463
+#22 0x000061ef in lua_pcall (L=0x100180, nargs=0, nresults=-1, errfunc=2) at lapi.c:821
+#23 0x00002680 in docall (L=0x100180, narg=0, clear=0) at lua.c:102
+#24 0x00002f96 in handle_script (L=0x100180, argv=0xbffff710, n=1) at lua.c:250
+#25 0x00003482 in pmain (L=0x100180) at lua.c:362
+#26 0x0000bbc9 in luaD_precall (L=0x100180, func=0x80000c, nresults=0) at ldo.c:319
+#27 0x0000be28 in luaD_call (L=0x100180, func=0x80000c, nResults=0) at ldo.c:376
+#28 0x00006368 in f_Ccall (L=0x100180, ud=0xbffff684) at lapi.c:846
+#29 0x0000b096 in luaD_rawrunprotected (L=0x100180, f=0x6224 &lt;f_Ccall&gt;, ud=0xbffff684) at ldo.c:116
+#30 0x0000c1d2 in luaD_pcall (L=0x100180, func=0x6224 &lt;f_Ccall&gt;, u=0xbffff684, old_top=12, ef=0) at ldo.c:463
+#31 0x000063c3 in lua_cpcall (L=0x100180, func=0x32ee &lt;pmain&gt;, ud=0xbffff6cc) at lapi.c:856
+#32 0x0000356d in main (argc=2, argv=0xbffff710) at lua.c:387
+(gdb) 
+</pre>
+
+<p>
+The assert happens on any key input, but still maybe related as the previous crash occurs on
+multiple key input.
+</p>
+
+<p>
+Really need to see if this repros on other platforms.
+</p>
+
+<p>
+Jesus, I don't even remember writing this code, but I did, and look at this:
+</p>
+<pre>
+// lua_setKeyCallback.c:custom implementation for glfwSetKeyCallback()
+#include &lt;string.h&gt;
+#include "sys.h"
+static char lua_keyCallbackFuncName[256] = "";
+static lua_State* LL = NULL;
+static void keyCallback(int key, int action) {
+  // TODO: add reentrant guard?
+  if(!strlen(lua_keyCallbackFuncName)) 
+  return;
+  lua_getglobal(LL, lua_keyCallbackFuncName);
+  lua_pushnumber(LL, key);
+  lua_pushnumber(LL, action);
+  int rc = lua_pcall(LL, 2, 0, 0);
+  if(rc) {
+    const char* err = lua_tostring(LL, -1);
+    fprintf(stderr, "failed calling lua keydown handler: %s\n", err);
+    sys_err("keyCallback");
+  }
+  lua_pop(LL, 1);
+}
+</pre>
+
+<p>
+This is definitely looking hopeful.
+</p>
+
+<p>
+After work and lunch, back on it. Looking at the code in lua_setKeyCallback.c,
+first thing that jumps out at me is that the lua state is stored in a static
+var, is that problematic ever? Next, I need to look more closely at the
+traceback to see if I can identify what is asserting and why.
+</p>
+
+<pre>
+LUA_API void lua_settop (lua_State *L, int idx) {
+  lua_lock(L);
+  if (idx &gt;= 0) {
+    api_check(L, idx &lt;= L-&gt;stack_last - L-&gt;base);
+    while (L-&gt;top &lt; L-&gt;base + idx)
+      setnilvalue(L-&gt;top++);
+    L-&gt;top = L-&gt;base + idx;
+  }
+  else {
+    api_check(L, -(idx+1) &lt;= (L-&gt;top - L-&gt;base));
+    L-&gt;top += idx+1;  /* `subtract' index (index is negative) */
+  }
+  lua_unlock(L);
+}
+</pre>
+
+<P>
+So, the assert happens in the lua_pop(), so I'm probably just popping wrong
+number of items from stack.
+</p>
+
+<p>
+ftfm:
+</p
+<blockquote>
+Like [`lua_call`][60], [`lua_pcall`][35] always removes the
+function and its arguments from the stack.
+</pre>
+
+<p>
+So, seems like the pop is a mistake? Why did I add it then?
+</p>
+
+<p>
+Wow, looking back in the devlog, I discover that I ran into this on 2011-12-12, right
+before I dived into ape, and even mentioned trying LUA_USE_APICHECK, which I don't
+think I ever did!! I don't remember any of that crap. Thank God for logs.
+</p>
+
+<p>
+So, further back, I see I added that pop for a reason, to fix growing stack,
+back on 2011-09-19. Ok, I am going to write some simple test apps that use
+lua_pcall() and do stack checks, so I can really understand what is going on
+instead of poking at shit with pointy sticks. But first, time to hit the M.
+</p>
+
+<p>
+Back from the hike, starting on test_pcall app.
+</p>
+
+<p>
+A new Friday, up early, back at it.
+</p>
+
+<p>
+Read some more lua book, chaps 24 and 25, wrote a simple C program
+using lua_pcall() and dump_stack, it is more clear now. Commented out
+the lua_pop() in lua_setKeyCallback.c.
+</p>
+
+<p>
+Rebuilt, ran editor, bug is gone. We are back on track.
 </p>
 
 </body>

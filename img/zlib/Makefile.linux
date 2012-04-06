@@ -5,8 +5,22 @@ $(error "PREFIX env var not defined")
 endif
 
 CC=gcc
-CFLAGS=-O3
-SFLAGS=-O3 -fPIC
+#CFLAGS=-O3
+SFLAGS += -fPIC
+
+
+ifdef NO_OPTIMIZE
+CFLAGS += -O0
+else
+CFLAGS += -O3
+endif
+
+ifdef NO_OPTIMIZE
+SFLAGS += -O0
+else
+SFLAGS += -O3
+endif
+
 LDSHARED=gcc -shared
 SHAREDLIB=libz.so
 AR=ar rc

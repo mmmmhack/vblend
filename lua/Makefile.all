@@ -9,6 +9,8 @@ PLAT= none
 
 CC= gcc
 CFLAGS= -g -Wall $(MYCFLAGS)
+CFLAGS += -DLUA_USE_APICHECK
+
 ifdef NO_OPTIMIZE
 CFLAGS += -O0
 else

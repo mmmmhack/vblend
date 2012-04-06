@@ -2,13 +2,25 @@
 
 CC=gcc
 
-CFLAGS=-O3
+#CFLAGS=-O3
+
+ifdef NO_OPTIMIZE
+CFLAGS += -O0
+else
+CFLAGS += -O3
+endif
 #CFLAGS=-O -DMAX_WBITS=14 -DMAX_MEM_LEVEL=7
 #CFLAGS=-g -DDEBUG
 #CFLAGS=-O3 -Wall -Wwrite-strings -Wpointer-arith -Wconversion \
 #           -Wstrict-prototypes -Wmissing-prototypes
 
-SFLAGS=-O3 -fPIC
+SFLAGS += -fPIC
+ifdef NO_OPTIMIZE
+SFLAGS += -O0
+else
+SFLAGS += -O3
+endif
+
 #LDFLAGS= -L. libz.a
 #LDSHARED=gcc -dynamiclib -install_name ${exec_prefix}/lib/libz.1.dylib -compatibility_version 1 -current_version 1.2.5
 LDSHARED=gcc -dynamiclib -compatibility_version 1 -current_version 1.2.5

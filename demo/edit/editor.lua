@@ -56,6 +56,9 @@ end
 
 -- called at module load
 M.init = function()
+	-- global debug var
+	M.debug_state = ""
+
 	local w = tfont.num_cols()
 	local h = tfont.num_rows()
 	M.editor = {}

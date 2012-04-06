@@ -16,7 +16,7 @@ static void keyCallback(int key, int action) {
 		fprintf(stderr, "failed calling lua keydown handler: %s\n", err);
 		sys_err("keyCallback");
 	}
-	lua_pop(LL, 1);
+//	lua_pop(LL, 1);
 }
 static int lw_setKeyCallback(lua_State* L) {
   const char* cb_name = lua_tostring(L, -1);
