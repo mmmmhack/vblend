@@ -18,6 +18,7 @@ require "buffer"
 require "normal_mode"
 require "insert_mode"
 require "cmd_mode"
+require "edit_util"
 
 require "debugger"
 
@@ -35,11 +36,11 @@ local mode = 'normal'
 local lshift_key_down = false
 local rshift_key_down = false
 
---local _active_buf = nil
---local _cmd_buf = nil
 local _editor = nil
 
 -- TODO: modularize this file
+
+-- create a line for testing
 local _init_line = string.rep("0123456789", 7) .. "012345678"
 
 M.set_mode = function(m)
@@ -56,8 +57,9 @@ end
 
 -- called at module load
 M.init = function()
-	-- global debug var
-	M.debug_state = ""
+	
+	M.debug_state = ""	-- global debug var
+	M.key_count = 0			-- tracks number of input chars, for triggering debug conditions
 
 	local w = tfont.num_cols()
 	local h = tfont.num_rows()
@@ -65,7 +67,6 @@ M.init = function()
 
 	-- create first buffer
 	M.editor._active_buf = buffer.new("active", {[0]=0, [1]=0}, {[0]=w, [1]=h-1})
-	
 	buffer.set(M.editor._active_buf, _init_line)
 
 	-- create cmd-line buffer
@@ -74,10 +75,16 @@ M.init = function()
 
 end
 
--- called periodically by the app
--- maps the glfw keycode in shift state to the ascii code
+--[[
+	descrip:
+		Heartbeat function, called periodically by the app. Currently just used for
+		key input stuff:
+			- key autorepeat
+			- maps the glfw keycode in shift state to the ascii code
+			- calls main key handler: char_pressed()
+]]
 M.tick = function()
---	print("lua tick!")
+	-- 
 	if keydown_time == nil then
 		return
 	end
@@ -187,7 +194,13 @@ M.cc = function(ch)
 	return ch
 end
 
+--[[
+	descrip: main key input handler
+]]
 M.char_pressed = function(ch)
+	-- update debug helper var
+	M.key_count = M.key_count + 1
+
 	-- ch = keymap(ch)
 	if 		 mode == 'normal' then
 		normal_mode.char_pressed(ch)
@@ -215,6 +228,9 @@ M.draw = function()
 --print("END tf_edit.lua draw()")
 end
 
+--[[
+	descrip: program entry function
+]]
 M.main = function()
 	M.init()
 	gamelib.open_window("test editor")
@@ -245,6 +261,5 @@ M.quit = function()
 	os.exit(0)
 end
 
---debug_console()
 M.main()
 

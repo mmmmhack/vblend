@@ -116,10 +116,14 @@ M.char_pressed = function (ch)
     -- erase cmd-line
 --    M.erase_cmd_line()
 
-    -- move cursor back to prev pos
+    -- move screen cursor back to prev pos
+		-- is this a hack? because the buffer._cursor_pos is getting set to itself,
+		-- and we are relying on the side-effect of it also setting the screen cursor
+		-- maybe should set the screen cursor directly?
 --    buffer.set_cursor(M.buf, cursor.saved_pos)
     local b = editor.active_buf()
-    buffer.set_cursor(b, b.cursor_pos)
+		local pos = buffer.get_cursor(b)
+    buffer.set_cursor(b, pos)
 
     -- process command
     M.do_cmd(cmd) 

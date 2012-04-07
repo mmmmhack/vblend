@@ -29,7 +29,7 @@ M.new = function(buffer_name, win_pos, win_size)
   local b = {}
 	b.name = buffer_name
   b.lines_head = buf_line.new()
-  b.cursor_pos = {[0]=0, [1]=0}
+  b._cursor_pos = {[0]=0, [1]=0}		-- [0] is col_num (0-based index), [1] is line_num (0-based index)
   b.scroll_pos = {[0]=0, [1]=0}		-- used in buf2win()
   b.win_pos = {[0]=win_pos[0], [1]=win_pos[1]}
   b.win_size = {[0]=win_size[0], [1]=win_size[1]}
@@ -57,7 +57,7 @@ M.tostring = function(b)
 		line = line.next_line
 		i = i + 1
   end
-  s = s .. string.format("b.cursor_pos: (%d, %d)\n", b.cursor_pos[0], b.cursor_pos[1])
+  s = s .. string.format("b._cursor_pos: (%d, %d)\n", b._cursor_pos[0], b._cursor_pos[1])
   s = s .. string.format("b.scroll_pos: (%d, %d)\n", b.scroll_pos[0], b.scroll_pos[1])
   s = s .. string.format("b.win_pos: (%d, %d)\n", b.win_pos[0], b.win_pos[1])
   s = s .. string.format("b.win_size: (%d, %d)\n", b.win_size[0], b.win_size[1])
@@ -93,18 +93,29 @@ M.buf2scr = function (b, buf_pos)
   return M.win2scr(b, win_pos)
 end
 
--- adjusts cursor position on current cursor row
+-- adjusts cursor position on current cursor row, clamping as needed
 M.inc_cursor = function(b, n)
-  local x = b.cursor_pos[0] 
-  local y = b.cursor_pos[1] 
-  M.set_cursor(b, {[0]=(x + n), [1]=y})
+  local x = b._cursor_pos[0] + n
+  local y = b._cursor_pos[1] 
+
+	local ln = M.get(b).text
+	x = math.min(x, #ln)
+	x = math.max(0, x)
+  M.set_cursor(b, {[0]=x, [1]=y})
+end
+
+-- adjusts cursor position on current cursor row
+M.inc_cursor_y = function(b, n)
+  local x = b._cursor_pos[0] 
+  local y = b._cursor_pos[1] 
+  M.set_cursor(b, {[0]=(x), [1]=y+n})
 end
 
 --[[
-	returns a copy of b.cursor_pos
+	returns a copy of b._cursor_pos
 ]]
 M.get_cursor = function (b)
-	local pos = {[0] = b.cursor_pos[0], [1] = b.cursor_pos[1]}
+	local pos = {[0] = b._cursor_pos[0], [1] = b._cursor_pos[1]}
 	return pos
 end
 
@@ -113,7 +124,7 @@ end
 
 	descrip: sets cursor position in param buffer object and also on the screen
 	params:
-		pos:	type: table {[0]=x, [1]=y} where x, y are new values of b.cursor_pos
+		pos:	type: table {[0]=x, [1]=y} where x, y are new values of b._cursor_pos
 
 	notes:
 		since the cursor should remain visible on the screen at all times, if the
@@ -122,12 +133,24 @@ end
 
 ]]
 M.set_cursor = function (b, pos)
---print(string.format("beg buffer.set_cursor(): pos: (%d, %d)", pos[0], pos[1]))
-  b.cursor_pos[0] = pos[0]
-  b.cursor_pos[1] = pos[1]
+
+--[[
+if editor.debug_state == "" and M.count_lines(b) == 2 then
+editor.debug_state = "enabled"
+end
+if editor.debug_state == "enabled" then
+	print(string.format("buffer.set_cursor(): editor.debug_state: b._cursor_pos: %s", edit_util.pos2str(b._cursor_pos)))
+--	editor.debug_state = "done"
+end
+]]
+
+	assert(pos[0])
+	assert(pos[1] >= 0)	
+  b._cursor_pos[0] = pos[0]
+  b._cursor_pos[1] = pos[1]
 
   -- get cursor pos in window
-  local cursor_win_pos = M.buf2win(b, b.cursor_pos)
+  local cursor_win_pos = M.buf2win(b, b._cursor_pos)
 
   -- calc scroll to ensure cursor visible in window
   -- x
@@ -152,7 +175,7 @@ M.set_cursor = function (b, pos)
   -- y: TODO: implement by making above a loop
 
   -- use updated scroll pos to get cursor display pos
-  cursor_win_pos = M.buf2win(b, b.cursor_pos)
+  cursor_win_pos = M.buf2win(b, b._cursor_pos)
 
   -- set the actual cursor position on the screen
   local scr_pos = M.win2scr(b, cursor_win_pos)
@@ -180,7 +203,7 @@ end
 	params:
 		[line_num]: type: number, descrip: 0-based index into b.lines linked list
 								If nil, then default line will be returned. 
-								Default line is at index b.cursor_pos[1].
+								Default line is at index b._cursor_pos[1].
 	returns:
 		buf_line: type: table 
 		
@@ -189,7 +212,7 @@ end
 ]]
 
 M.get = function(b, line_num)
-  local line_num = line_num or b.cursor_pos[1]
+  local line_num = line_num or b._cursor_pos[1]
 	local i = 0
 	local line = b.lines_head
 	while line ~= nil do
@@ -204,7 +227,7 @@ end
 
 -- sets buffer text to param content, at param row or default 
 M.set = function(b, content, row)
-  local row = row or b.cursor_pos[1]
+  local row = row or b._cursor_pos[1]
 --  b.lines[row] = content
 	local line = M.get(b, row)
 	line.text = content
@@ -256,7 +279,7 @@ M.update_display_lines = function(b)
   local beg_col = b.scroll_pos[0]
 
   -- default: only draw cursor line
---  local beg_row = --[[ b.scroll_pos[1] + --]] b.cursor_pos[1]
+--  local beg_row = --[[ b.scroll_pos[1] + --]] b._cursor_pos[1]
 --  local end_row = beg_row
   -- update all lines in window if scrolled
 	local num_lines = M.count_lines(b)
@@ -321,10 +344,14 @@ end
     tfont.set_text_buf(scr_row + i, scr_col, ln)
   end
   b.redraw = false
---  b.update_all = false
---print(string.format("buffer after at end of draw():\n%s", M.tostring(b)))
---if(b.name == "active") then
---	print("end buffer.draw()")
---end
+--[[
+if editor.debug_state == "" and M.count_lines(b) == 2 then
+editor.debug_state = "enabled"
+end
+if editor.debug_state == "enabled" then
+	print(string.format("buffer.draw(): editor.debug_state: b._cursor_pos: %s", edit_util.pos2str(b._cursor_pos)))
+--	editor.debug_state = "done"
+end
+]]
 end
 

@@ -6541,6 +6541,8 @@ instead of poking at shit with pointy sticks. But first, time to hit the M.
 Back from the hike, starting on test_pcall app.
 </p>
 
+<h2>2012-04-06</h2>
+
 <p>
 A new Friday, up early, back at it.
 </p>
@@ -6553,6 +6555,72 @@ the lua_pop() in lua_setKeyCallback.c.
 
 <p>
 Rebuilt, ran editor, bug is gone. We are back on track.
+</p>
+
+<p>
+Next: 'j' and 'k' commands.
+</p>
+
+<P>
+Did it, works, except need 'at-end-of-line' flag like in vim, but will add that later.
+next: add 'd(move)' command.
+</p>
+
+<p>
+Friday afternoon! Time to code.
+</p>
+
+<h2>2012-04-07</h2>
+
+<p>
+Saturday morning, after much revelry last night. Working on bug introduced
+by implementing new line on ASC_RET in insert mode, inserts the new line
+but cursor gets shifted to the left for some reason. Created test
+app 'test/edit/buffer_insert_newline.lua', but no enlightenment there.
+Next, looking at set_cursor code.
+</p>
+
+<p>
+Just for fun, I might try turning on code-tracing in the debugger again,
+now that presumably the bug is fixed that busted it.
+</p>
+
+<p>
+Adding triggered debug code in edit app, this isn't right:
+</p>
+
+<pre>
+mhackslab:dist $ r
+buffer.draw(): editor.debug_state: b.cursor_pos: (0, 1)
+buffer.draw(): editor.debug_state: b.cursor_pos: (-1, 1)
+buffer.draw(): editor.debug_state: b.cursor_pos: (0, 0)
+buffer.draw(): editor.debug_state: b.cursor_pos: (0, 0)
+</pre>
+
+<p>
+My first thought is that exposure of the b.cursor_pos var
+is causing some external code to improperly change the refs to
+it, so first up I will rename with prepended '_' to signify
+privacy.
+</p>
+
+<p>
+This is another indicator:
+</p>
+<pre>
+    -- move cursor back to prev pos
+--    buffer.set_cursor(M.buf, cursor.saved_pos)
+    local b = editor.active_buf()
+    buffer.set_cursor(b, b.cursor_pos)
+</pre>
+
+<p>
+Ok, -1 cursor_pos is fixed, but still weird diff between
+reported b._cursor_pos and screen cursor.
+</p>
+
+<p>
+Cleaned up some stuff, looks good now. Next: handle row scrolling.
 </p>
 
 </body>
