@@ -143,8 +143,10 @@ if editor.debug_state == "enabled" then
 --	editor.debug_state = "done"
 end
 ]]
-
-	assert(pos[0])
+if pos == nil then
+	debug_console()
+end
+	assert(pos[0] >= 0)
 	assert(pos[1] >= 0)	
   b._cursor_pos[0] = pos[0]
   b._cursor_pos[1] = pos[1]
@@ -157,22 +159,23 @@ end
   -- before min bound
   if cursor_win_pos[0] < 0 then
 		b.scroll_pos[0] = b.scroll_pos[0] + cursor_win_pos[0]
---    b.scrolled = true
   	b.redraw = true
   -- beyond max bound
   elseif cursor_win_pos[0] > (b.win_size[0] - 1) then
 		b.scroll_pos[0] = b.scroll_pos[0] + (cursor_win_pos[0] - (b.win_size[0]-1))
---    b.scrolled = true
   	b.redraw = true
   end
 
---DEBUG
---print(string.format("after calc scroll: b.scroll_pos[0]: %d", b.scroll_pos[0]))
-  -- set scroll flag
---  if dx then
---    b.scrolled = true
---  end
-  -- y: TODO: implement by making above a loop
+  -- y
+  -- before min bound
+  if cursor_win_pos[1] < 0 then
+		b.scroll_pos[1] = b.scroll_pos[1] + cursor_win_pos[1]
+  	b.redraw = true
+  -- beyond max bound
+  elseif cursor_win_pos[1] > (b.win_size[1] - 1) then
+		b.scroll_pos[1] = b.scroll_pos[1] + (cursor_win_pos[1] - (b.win_size[1]-1))
+  	b.redraw = true
+  end
 
   -- use updated scroll pos to get cursor display pos
   cursor_win_pos = M.buf2win(b, b._cursor_pos)
@@ -186,6 +189,7 @@ end
 end
 
 -- returns number of content lines in param buffer
+-- TODO: optimize with a cache var
 M.count_lines = function(b)
 	local line = b.lines_head
 	local i = 0
@@ -267,6 +271,36 @@ M.insert_line = function(b, line_text, line_num)
 --	b.update_all = true
 	b.redraw = true
 	return new_line
+end
+
+--[[
+	descrip:
+		removes param line at parm pos in line buffer.
+	params:
+		line_num: type: number, descrip: 0-based index of position where removed
+
+	returns:
+		line: type: string, descrip: text of line removed or nil if no removal
+
+	notes:
+		if line_num is negative or > num_lines, no removal is done.
+]]
+M.remove_line = function(b, line_num)
+	local num_lines = M.count_lines(b)
+	if line_num < 0 or line_num >= num_lines then
+		return nil
+	end
+	local ln = M.get(b, line_num)
+	-- no prev line: line is at head
+	local prev_ln = M.get(b, line_num - 1)
+	if line_num == 0 or prev_ln == nil then
+		b.lines_head = ln.next_line
+	-- hook prev to next
+	else
+		prev_ln.next_line = ln.next_line
+	end
+	b.redraw = true
+	return ln.text
 end
 
 -- builds display buffer from content of lines buffer and scroll offset

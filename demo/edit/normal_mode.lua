@@ -44,7 +44,6 @@ end
 M.move_horiz = function(count)
 	local b = editor.active_buf()
 
---	local n = dir * M.op_count()
 	-- clamp to line
 	local ln = buffer.get(b).text
 	local final_col = math.max(0, #ln - 1)
@@ -86,6 +85,26 @@ M.move_vert = function(count)
 	M.clear_op()
 end
 
+M.delete_lines = function()
+	local b = editor.active_buf()
+	local cur_pos = buffer.get_cursor(b)
+	local cur_row = cur_pos[1]
+	local num_remove = math.min(M.op_count(), buffer.count_lines(b) - cur_row)
+	for i = 0, num_remove - 1 do
+		buffer.remove_line(b, cur_row)
+	end
+	-- if no lines remain, insert a new empty line
+	if buffer.count_lines(b) == 0 then
+		buffer.insert_line(b, "", 0)
+	end
+	-- if cur_row no longer valid, adjust cursor
+	if cur_row >= buffer.count_lines(b) then
+		local new_cur_row = math.max(cur_row - 1, 0)
+		buffer.set_cursor(b, edit_util.new_pos(0, new_cur_row)) 
+	end
+	M.clear_op()
+end
+
 -- handles key input for normal mode
 M.char_pressed = function (ch)
 --print(string.format("beg normal_mode.char_pressed(): ch: [%s]", tostring(ch)))
@@ -124,10 +143,18 @@ M.char_pressed = function (ch)
 		editor.set_mode('command')
 		cmd_mode.begin()
 		return
-	-- undefined
+	-- delete chars
+	elseif ch == editor.cc('x') then
+			M.delete_chars()
+	-- delete lines
 	elseif ch == editor.cc('d') then
-		M.pending_op = "d"
-		M.update_pending_op()
+		if M.pending_op == 'd' then
+			M.delete_lines()
+		else
+			M.pending_op = "d"
+			M.update_pending_op()
+		end
+	-- undefined
 	else
 --		print("normal mode: undefined ch: " .. ch)
 	end
