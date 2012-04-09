@@ -1,0 +1,50 @@
+** vblend **
+
+==============================================================================
+Navigation - 3D
+
+j							rotate right
+h							rotate left
+k							tilt down
+i							tilt up
+f							translate right
+g							translate left
+d							translate out
+e							translate in
+s							translate down
+w							translate up
+
+==============================================================================
+Editor -	normal mode
+
+:											open command line
+
+[count] h							move [count] chars left
+[count] l							move [count] chars right
+0											move to beginning of line
+$											move to end of line
+
+[count] j							move [count] lines down
+[count] k							move [count] lines up
+
+[count] dd						delete [count] lines
+
+--- if writeable buffer:
+i											insert at cursor pos
+a											append to line
+o											open new line
+
+==============================================================================
+Editor -	command mode
+
+h							show help
+q							quit
+
+
+==============================================================================
+Editor -	insert mode
+
+ESC						exit to normal mode
+BS						erase char to left
+RET					  open new line with content after cursor
+

@@ -136,8 +136,10 @@ M.char_pressed = function (ch)
 		end
 	-- insert mode
 	elseif ch == editor.cc('i') or ch == editor.cc('a') or ch == editor.cc('o') then
-		editor.set_mode('insert')
-		insert_mode.begin(ch)
+		if not editor.options['read-only'] then
+			editor.set_mode('insert')
+			insert_mode.begin(ch)
+		end
 	-- command mode
 	elseif ch == editor.cc(':') then
 		editor.set_mode('command')

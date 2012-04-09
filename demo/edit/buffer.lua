@@ -134,15 +134,6 @@ end
 ]]
 M.set_cursor = function (b, pos)
 
---[[
-if editor.debug_state == "" and M.count_lines(b) == 2 then
-editor.debug_state = "enabled"
-end
-if editor.debug_state == "enabled" then
-	print(string.format("buffer.set_cursor(): editor.debug_state: b._cursor_pos: %s", edit_util.pos2str(b._cursor_pos)))
---	editor.debug_state = "done"
-end
-]]
 if pos == nil then
 	debug_console()
 end
@@ -184,8 +175,6 @@ end
   local scr_pos = M.win2scr(b, cursor_win_pos)
   edit.set_cursor(scr_pos[1], scr_pos[0])
 
---print(string.format("end buffer.set_cursor(): scr_pos: %s, b.scroll_pos: %s", 
---	edit_util.pos2str(scr_pos), edit_util.pos2str(b.scroll_pos)))
 end
 
 -- returns number of content lines in param buffer
@@ -303,6 +292,14 @@ M.remove_line = function(b, line_num)
 	return ln.text
 end
 
+--[[
+	descrip: removes all lines in buffer
+]]
+M.remove_all = function(b)
+	b.lines_head = nil
+	b.redraw = true
+end
+
 -- builds display buffer from content of lines buffer and scroll offset
 M.update_display_lines = function(b)
 --if(b.name == "active") then
@@ -322,7 +319,8 @@ M.update_display_lines = function(b)
 --    end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
 	local end_row = math.max(num_lines - 1, beg_row + b.win_size[1] - 1)
 --  end
-  local blank_ln = "~" .. string.rep(" ", b.win_size[1]-1)
+	local ch = editor.options["tilde-display-lines"] and "~" or " "
+  local blank_ln = ch .. string.rep(" ", b.win_size[1]-1)
   local j = 0
   for i = beg_row, end_row do
     local ln = blank_ln

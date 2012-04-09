@@ -1,6 +1,6 @@
 -- editor.lua	:	test editor application
 local M = {}
-local modname = 'editor'
+local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
@@ -22,8 +22,6 @@ require "edit_util"
 
 require "debugger"
 
-local fps = 60
-local frame_time = 1/fps
 local keydown_time = nil
 local keydown_key = nil
 local key_autorepeat_first_delay = 1 / 2
@@ -36,23 +34,20 @@ local mode = 'normal'
 local lshift_key_down = false
 local rshift_key_down = false
 
-local _editor = nil
-
--- TODO: modularize this file
-
--- create a line for testing
-local _init_line = string.rep("0123456789", 7) .. "012345678"
-
 M.set_mode = function(m)
 	mode = m
 end
 
+M.get_mode = function(m)
+	return mode
+end
+
 M.set_active_buf = function(b)
-	M.editor._active_buf = b
+	M._active_buf = b
 end
 
 M.active_buf = function()
-	return M.editor._active_buf
+	return M._active_buf
 end
 
 -- called at module load
@@ -63,16 +58,19 @@ M.init = function()
 
 	local w = tfont.num_cols()
 	local h = tfont.num_rows()
-	M.editor = {}
 
 	-- create first buffer
-	M.editor._active_buf = buffer.new("active", {[0]=0, [1]=0}, {[0]=w, [1]=h-1})
-	buffer.set(M.editor._active_buf, _init_line)
+	M._active_buf = buffer.new("active", {[0]=0, [1]=0}, {[0]=w, [1]=h-1})
 
 	-- create cmd-line buffer
-	M.editor._cmd_buf = buffer.new("cmd", {[0]=0, [1]=h-1}, {[0]=w, [1]=1})
-	cmd_mode.buf = M.editor._cmd_buf
+	M._cmd_buf = buffer.new("cmd", {[0]=0, [1]=h-1}, {[0]=w, [1]=1})
+	cmd_mode.buf = M._cmd_buf
 
+	M.options = {
+		["tilde-display-lines"] = true,
+		["read-only"] = false,	-- sets flag disabling editing actions for active buffer
+		["draw-cursor"] = true,	-- enables display of cursor
+	}
 end
 
 --[[
@@ -217,49 +215,17 @@ M.draw = function()
 --print("BEG tf_edit.lua draw()")
 --traceback()
 --debug_console()
-	if M.editor._active_buf.redraw then
-		buffer.draw(M.editor._active_buf)
+	if M._active_buf.redraw then
+		buffer.draw(M._active_buf)
 	end
-	if M.editor._cmd_buf.redraw then
-		buffer.draw(M.editor._cmd_buf)
+	if M._cmd_buf.redraw then
+		buffer.draw(M._cmd_buf)
 	end
 	tfont.draw_text_buf()
-	edit.draw_cursor()
+	if M.options['draw-cursor'] then
+		edit.draw_cursor()
+	end
 --print("END tf_edit.lua draw()")
 end
 
---[[
-	descrip: program entry function
-]]
-M.main = function()
-	M.init()
-	gamelib.open_window("test editor")
-	glfw.setKeyCallback('key_event')
-
-	local run = true
-	while run do
-		-- beg frame
-		local beg_time = sys.double_time()
-
-		M.tick()
-		M.draw()
-
-		-- end frame
-		gamelib.update()
-		if gamelib.window_closed() then
-			run = false
-		end
-		local end_time = sys.double_time()
-		local wrk_time = end_time - beg_time
-		local slp_time = frame_time - wrk_time
-		slp_time = math.max(0, slp_time)
-		sys.usleep(slp_time * 1e6)
-	end
-end
-
-M.quit = function()
-	os.exit(0)
-end
-
-M.main()
 
