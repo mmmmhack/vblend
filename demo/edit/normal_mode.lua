@@ -109,7 +109,11 @@ end
 M.char_pressed = function (ch)
 --print(string.format("beg normal_mode.char_pressed(): ch: [%s]", tostring(ch)))
 	local b = editor.active_buf()
-	local ln = buffer.get(b).text
+	local line_buf = buffer.get(b)
+if line_buf == nil then
+debug_console()
+end
+	local ln = line_buf.text
 	-- movement
 	if ch == nil then
 				-- holding down the 'command' key in osx can produce this, so just ignore it		

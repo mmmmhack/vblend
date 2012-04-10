@@ -7,7 +7,7 @@ export LUA_PATH=$LUA_PATH;$PROJ_DIR/gamelib/?.lua
 require('util')
 require('getopt')
 require('get_decls')
---require('debugger')
+require('debugger')
 
 -- file with subset of function names for which wrappers should be generated
 local sel_funcs = nil
@@ -226,6 +226,8 @@ function get_return_types(ret_decl)
   elseif c_ret_type == "void" then
     lua_ret_type = "void"
   else  
+    -- check some ways for getting luatype: look in opt_type_map table
+    lua_ret_type = get_lua_type(c_ret_type)
   end
   if lua_ret_type == nil then
     if opts.verbose then

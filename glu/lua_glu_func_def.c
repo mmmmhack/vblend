@@ -1,3 +1,12 @@
+static int lw_errorString(lua_State* L) {
+  GLenum error = lua_tointeger(L, -1);
+  const GLubyte * ret_val = 
+  gluErrorString(
+    error
+  );
+  lua_pushstring(L, ret_val);
+  return 1;
+}
 static int lw_lookAt(lua_State* L) {
   GLdouble eyeX = lua_tonumber(L, -9);
   GLdouble eyeY = lua_tonumber(L, -8);

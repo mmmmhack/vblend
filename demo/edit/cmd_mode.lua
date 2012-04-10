@@ -81,6 +81,8 @@ M.char_pressed = function (ch)
     local cmd = string.sub(ln, 2) 
 
     -- erase cmd-line
+		buffer.set(M.buf, "")
+
     -- move screen cursor back to prev pos
 		-- is this a hack? because the buffer._cursor_pos is getting set to itself,
 		-- and we are relying on the side-effect of it also setting the screen cursor

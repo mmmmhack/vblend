@@ -70,21 +70,28 @@ M.tostring = function(b)
 	return s
 end
 
--- converts buffer position to the position it occupies in the display window, after scroll offsets are applied
--- scroll offsets are always positive and should cause the buffer text to display more to the left and up,
--- compared to a scroll offset of 0
--- example: buffer pos (10, 0) + scroll pos (1, 0) causes the 10th character of the first buffer line to
---          appear at window pos (9, 0)
---
+--[[
+	descrip:
+		converts buffer position to the position it occupies in the display window, after scroll offsets are applied
+		scroll offsets are always positive and should cause the buffer text to display more to the left and up,
+		compared to a scroll offset of 0
+
+		example: buffer pos (10, 0) + scroll pos (1, 0) causes the 10th character of the first buffer line to
+		appear at window pos (9, 0)
+]]
 M.buf2win = function(b, buf_pos)
   local wx = buf_pos[0] - b.scroll_pos[0]
   local wy = buf_pos[1] - b.scroll_pos[1]
   return {[0]=wx, [1]=wy}
 end
 
+--[[
+	descrip:
+		converts buffer display position to screen position by adding window pos offset of buffer
+]]
 M.win2scr = function(b, win_pos)
   local sx = win_pos[0] + b.win_pos[0]
-  local sy = win_pos[1] - b.win_pos[1]
+  local sy = win_pos[1] + b.win_pos[1]
   return {[0]=sx, [1]=sy}
 end
 
@@ -177,13 +184,30 @@ end
 
 end
 
--- returns number of content lines in param buffer
--- TODO: optimize with a cache var
+--[[
+	descrip:
+		returns number of content lines in param buffer
+	TODO: optimize with a cache var
+]]
 M.count_lines = function(b)
 	local line = b.lines_head
 	local i = 0
 	while line ~= nil do
 		i = i + 1
+		line = line.next_line
+  end
+	return i
+end
+
+--[[ 
+	descrip:
+		returns number of chars in param buffer
+]]
+M.count_chars = function(b)
+	local line = b.lines_head
+	local i = 0
+	while line ~= nil do
+		i = i + #line.text
 		line = line.next_line
   end
 	return i
@@ -244,7 +268,7 @@ end
 ]]
 M.insert_line = function(b, line_text, line_num)
 	local num_lines = M.count_lines(b)
-	if line_num < 0 or line_num > num_lines then
+	if line_num == nil or line_num < 0 or line_num > num_lines then
 		return nil
 	end
 	local new_line = buf_line.new(line_text)
@@ -298,10 +322,17 @@ end
 M.remove_all = function(b)
 	b.lines_head = nil
 	b.redraw = true
+	b._cursor_pos = {[0]=0, [1]=0}
+	b.scroll_pos = {[0]=0, [1]=0}
 end
 
 -- builds display buffer from content of lines buffer and scroll offset
 M.update_display_lines = function(b)
+--[[
+if editor.debug_state == "help closed" and b.name == "active" then
+print(string.format("buffer.update_display_lines() after help closed:\n%s", M.tostring(b)))
+end
+]]
 --if(b.name == "active") then
 --	print("beg buffer.update_display_lines()")
 --end
@@ -316,8 +347,13 @@ M.update_display_lines = function(b)
 	local num_lines = M.count_lines(b)
 --  if b.update_all then
 	local beg_row = b.scroll_pos[1]
---    end_row = math.max(#b.lines - 1, beg_row + b.win_size[1] - 1)
+
+	-- no! should be math.max, NOT math.min, to force display of blank lines below buffer
+	-- but, we must clamp to min screen size also
+	--local end_row = math.min(num_lines - 1, beg_row + b.win_size[1] - 1)
 	local end_row = math.max(num_lines - 1, beg_row + b.win_size[1] - 1)
+	local max_display_lines = tfont.num_rows() - 1
+	end_row = math.min(end_row, max_display_lines)
 --  end
 	local ch = editor.options["tilde-display-lines"] and "~" or " "
   local blank_ln = ch .. string.rep(" ", b.win_size[1]-1)
@@ -348,18 +384,18 @@ M.draw = function (b)
   if not b.redraw then
     do return end
   end
---if(b.name == "active") then
---	print("beg buffer.draw()")
---end
 
 --[[
---if editor.debug_state == "blines > 1, char_pressed" then
-if buffer.count_lines(b) > 1 then
-print("--- buffer.draw(), bef update_display_lines")
-print(string.format("buffer.tostring(b): %s", buffer.tostring(b)))
+if editor.debug_state == "buffer.draw" then
+debug_console()
 end
 ]]
+
   M.update_display_lines(b)
+
+if editor.debug_state == "buffer.draw" then
+--	print(string.format("b:\n%s", M.tostring(b)))
+end
 
 --[[
 if buffer.count_lines(b) > 1 then

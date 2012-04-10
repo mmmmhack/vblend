@@ -27,6 +27,27 @@ static int lw_blendFunc(lua_State* L) {
   );
   return 0;
 }
+static int lw_enable(lua_State* L) {
+  GLenum cap = lua_tointeger(L, -1);
+  glEnable(
+    cap
+  );
+  return 0;
+}
+static int lw_disable(lua_State* L) {
+  GLenum cap = lua_tointeger(L, -1);
+  glDisable(
+    cap
+  );
+  return 0;
+}
+static int lw_getError(lua_State* L) {
+  GLenum ret_val = 
+  glGetError(
+  );
+  lua_pushinteger(L, ret_val);
+  return 1;
+}
 static int lw_matrixMode(lua_State* L) {
   GLenum mode = lua_tointeger(L, -1);
   glMatrixMode(

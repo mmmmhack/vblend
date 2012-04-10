@@ -9,4 +9,5 @@ return {
   ['GLuint'] = 'integer',
   ['GLushort'] = 'integer',
   ['void'] = 'void',
+  ['const GLubyte *'] = 'string',
 }

@@ -32,11 +32,14 @@ M._fps = -1;
 
 -- functions
 
--- opens a new window for a gamelib ap
--- defaults:
---  * 800x600 window size
---  * ortho projection
---  * color depth: ?
+--[[
+	descrip:
+		Opens a new window for a gamelib application.
+			defaults:
+			. 800x600 window size
+			. ortho projection
+			. color depth: ?
+]]
 M.open_window = function(title)
 	local rc = glfw.init()
   if rc ~= gl.GL_TRUE then
@@ -64,52 +67,18 @@ M.open_window = function(title)
 	M.win_defaults.title = title
   end
 
-  -- set default ortho project
-	gl.matrixMode(gl.GL_PROJECTION)
-	gl.loadIdentity()
-	gl.ortho(0, w, 0, h, -1, 1)
-	gl.matrixMode(gl.GL_MODELVIEW)
+  -- set default ortho projection
+	M.set_ortho()
 	gl.loadIdentity()
 
   local cc = M.win_defaults.bg_color
   gl.clearColor(cc[0], cc[1], cc[2], cc[3])
 end
 
-M.win_width = function()
-  local width, height = glfw.getWindowSize()
-  return width
-end
-
-M.win_height = function()
-  local width, height = glfw.getWindowSize()
-  return height
-end
-
-M.draw_circle = function (x0, y0, radius)
-  gl.Begin(gl.GL_TRIANGLE_FAN)
-    gl.vertex2f(x0, y0)
-		local nslices = M.NUM_CIRCLE_SLICES
-		local theta = 0
-		local delta_theta = 2*math.pi / nslices
-		local i
-		for i = 0, nslices do
-			local x = x0 + radius * math.cos(theta)
-			local y = y0 + radius * math.sin(theta)
-			theta = theta + delta_theta
-			gl.vertex2f(x, y)
-		end
-  gl.End()
-end
-
-M.draw_rect = function (x, y, w, h)
-  gl.Begin(gl.GL_QUADS)
-    gl.vertex2f(x, y)
-    gl.vertex2f(x + w, y)
-    gl.vertex2f(x + w, y + h)
-    gl.vertex2f(x, y + h)
-  gl.End()
-end
-
+--[[
+	descrip:
+		Calculates and returns frame rate.
+]]
 M.calc_fps = function ()
   if M._num_frames_drawn == 0 then
     M._prev_fps_frame = 0
@@ -133,12 +102,80 @@ M.calc_fps = function ()
   return M._fps;
 end
 
--- Performs internal gamelib updates, should be called at the end of every game loop.
--- Specifically, the following is done:
---  * updates the screen with the opengl graphics buffer
---  * updates glfw input buffers (keyboard and mouse)
---  * clears the opengl graphics buffer
---  * calculates fps
+--[[
+	descrip:
+		Draws a circle outline at param position with param radius.
+]]
+M.draw_circle = function (x0, y0, radius)
+  gl.Begin(gl.GL_TRIANGLE_FAN)
+    gl.vertex2f(x0, y0)
+		local nslices = M.NUM_CIRCLE_SLICES
+		local theta = 0
+		local delta_theta = 2*math.pi / nslices
+		local i
+		for i = 0, nslices do
+			local x = x0 + radius * math.cos(theta)
+			local y = y0 + radius * math.sin(theta)
+			theta = theta + delta_theta
+			gl.vertex2f(x, y)
+		end
+  gl.End()
+end
+
+--[[
+	descrip:
+		Draws a rectangle outline at param position and size.
+]]
+M.draw_rect = function (x, y, w, h)
+  gl.Begin(gl.GL_QUADS)
+    gl.vertex2f(x, y)
+    gl.vertex2f(x + w, y)
+    gl.vertex2f(x + w, y + h)
+    gl.vertex2f(x, y + h)
+  gl.End()
+end
+
+--[[
+	descrip:
+		Sets orthographic projection in OpenGL projection matrix.
+]]
+M.set_ortho = function ()
+	local w = gamelib.win_defaults.width
+	local h = gamelib.win_defaults.height
+	gl.matrixMode(gl.GL_PROJECTION)
+	gl.loadIdentity()
+	gl.ortho(0, w, 0, h, -1, 1)
+	gl.matrixMode(gl.GL_MODELVIEW)
+end
+
+--[[
+	descrip:
+		Sets perspective projection in OpenGL projection matrix.
+]]
+M.set_perspective = function ()
+	gl.matrixMode(gl.GL_PROJECTION)
+	gl.loadIdentity()
+	local w = gamelib.win_width()
+	local h = gamelib.win_height()
+	local l = -w/2
+	local r = w/2
+	local b = -h/2
+	local t =  h/2
+	local n = 0.1
+	local f = 1000
+	glu.perspective(60, w/h, n, f)
+	gl.matrixMode(gl.GL_MODELVIEW)
+end
+
+--[[
+	descrip:
+		Performs internal gamelib updates, should be called at the end of every game loop.
+		Specifically, the following is done:
+			. updates the screen with the opengl graphics buffer
+			. updates glfw input buffers (keyboard and mouse)
+			. clears the opengl graphics buffer
+			. calculates fps
+]]
 M.update = function ()
 	glfw.swapBuffers()
   M.win_open = glfw.getWindowParam(glfw.GLFW_OPENED)
@@ -151,7 +188,30 @@ M.update = function ()
   glfw.setWindowTitle(title)
 end
 
+--[[
+	descrip:
+		Returns width of main window, in pixels.
+]]
+M.win_width = function()
+  local width, height = glfw.getWindowSize()
+  return width
+end
+
+--[[
+	descrip:
+		Returns width of main window, in pixels.
+]]
+M.win_height = function()
+  local width, height = glfw.getWindowSize()
+  return height
+end
+
+--[[
+	descrip:
+		Returns true if main window (opened with gamelib.open_window()) has been closed.
+]]
 M.window_closed = function()
   return M.win_open ~= gl.GL_TRUE
 end
+
 

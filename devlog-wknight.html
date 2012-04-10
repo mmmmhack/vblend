@@ -6654,6 +6654,89 @@ Finished modularizing editor.lua
 Very tired today. Will add a 'read-only' switch to editor in vblend.
 </p>
 
+<p>
+Did that, next adding display of help text.
+</p>
+
+<p>
+Working on bug: buffer.update_display_lines() isn't hitting display win height
+limit
+</p>
+
+<p>
+Duh, found bug, was doing math.max() instead of math.min
+</p>
+
+<a>
+Ok, fixed, it's displaying help text! Next, need to enable editor and
+handle tab chars
+</p>
+
+<h2>2012-04-10</h2>
+
+Today I will add a semi-transparent backing behind the editor text to
+improve readability.
+</p>
+
+<p>
+In doing this, also updating docs and functions for gamelib. One common
+source of error I'm seeing is using incorrect constants like gl.GL_RECTANGLE,
+glfw.GL_KEY_ESC. Will add error reporting for GL and also GLFW if it
+provides it (which I think it does).
+</p>
+
+<p>
+Added glGetError to gl/lua_gl_selfuncs.lua, but not getting picked up for
+some reason.
+</p>
+
+<p>
+Ran again with verbose flag, now it's clear:
+</p>
+<pre>
+processing decl 0054: [
+ GLenum  glGetError( void );]
+processing func decl
+gen_func_wrapper(): ret_decl: [GLenum], func_name: [glGetError], params_decl: [ void ]
+gen_func_wrapper(): parsing param declarations
+gen_func_wrapper(): emitting C function definition
+get_return_types(): lua_ret_type is nil for c_ret_type: [GLenum]
+gen_func_wrapper(): func glGetError: no ret type for decl: [GLenum]
+</pre>
+
+<p>
+So just need to handle the GLenum. Hmm, the typemap should have handled it, right?
+Too long since I ran this code.
+</p>
+
+<p>
+Will fire up the debug console.
+</p>
+
+<p>
+Ok, currently looks like the typemap is only used for params, not return types. Not
+sure yet why return types shouldn't also use it.
+</p>
+
+<p>
+Looks like error routines are working, but doesn't catch this particular error
+at the OpenGL level:
+</p>
+<pre>
+gl.GL_RECTANGLE: nil
+draw_rect(): err: 0, err_str: no error
+mhackslab:dist $ 
+</pre>
+
+<p>
+Would have to check for nil probably at the wrapper level, but not going to 
+do that right now, will have to think about how to best do that.
+</p>
+
+<p>
+Got semi-transparent background working.
+</p>
+
 </body>
 
 </html>

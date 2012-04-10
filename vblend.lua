@@ -73,9 +73,35 @@ M.show_help = function ()
 	buffer.remove_all(b)
 	local i = 0
 	for line in io.lines(M.help_file) do
-		buffer.insert_line(b, line, i)
+		-- convert tabs to spaces
+		local ln = string.gsub(line, "\t", "    ")
+		buffer.insert_line(b, ln, i)
 		i = i + 1
 	end
+--editor.debug_state = "buffer.draw"
+end
+
+M.close_help = function()
+	local b = editor.active_buf()
+	buffer.remove_all(b)
+	buffer.insert_line(b, "", 0)
+--editor.debug_state = "help closed"
+end
+
+function draw_edit_bg()
+  local w = gamelib.win_width()
+  local h = gamelib.win_height()
+  local b = 0
+  local d = -0.1
+  local s = 0.6
+  local c = 0.3
+  gl.color4f(c, c, c, s)
+  gl.Begin(gl.GL_QUADS)
+    gl.vertex3f(0, 0, d)
+    gl.vertex3f( w, 0, d)
+    gl.vertex3f( w,  h, d)
+    gl.vertex3f( 0,  h, d)
+  gl.End()
 end
 
 function main()
@@ -86,9 +112,13 @@ function main()
 	editor.init()
 	editor.options["tilde-display-lines"] = false
 	editor.options['read-only'] = true
-	editor.options['draw-cursor'] = false
+--	editor.options['draw-cursor'] = false
 	cmd_mode.add_handler("h", M.show_help)
+	cmd_mode.add_handler("clo", M.close_help)
 	glfw.setKeyCallback('key_event')
+
+  gl.enable(gl.GL_BLEND)
+  gl.blendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
 	local frame_time = 1/60
 	local cam = camera.new()
@@ -107,18 +137,27 @@ function main()
 		M.set_perspective()
 		M.draw_grid()
 
+		-- get editor draw state
+		local editor_active = false
+		local editor_text = buffer.count_chars(editor.active_buf()) > 0
+		if editor.get_mode() == "command" or editor_text then
+			editor_active = true
+		end
+
+		-- draw semi-transparent background behind edit text
+		M.set_ortho()
+		if editor_text then
+			draw_edit_bg()
+		end
+
 		-- draw editor
 		editor.tick()
-		M.set_ortho()
 		editor.draw()
 
 		gamelib.update()
 
 		-- get navigation input
-		local editor_active = false
-		if editor.get_mode() == "command" then
-			editor_active = true
-		end
+		editor.options['draw-cursor'] = editor_active
 		if not editor_active then
 	  	M.apply_inputs(frame_time, cam)
 		end
