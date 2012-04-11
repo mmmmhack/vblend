@@ -326,7 +326,15 @@ M.remove_all = function(b)
 	b.scroll_pos = {[0]=0, [1]=0}
 end
 
--- builds display buffer from content of lines buffer and scroll offset
+--[[
+	descrip: 
+		Builds display buffer from content of lines buffer and scroll offset.
+		- All buffer lines in the range defined by the scroll offset should be
+		  copied to the display buffer.
+		- Any lines in the display buffer that haven't been overwritten by content lines
+		  should be set to blank lines (or blank lines starting with '~' if tilde
+			option set)
+]]
 M.update_display_lines = function(b)
 --[[
 if editor.debug_state == "help closed" and b.name == "active" then
@@ -336,16 +344,13 @@ end
 --if(b.name == "active") then
 --	print("beg buffer.update_display_lines()")
 --end
+--[[ old
+
   local dis_col = b.win_pos[0]
   local dis_row = b.win_pos[1]
   local beg_col = b.scroll_pos[0]
 
-  -- default: only draw cursor line
---  local beg_row = --[[ b.scroll_pos[1] + --]] b._cursor_pos[1]
---  local end_row = beg_row
-  -- update all lines in window if scrolled
 	local num_lines = M.count_lines(b)
---  if b.update_all then
 	local beg_row = b.scroll_pos[1]
 
 	-- no! should be math.max, NOT math.min, to force display of blank lines below buffer
@@ -361,7 +366,6 @@ end
   for i = beg_row, end_row do
     local ln = blank_ln
     if i < num_lines then
---      ln = b.lines[i]
 			ln = M.get(b, i).text		-- TODO: this is inefficient, fix it
     end       
     local end_col = math.min(#ln, beg_col + b.win_size[0])
@@ -377,6 +381,44 @@ end
 --	print(M.tostring(b))
 --	print("end buffer.update_display_lines()")
 --end
+--]]
+
+	-- first, blank display buffer
+	local ch = editor.options["tilde-display-lines"] and "~" or " "
+  local blank_ln = ch .. string.rep(" ", b.win_size[1]-1)
+  local j = 0
+  for i = 0, #b.display_lines - 1 do
+    b.display_lines[i] = blank_ln
+	end
+
+--[[
+if b.name == "active" then
+debug_console()
+end
+]]
+
+	-- get number of content lines in scroll range
+  local beg_col = b.scroll_pos[0]
+	local beg_line = b.scroll_pos[1]
+	local num_content_lines = buffer.count_lines(b)
+	local num_display_content_lines = num_content_lines - beg_line
+	-- clamp to display height
+	num_display_content_lines = math.min(num_display_content_lines, b.win_size[1])
+
+	-- copy lines
+	local end_line = beg_line + num_display_content_lines - 1
+	local j = 0
+	for i = beg_line, end_line do
+		local ln_buf = buffer.get(b, i)
+		local ln = ln_buf.text
+    local end_col = math.min(#ln, beg_col + b.win_size[0])
+    -- pad out the rest of the line to the end of the buffer window
+    local pad = b.win_size[0] - (end_col - beg_col)
+    local s = string.sub(ln, beg_col+1, end_col+1) .. string.rep(" ", pad)
+    b.display_lines[j] = s
+		j = j + 1
+	end
+
 end
 
 -- updates screen buffer with current contents of b.display_lines buffer

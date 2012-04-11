@@ -6737,6 +6737,24 @@ do that right now, will have to think about how to best do that.
 Got semi-transparent background working.
 </p>
 
+<h2>2012-04-11</h2>
+
+<p>
+There is a bug in scrolling the help text, blank lines at bottom are not getting
+cleared.
+</p>
+
+<p>
+More detail, using a file with numbered lines, it only displays the first
+35 lines, then scrolling from the bottom, the 36th line is just repeated
+instead of subsequent lines being displayed.
+</p>
+
+<p>
+Created another test app, thought a little bit and re-wrote buffer.update_display_lines(),
+bug fixed.
+</p>
+
 </body>
 
 </html>

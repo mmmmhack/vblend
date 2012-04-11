@@ -151,10 +151,13 @@ function main()
 		end
 
 		-- draw editor
-		editor.tick()
 		editor.draw()
 
+		-- update gamelib
 		gamelib.update()
+
+		-- update editor inputs
+		editor.tick()
 
 		-- get navigation input
 		editor.options['draw-cursor'] = editor_active
