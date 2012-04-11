@@ -63,7 +63,7 @@ M.tostring = function(b)
   s = s .. string.format("b.win_size: (%d, %d)\n", b.win_size[0], b.win_size[1])
   s = s .. string.format("b.redraw: %s\n", tostring(b.redraw))
 --  s = s .. string.format("b.update_all: %s\n", tostring(b.update_all))
-  s = s .. string.format("b.display_lines: len: %d\n", #b.display_lines)
+  s = s .. string.format("b.display_lines: len: %d\n", #b.display_lines + 1)
   for i = 0, #b.display_lines do
     s = s .. string.format("  [%2d]: '%s'\n", i, b.display_lines[i])
   end
@@ -336,66 +336,14 @@ end
 			option set)
 ]]
 M.update_display_lines = function(b)
---[[
-if editor.debug_state == "help closed" and b.name == "active" then
-print(string.format("buffer.update_display_lines() after help closed:\n%s", M.tostring(b)))
-end
-]]
---if(b.name == "active") then
---	print("beg buffer.update_display_lines()")
---end
---[[ old
-
-  local dis_col = b.win_pos[0]
-  local dis_row = b.win_pos[1]
-  local beg_col = b.scroll_pos[0]
-
-	local num_lines = M.count_lines(b)
-	local beg_row = b.scroll_pos[1]
-
-	-- no! should be math.max, NOT math.min, to force display of blank lines below buffer
-	-- but, we must clamp to min screen size also
-	--local end_row = math.min(num_lines - 1, beg_row + b.win_size[1] - 1)
-	local end_row = math.max(num_lines - 1, beg_row + b.win_size[1] - 1)
-	local max_display_lines = tfont.num_rows() - 1
-	end_row = math.min(end_row, max_display_lines)
---  end
-	local ch = editor.options["tilde-display-lines"] and "~" or " "
-  local blank_ln = ch .. string.rep(" ", b.win_size[1]-1)
-  local j = 0
-  for i = beg_row, end_row do
-    local ln = blank_ln
-    if i < num_lines then
-			ln = M.get(b, i).text		-- TODO: this is inefficient, fix it
-    end       
-    local end_col = math.min(#ln, beg_col + b.win_size[0])
-    -- for now: pad out the rest of the line to the end of the buffer window. later, maybe optimize?
-    local pad = b.win_size[0] - (end_col - beg_col)
-    local s = string.sub(ln, beg_col+1, end_col+1) .. string.rep(" ", pad)
---    tflua.set_screen_buf(scr_row, scr_col, s)
-    b.display_lines[j] = s
-    j = j + 1
-    dis_row = dis_row + 1
-  end
---if(b.name == "active") then
---	print(M.tostring(b))
---	print("end buffer.update_display_lines()")
---end
---]]
 
 	-- first, blank display buffer
 	local ch = editor.options["tilde-display-lines"] and "~" or " "
-  local blank_ln = ch .. string.rep(" ", b.win_size[1]-1)
+  local blank_ln = ch .. string.rep(" ", b.win_size[0]-1)
   local j = 0
-  for i = 0, #b.display_lines - 1 do
+  for i = 0, #b.display_lines do
     b.display_lines[i] = blank_ln
 	end
-
---[[
-if b.name == "active" then
-debug_console()
-end
-]]
 
 	-- get number of content lines in scroll range
   local beg_col = b.scroll_pos[0]
@@ -408,6 +356,7 @@ end
 	-- copy lines
 	local end_line = beg_line + num_display_content_lines - 1
 	local j = 0
+
 	for i = beg_line, end_line do
 		local ln_buf = buffer.get(b, i)
 		local ln = ln_buf.text
@@ -421,30 +370,17 @@ end
 
 end
 
--- updates screen buffer with current contents of b.display_lines buffer
+--[[
+	descrip:
+		Updates screen buffer with current contents of b.display_lines buffer
+]]
 M.draw = function (b)
+
   if not b.redraw then
     do return end
   end
 
---[[
-if editor.debug_state == "buffer.draw" then
-debug_console()
-end
-]]
-
   M.update_display_lines(b)
-
-if editor.debug_state == "buffer.draw" then
---	print(string.format("b:\n%s", M.tostring(b)))
-end
-
---[[
-if buffer.count_lines(b) > 1 then
-print("--- buffer.draw(), aft update_display_lines")
-print(string.format("buffer.tostring(b): %s", buffer.tostring(b)))
-end
-]]
 
   -- copy display_lines buffer to screen buffer
   local scr_col = b.win_pos[0]
@@ -454,14 +390,5 @@ end
     tfont.set_text_buf(scr_row + i, scr_col, ln)
   end
   b.redraw = false
---[[
-if editor.debug_state == "" and M.count_lines(b) == 2 then
-editor.debug_state = "enabled"
-end
-if editor.debug_state == "enabled" then
-	print(string.format("buffer.draw(): editor.debug_state: b._cursor_pos: %s", edit_util.pos2str(b._cursor_pos)))
---	editor.debug_state = "done"
-end
-]]
 end
 

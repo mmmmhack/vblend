@@ -330,6 +330,10 @@ end
 -- prints the value of a builtin debugger function operating on param expression
 M.print_func_expr = function(func_name, expr)
   local nm, val = M.eval_expr(expr)
+	if val == nil then
+		print(string.format("'%s' evaluates to nil", tostring(expr)))
+		return
+	end
   if      func_name == "type" then
     print(string.format("type(%s): %s", expr, type(val)))
   elseif func_name == "len" then

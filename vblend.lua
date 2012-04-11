@@ -1,5 +1,7 @@
 -- vblend.lua	:	a love child of vim and blender
 
+g_debug_state = ""
+
 local M = {}
 
 require('gamelib')
@@ -78,17 +80,15 @@ M.show_help = function ()
 		buffer.insert_line(b, ln, i)
 		i = i + 1
 	end
---editor.debug_state = "buffer.draw"
 end
 
 M.close_help = function()
 	local b = editor.active_buf()
 	buffer.remove_all(b)
 	buffer.insert_line(b, "", 0)
---editor.debug_state = "help closed"
 end
 
-function draw_edit_bg()
+M.draw_edit_bg = function()
   local w = gamelib.win_width()
   local h = gamelib.win_height()
   local b = 0
@@ -104,6 +104,11 @@ function draw_edit_bg()
   gl.End()
 end
 
+M.dump_active_buf = function()
+	local b = editor.active_buf()
+	print(buffer.tostring(b))
+end
+
 function main()
 	gamelib.open_window()
 
@@ -115,6 +120,7 @@ function main()
 --	editor.options['draw-cursor'] = false
 	cmd_mode.add_handler("h", M.show_help)
 	cmd_mode.add_handler("clo", M.close_help)
+	cmd_mode.add_handler("dump active_buf", M.dump_active_buf)
 	glfw.setKeyCallback('key_event')
 
   gl.enable(gl.GL_BLEND)
@@ -126,38 +132,18 @@ function main()
 	while not done do
 		local beg_time = sys.double_time()
 
-		gl.loadIdentity()
-
-		-- draw 3d
-		local eye_pos = cam.center
-		local cen_pos = vector3.add(eye_pos, cam.look_dir)
-		local up_dir = cam.up_dir
-		glu.lookAt(eye_pos.x, eye_pos.y, eye_pos.z, cen_pos.x, cen_pos.y, cen_pos.z, up_dir.x, up_dir.y, up_dir.z)
-
-		M.set_perspective()
-		M.draw_grid()
-
-		-- get editor draw state
-		local editor_active = false
-		local editor_text = buffer.count_chars(editor.active_buf()) > 0
-		if editor.get_mode() == "command" or editor_text then
-			editor_active = true
-		end
-
-		-- draw semi-transparent background behind edit text
-		M.set_ortho()
-		if editor_text then
-			draw_edit_bg()
-		end
-
-		-- draw editor
-		editor.draw()
-
 		-- update gamelib
 		gamelib.update()
 
 		-- update editor inputs
 		editor.tick()
+
+		-- get editor state
+		local editor_active = false
+		local editor_text = buffer.count_chars(editor.active_buf()) > 0
+		if editor.get_mode() == "command" or editor_text then
+			editor_active = true
+		end
 
 		-- get navigation input
 		editor.options['draw-cursor'] = editor_active
@@ -165,9 +151,25 @@ function main()
 	  	M.apply_inputs(frame_time, cam)
 		end
 
-		-- check for exit
---		local esc_key_hit = glfw.getKey(glfw.GLFW_KEY_ESC) == glfw.GLFW_PRESS
---		done = gamelib.window_closed() or esc_key_hit
+		-- render at end of game loop
+		gl.loadIdentity()
+
+		-- draw 3d
+		local eye_pos = cam.center
+		local cen_pos = vector3.add(eye_pos, cam.look_dir)
+		local up_dir = cam.up_dir
+		glu.lookAt(eye_pos.x, eye_pos.y, eye_pos.z, cen_pos.x, cen_pos.y, cen_pos.z, up_dir.x, up_dir.y, up_dir.z)
+		M.set_perspective()
+		M.draw_grid()
+
+		-- draw semi-transparent background behind edit text
+		M.set_ortho()
+		if editor_text then
+			M.draw_edit_bg()
+		end
+
+		-- draw editor
+		editor.draw()
 
 		local end_time = sys.double_time()
 		local work_time = end_time - beg_time

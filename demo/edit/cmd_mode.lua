@@ -16,6 +16,7 @@ M.cmd_handler = {
 }
 
 M.add_handler = function(cmd, handler_func)
+	assert(handler_func)
 	local old_func = M.cmd_handler[cmd]
 	M.cmd_handler[cmd] = handler_func
 	return old_func

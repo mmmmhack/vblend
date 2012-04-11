@@ -53,7 +53,6 @@ end
 -- called at module load
 M.init = function()
 	
-	M.debug_state = ""	-- global debug var
 	M.key_count = 0			-- tracks number of input chars, for triggering debug conditions
 
 	local w = tfont.num_cols()
@@ -153,11 +152,15 @@ M.glfw_key_toascii = function(k)
 	return ascii_ch
 end
 
--- called from the app on key input event
--- wknight 2011-12-07: currently this function needs to be global, because of 
--- requirements/limitations in glfw.setKeyCallback()
+--[[
+	descrip:
+		Called from the app on key input event.
+	
+	notes:
+		wknight 2011-12-07: currently this function needs to be global, because of 
+		requirements/limitations in glfw.setKeyCallback()
+]]
 key_event = function(k, state)
---print(string.format("key_event(): k: [%s], state: [%s]", tostring(k), tostring(state)))
 	
 	-- record shift key state
 	if M.shift_key_event(k, state) then
@@ -212,9 +215,6 @@ M.char_pressed = function(ch)
 end
 
 M.draw = function()
---print("BEG tf_edit.lua draw()")
---traceback()
---debug_console()
 	if M._active_buf.redraw then
 		buffer.draw(M._active_buf)
 	end
@@ -225,7 +225,6 @@ M.draw = function()
 	if M.options['draw-cursor'] then
 		edit.draw_cursor()
 	end
---print("END tf_edit.lua draw()")
 end
 
 

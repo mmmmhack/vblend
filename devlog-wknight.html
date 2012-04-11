@@ -6755,6 +6755,127 @@ Created another test app, thought a little bit and re-wrote buffer.update_displa
 bug fixed.
 </p>
 
+<p>
+Later in UC, working on another bug where some garbage is left over in the display
+after the help text is closed, I realize that there's a fundamental drawback of
+using 0-based indexes in lua code: #t doesn't give the right length because
+it skips the [0] item.
+</p>
+
+<p>
+Perhaps a better intepretation is that #t returns (num_items - 1) (assuming no holes, of course)
+</p>
+
+<p>
+Currently, all uses of # operator except on display_lines appear to be on strings, which is ok.
+</p>
+
+<p>
+Fixed that one-off bug in updating display_lines, but this call now appears to be the remaining
+problem:
+</p>
+<pre>
+    tfont.set_text_buf(scr_row + i, scr_col, ln)
+</pre>
+
+<p>
+Using the debug_state var (need to find a way to better automate that), it's now clear that
+the editor.draw() function isn't getting called after 'clo' command.
+</p>
+<pre>
+mhackslab:dist $ r
+vblend.lua: close_help(): set debug_state: help closed
+vblend.lua: debug_state: help closed, after gamelib.update() call, debug_state cleared
+</pre>
+
+<p>
+I think now it's because the g_debug_state var (switched from module var to global, just
+to eliminate probs) is getting set after I think it is:
+</p>
+<pre>
+mhackslab:dist $ r
+vblend.lua: close_help(): set debug_state: help closed
+traceback: stack traceback:
+vblend.lua:91: in function 'h'
+./cmd_mode.lua:62: in function 'do_cmd'
+./cmd_mode.lua:97: in function 'char_pressed'
+./editor.lua:205: in function 'char_pressed'
+./editor.lua:185: in function <./editor.lua:158>
+[C]: in function 'swapBuffers'
+./gamelib.lua:180: in function 'update'
+vblend.lua:169: in function 'main'
+vblend.lua:201: in main chunk
+[C]: ?
+vblend.lua: debug_state: help closed, after gamelib.update() call, debug_state cleared
+</pre>
+
+<p>
+Yes, this happens in gamelib.update(), AFTER draw() has been called.
+</p>
+
+<p>
+So, does this mean that it's better to always put drawing LAST in the game loop?
+</p>
+
+<p>
+After a brief search and read of article on so that says typically render last,
+that's what I'm going to do.
+</p>
+
+<p>
+Ok, finally figured it, the blank lines in display_line buf were truncate for
+some reason:
+</p>
+<pre>
+...
+*** buffer.draw(): g_debug_state: [help closed] tfont.set_text_buf(26, 0, '                                   '
+*** buffer.draw(): g_debug_state: [help closed] tfont.set_text_buf(27, 0, '                                   '
+*** buffer.draw(): g_debug_state: [help closed] tfont.set_text_buf(28, 0, '                                   '
+...
+editor.draw(): g_debug_state: [help closed] beg func
+buffer.draw() debug_state: help closed, aft update_display_lines: b:
+b.name: active
+b.lines: len: 1
+  [ 0]: ''
+b._cursor_pos: (0, 0)
+b.scroll_pos: (0, 0)
+b.win_pos: (0, 0)
+b.win_size: (80, 35)
+b.redraw: true
+b.display_lines: len: 35
+  [ 0]: '                                                                                '
+  [ 1]: '                                   '
+  [ 2]: '                                   '
+  [ 3]: '                                   '
+  [ 4]: '                                   '
+  [ 5]: '                                   '
+  [ 6]: '                                   '
+  [ 7]: '                                   '
+  [ 8]: '                                   '
+  [ 9]: '                                   '
+  [10]: '                                   '
+...
+</pre>
+
+<p>
+Ok, duh, finally found it, was padding with win height, not win width:
+</p>
+<pre>
+continuing program execution
+[./buffer.lua:392] (update_display_lines) local blank_ln = ch .. string.rep(" ", b.win_size[1]-1)
+&gt; n
+continuing program execution
+[./buffer.lua:393] (update_display_lines) local j = 0
+&gt; p blank_ln
+blank_ln: '                                   '
+&gt; p b.win_size
+b.win_size: table: 0x1ec9f0
+&gt; p pairs(b.win_size)
+0               : 80
+1               : 35
+&gt; 
+</pre>
+
 </body>
 
 </html>
