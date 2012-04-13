@@ -1,46 +1,19 @@
 -- vblend.lua	:	a love child of vim and blender
 
+-- global debug var
 g_debug_state = ""
 
+local modname = "vblend"
 local M = {}
+_G[modname] = M
+package.loaded[modname] = M
 
 require('gamelib')
+require('graphics')
 require('cam_control')
 require('editor')
+require('editor3d')
 require('debugger')
-
---local _init_line = string.rep("0123456789", 7) .. "012345678"
-
---[[
-	descrip:
-		Draws a wireframe grid in the x-z plane, centered at the origin.
-]]
-M.draw_grid = function ()
-	local c = 0.3
-	gl.color3f(c, c, c)
-	gl.Begin(gl.GL_LINES)
-		local y = 0
-
-		local zb = -100
-		local ze = 100
-
-		local xb = -100
-		local xe = 100
-
-		local dx = 10
-		local dz = 10
-		-- columns
-		for x = xb, xe, dx do
-			gl.vertex3f(x, y, zb)
-			gl.vertex3f(x, y, ze)
-		end
-		-- rows
-		for z = zb, ze, dz do
-			gl.vertex3f(xb, y, z)
-			gl.vertex3f(xe, y, z)
-		end
-	gl.End()
-end
 
 --[[
 	descrip:
@@ -50,33 +23,22 @@ M.apply_inputs = function (dt, cam)
 	cam_control.update(dt, cam)
 end
 
-M.show_help = function ()
---	cmd_mode.set_text("")
-
 --[[
-	-- read lines into active buffer
-	local b = editor.active_buf()
-	buffer.remove_all(b)
-	local i = 0
-	for line in io.lines(M.help_file) do
-		-- convert tabs to spaces
-		local ln = string.gsub(line, "\t", "    ")
-		buffer.insert_line(b, ln, i)
-		i = i + 1
-	end
---]]
+	descrip:
+		Shows help text for vblend app in editor.
+]]
+M.show_help = function ()
 	-- load lines into help buffer
 	edit_util.buf_load(M.help_buf, M.help_file)
 	editor.set_active_buf(M.help_buf)
 	M.showing_help = true
 end
 
-M.close_help = function()
 --[[
-	local b = editor.active_buf()
-	buffer.remove_all(b)
-	buffer.insert_line(b, "", 0)
---]]
+	descrip:
+		Closes help text, returns to main view.
+]]
+M.close_help = function()
 	M.showing_help = false
 	editor.set_active_buf(M.status_buf)
 end
@@ -124,33 +86,9 @@ end
 
 --[[
 	descrip:
-		Draws a 3d cursor.
-]]
-M.draw_cursor3d = function()
-	gl.pushMatrix()
-		gl.rotatef(90, 0, 1, 0)
-		gl.color3f(1, 0, 0)
-		gamelib.draw_circle_wireframe(0, 0, 1.0)
-	gl.popMatrix()
-
-	gl.pushMatrix()
-		gl.rotatef(90, -1, 0, 0)
-		gl.color3f(0, 1, 0)
-		gamelib.draw_circle_wireframe(0, 0, 1.0)
-	gl.popMatrix()
-
-	gl.pushMatrix()
-		gl.color3f(0, 0, 1)
-		gamelib.draw_circle_wireframe(0, 0, 1.0)
-	gl.popMatrix()
-end
-
---[[
-	descrip:
 		Displays general-purpose status text in an editor window.
 ]]
 M.status_out = function (txt)
---	local b = editor.active_buf()	
 	buffer.set(M.status_buf, txt, 0)
 end
 
@@ -183,40 +121,28 @@ function main()
   gl.enable(gl.GL_BLEND)
   gl.blendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-	local frame_count = 0
+	M.frame_count = 0
+
 	local frame_time = 1/60
-	local cam = camera.new()
-	cam.center = vector3.new(0, 10, 30)
+	M.cam = camera.new()
+	M.cam.center = vector3.new(0, 10, 30)
 
 	local done = false
 	while not done do
-		frame_count = frame_count + 1
+		M.frame_count = M.frame_count + 1
+
 		local beg_time = sys.double_time()
 
 		-- update gamelib
 		gamelib.update()
 
-		-- update editor inputs
+		-- update editor
 		editor.tick()
 
-		--[[
-		-- TODO: determine whether status or help buffer should be shown
-		local editor_has_keyboard = false
-		local scrollable_text = false 
-		local num_lines = buffer.count_lines(editor.active_buf())
-		if num_lines > tfont.num_rows() then
-			scrollable_text = true
-		end
-		-- TODO: check for longest line
-		if editor.get_mode() == "command" or scrollable_text then
-			editor_has_keyboard = true
-			editor.options['draw-cursor'] = true
-		else
-			editor.options['draw-cursor'] = false
-		end
-		--]]
+		-- update 3d editor
+		editor3d.tick()
 
-		-- set editor state
+		-- determine input state
 		editor.options['draw-cursor'] = false
 		local editor_has_keyboard = false
 		if editor.get_mode() == "command" or M.showing_help then
@@ -226,11 +152,11 @@ function main()
 
 		-- get navigation input
 		if not editor_has_keyboard then
-	  	M.apply_inputs(frame_time, cam)
+	  	M.apply_inputs(frame_time, M.cam)
 		end
 
 		-- status update
-		M.status_out(string.format("frame count: %d", frame_count))
+--		M.status_out(string.format("frame count: %d", frame_count))
 
 		-- render at end of game loop
 
@@ -238,21 +164,21 @@ function main()
 		gamelib.set_perspective()
 		gl.loadIdentity()
 
-		local eye_pos = cam.center
-		local cen_pos = vector3.add(eye_pos, cam.look_dir)
-		local up_dir = cam.up_dir
+		-- set camera
+		local eye_pos = M.cam.center
+		local cen_pos = vector3.add(eye_pos, M.cam.look_dir)
+		local up_dir = M.cam.up_dir
 		glu.lookAt(eye_pos.x, eye_pos.y, eye_pos.z, cen_pos.x, cen_pos.y, cen_pos.z, up_dir.x, up_dir.y, up_dir.z)
-		M.draw_grid()
-		M.draw_cursor3d()
+--		M.draw_grid()
+--		M.draw_cursor3d()
+		editor3d.draw()
 
 		-- ortho drawing
 		gamelib.set_ortho()
 		gl.loadIdentity()
 
-		-- draw semi-transparent background behind edit text
-		M.draw_edit_bg()
-
 		-- draw editor
+		M.draw_edit_bg() -- draw semi-transparent background behind edit text
 		editor.draw()
 
 		-- check for gl errors
