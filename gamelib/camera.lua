@@ -32,7 +32,10 @@ M.new = function()
 	return cam
 end
 
--- returns a matrix representing param camera rotation
+--[[
+  descrip:
+    Returns a matrix representing param camera rotation
+]]
 M.basis = function(cam)
 	local vx = vector3.cross(cam.look_dir, cam.up_dir)
 	local vy = cam.up_dir
@@ -41,8 +44,11 @@ M.basis = function(cam)
 	return Mb
 end
 
--- returns matrix representing param cam rotation where cam up dir is projected onto alignment with world y axis,
--- or nil if cam up dir is perpedicular to world y axis
+--[[
+  descrip:
+    returns matrix representing param cam rotation where cam up dir is projected onto alignment with world y axis,
+    or nil if cam up dir is perpedicular to world y axis
+]]
 M.get_projected_frame = function(cam)
 	-- convert translation to adjusted camera frame, where adjustment is projection of look_dir onto xz plane,
 	-- up_dir is aligned with world y axis

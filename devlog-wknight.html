@@ -6876,6 +6876,67 @@ b.win_size: table: 0x1ec9f0
 &gt; 
 </pre>
 
+<p>
+Fixed. Next, need to add some page up/dn commands to editor, but I want to get started
+on the 3d editing! So will start on the 3d cursor.
+</p>
+
+<h2>2012-04-12</h2>
+
+<p>
+Thursday morning, resume work on 3d cursor.
+</p>
+
+<p>
+Looked at init blender screen, will make vblend look more like that.
+</p>
+
+<p>
+At lunch in the UC, busy afternoon, will try to make the 3d cursor look like
+the one in blender. This appears to be rendered in ortho mode at a 3d location,
+so I'm thinking I can just project the point where it's located using the
+projection matrix to get the 2d point.
+</p>
+
+<p>
+Also, will need to start creating various status/debug displays.
+</p>
+
+<p>
+Waiting for bus, not much time to program today, to much other stuff
+going on. Hiking the M, came up with some good ideas for organizing
+the app, will create an 'editor3d' module, and maybe 'cursor3d' and
+grid3d modules too. Will try to avoid changing/adding app-specific
+stuff to the existing editor module, it was good that I developed
+it as a standalone app first, which I think produced some better
+modularity. 
+</p>
+
+<p>
+For handling status vs. help screen, will just set different
+buffers as the 'active buf' in the editor, it won't handle any
+content. Think I'll just stick with a single-buffer in one-screen
+approach for now too.
+</p>
+
+<p>
+Right now, will concentration on channeling the input among 3
+different destinations: 1) editor (2d), 2) navigation, 3) editor (3d).
+Later might add an animation module.
+</p>
+
+<p>
+Was also thinking of what key to use to switch between 3d nav and
+3d editor, think I'll just use the space key, as it is one of the
+most convenient and there isn't any pre-existing reserved meaning
+for the space key in those modes.
+</p>
+
+<p>
+Got separate status and help buffers working, checking in code
+before making the other changes.
+</p>
+
 </body>
 
 </html>

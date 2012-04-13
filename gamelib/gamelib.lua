@@ -104,7 +104,16 @@ end
 
 --[[
 	descrip:
-		Draws a circle outline at param position with param radius.
+		Draws a filled circle at param position with param radius.
+	
+	params:
+		x0:	type: number, descrip: x coord of circle center
+		y0:	type: number, descrip: y coord of circle center
+		radius: type: number, descrip: radius of circle
+
+	notes:
+		The circle orientation is facing the +z direction
+
 ]]
 M.draw_circle = function (x0, y0, radius)
   gl.Begin(gl.GL_TRIANGLE_FAN)
@@ -124,7 +133,37 @@ end
 
 --[[
 	descrip:
-		Draws a rectangle outline at param position and size.
+		Draws a wireframe circle outline at param position with param radius.
+	
+	params:
+		x0:	type: number, descrip: x coord of circle center
+		y0:	type: number, descrip: y coord of circle center
+		radius: type: number, descrip: radius of circle
+
+	notes:
+		The circle orientation is facing the +z direction
+
+]]
+M.draw_circle_wireframe = function (x0, y0, radius)
+  gl.Begin(gl.GL_LINE_LOOP)
+--    gl.vertex2f(x0, y0)
+		local nslices = M.NUM_CIRCLE_SLICES
+		local theta = 0
+		local delta_theta = 2*math.pi / nslices
+		local i
+		for i = 0, nslices do
+			local x = x0 + radius * math.cos(theta)
+			local y = y0 + radius * math.sin(theta)
+			theta = theta + delta_theta
+			gl.vertex2f(x, y)
+		end
+  gl.End()
+end
+
+
+--[[
+	descrip:
+		Draws a filled rectangle at param position and size.
 ]]
 M.draw_rect = function (x, y, w, h)
   gl.Begin(gl.GL_QUADS)
@@ -137,7 +176,8 @@ end
 
 --[[
 	descrip:
-		Sets orthographic projection in OpenGL projection matrix.
+		Sets orthographic projection in OpenGL projection matrix, 
+		leaving matrix mode in GL_MODELVIEW.
 ]]
 M.set_ortho = function ()
 	local w = gamelib.win_defaults.width
@@ -150,7 +190,8 @@ end
 
 --[[
 	descrip:
-		Sets perspective projection in OpenGL projection matrix.
+		Sets perspective projection in OpenGL projection matrix,
+		leaving matrix mode in GL_MODELVIEW.
 ]]
 M.set_perspective = function ()
 	gl.matrixMode(gl.GL_PROJECTION)

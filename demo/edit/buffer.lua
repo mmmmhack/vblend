@@ -242,7 +242,16 @@ M.get = function(b, line_num)
 	return nil
 end
 
--- sets buffer text to param content, at param row or default 
+--[[
+	descrip:
+		Sets buffer text to param content, at param row or default.
+
+	params:
+		b:				type: table, descrip: buffer object
+		content:	type: string, descrip: text for param buffer line
+		[row]:		type: number, descrip: 0-based index of buffer line
+							if nil, b.cursor_pos[1] is used
+]]
 M.set = function(b, content, row)
   local row = row or b._cursor_pos[1]
 --  b.lines[row] = content
