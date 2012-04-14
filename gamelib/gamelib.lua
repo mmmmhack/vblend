@@ -34,49 +34,6 @@ M._fps = -1;
 
 --[[
 	descrip:
-		Opens a new window for a gamelib application.
-			defaults:
-			. 800x600 window size
-			. ortho projection
-			. color depth: ?
-]]
-M.open_window = function(title)
-	local rc = glfw.init()
-  if rc ~= gl.GL_TRUE then
-    error(string.format("glfw.init() failed, rc: %d", rc))
-  end
-
-	local w = M.win_defaults.width
-	local h = M.win_defaults.height
-	local r = 0
-	local g = 0
-	local b = 0
-	local a = 0
-	local d = 0
-	local s = 0
-	local mode = glfw.GLFW_WINDOW
-	rc = glfw.openWindow(
-		w, h, r, g, b, a, d, s, mode
-	)
-  if rc ~= gl.GL_TRUE then
-    error(string.format("glfw.openWindow() failed, rc: %d", rc))
-  end
-  M.win_open = true
-
-  if title ~= nil then
-	M.win_defaults.title = title
-  end
-
-  -- set default ortho projection
-	M.set_ortho()
-	gl.loadIdentity()
-
-  local cc = M.win_defaults.bg_color
-  gl.clearColor(cc[0], cc[1], cc[2], cc[3])
-end
-
---[[
-	descrip:
 		Calculates and returns frame rate.
 ]]
 M.calc_fps = function ()
@@ -176,6 +133,75 @@ end
 
 --[[
 	descrip:
+		Helper function to run main loop at constant frame rate, used with frame_start().
+]]
+M.frame_end = function()
+	-- sleep
+	local end_time = sys.double_time()
+	local work_time = end_time - M.frame_beg_time
+	local sleep_time = M.frame_period - work_time
+	sleep_time = math.max(0, sleep_time)
+	sys.usleep(sleep_time * 1e6)
+end
+
+--[[
+	descrip:
+		Helper function to run main loop at constant frame rate, used with frame_end().
+	
+	params:
+		[fps]: type: number, descrip: frames per second (default = 60)
+]]
+M.frame_start = function(fps)
+	fps = fps or 60
+	M.frame_period = 1/60
+	M.frame_beg_time = sys.double_time()
+end
+
+--[[
+	descrip:
+		Opens a new window for a gamelib application.
+			defaults:
+			. 800x600 window size
+			. ortho projection
+			. color depth: 16
+]]
+M.open_window = function(title)
+	local rc = glfw.init()
+  if rc ~= gl.GL_TRUE then
+    error(string.format("glfw.init() failed, rc: %d", rc))
+  end
+
+	local w = M.win_defaults.width
+	local h = M.win_defaults.height
+	local r = 0
+	local g = 0
+	local b = 0
+	local a = 0
+	local d = 16 
+	local s = 0
+	local mode = glfw.GLFW_WINDOW
+	rc = glfw.openWindow(
+		w, h, r, g, b, a, d, s, mode
+	)
+  if rc ~= gl.GL_TRUE then
+    error(string.format("glfw.openWindow() failed, rc: %d", rc))
+  end
+  M.win_open = gl.GL_TRUE
+
+  if title ~= nil then
+	M.win_defaults.title = title
+  end
+
+  -- set default ortho projection
+	M.set_ortho()
+	gl.loadIdentity()
+
+  local cc = M.win_defaults.bg_color
+  gl.clearColor(cc[0], cc[1], cc[2], cc[3])
+end
+
+--[[
+	descrip:
 		Sets orthographic projection in OpenGL projection matrix, 
 		leaving matrix mode in GL_MODELVIEW.
 ]]
@@ -250,6 +276,9 @@ end
 --[[
 	descrip:
 		Returns true if main window (opened with gamelib.open_window()) has been closed.
+
+	notes:
+		This requires gamelib.update() to be called in order to detect the closed state.
 ]]
 M.window_closed = function()
   return M.win_open ~= gl.GL_TRUE

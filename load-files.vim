@@ -8,6 +8,7 @@
 :arga docsrc/lua-manual.txt
 ":arga test/ape/ape.vim
 :arga vblend.lua
+:arga editor3d.lua
 :arga gamelib/*.lua
 :arga demo/edit/*.lua
 :b3

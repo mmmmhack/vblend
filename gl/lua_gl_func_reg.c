@@ -18,3 +18,4 @@
   {"vertex3f", lw_vertex3f},
   {"color3f", lw_color3f},
   {"color4f", lw_color4f},
+  {"shadeModel", lw_shadeModel},

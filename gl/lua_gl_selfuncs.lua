@@ -16,6 +16,7 @@ return {
   ['glPopMatrix']=true,
   ['glPushMatrix']=true,
   ['glRotatef']=true,
+	['glShadeModel']=true,
   ['glTranslatef']=true,
   ['glVertex2f']=true,
   ['glVertex3f']=true,

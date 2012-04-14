@@ -94,10 +94,28 @@ end
 
 --[[
 	descrip:
+		Sets up lighting in opengl.
+]]
+function init_lighting()
+	gl.enable(gl.GL_LIGHTING)
+	gl.enable(gl.GL_LIGHT0)
+	gl.enable(gl.GL_COLOR_MATERIAL)
+--	gl.shadeModel(gl.GL_SMOOTH)
+--	gl.shadeModel(gl.GL_FLAT)
+end
+
+--[[
+	descrip:
 		Program entry point, shows a 3D view with 2D text overlay.
 ]]
 function main()
 	gamelib.open_window()
+
+	init_lighting()
+	gl.enable(gl.GL_DEPTH_TEST)
+  gl.enable(gl.GL_BLEND)
+  gl.blendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+	gl.enable(gl.GL_CULL_FACE)
 
 	-- create help buffer
 	M.help_file = "../docsrc/vblend.txt"
@@ -117,9 +135,6 @@ function main()
 	cmd_mode.add_handler("dump active_buf", M.dump_active_buf)
 	glfw.setKeyCallback('key_event')
 	editor.set_active_buf(M.status_buf)
-
-  gl.enable(gl.GL_BLEND)
-  gl.blendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
 	M.frame_count = 0
 
@@ -163,6 +178,8 @@ function main()
 		-- draw 3d
 		gamelib.set_perspective()
 		gl.loadIdentity()
+		gl.clear(gl.GL_COLOR_BUFFER_BIT)
+		gl.clear(gl.GL_DEPTH_BUFFER_BIT)
 
 		-- set camera
 		local eye_pos = M.cam.center

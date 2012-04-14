@@ -184,3 +184,10 @@ static int lw_color4f(lua_State* L) {
   );
   return 0;
 }
+static int lw_shadeModel(lua_State* L) {
+  GLenum mode = lua_tointeger(L, -1);
+  glShadeModel(
+    mode
+  );
+  return 0;
+}

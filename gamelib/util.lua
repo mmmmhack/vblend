@@ -1,76 +1,76 @@
--- util.lua	:	misc utilities
+-- util.lua : misc utilities
 local M = {}
 local modname = ...
 _G[modname] = M
 package.loaded[modname] = M
 
 M.isdigit = function(s)
-	local n = string.byte(s)
-	return n >= string.byte("0") and n <= string.byte("9")
+  local n = string.byte(s)
+  return n >= string.byte("0") and n <= string.byte("9")
 end
 
 M.isprintable = function(ch)
-	local n = string.byte(ch)
-	local min = string.byte(' ')
-	local max = string.byte('~')
-	return n >= min and n <= max
+  local n = string.byte(ch)
+  local min = string.byte(' ')
+  local max = string.byte('~')
+  return n >= min and n <= max
 end
 
 M.ptable = function(t)
-	for k,v in pairs(t) do
-		print("k: [" .. k .. "], v: [" .. tostring(v) .. "]")
-	end
+  for k,v in pairs(t) do
+  print("k: [" .. k .. "], v: [" .. tostring(v) .. "]")
+  end
 end
 
 M.trim = function(s)
-	local r = string.match(s, "^%s*(.-)%s*$")
-	return r
+  local r = string.match(s, "^%s*(.-)%s*$")
+  return r
 end
 
 M.dump_debug_info = function (info, label)
-	print(string.format("---%s: debug info:", label))
-	for k,v in pairs(info) do
-		print("  ", k, v)
-	end
+  print(string.format("---%s: debug info:", label))
+  for k,v in pairs(info) do
+    print("  ", k, v)
+  end
 end
 
 -- this function doesn't appear to work correctly to tokenize
 -- strings delimited by multiple spaces or varied whitespace. See the 'tokenize()' function below for an
 -- alternative
 M.split = function (str, delim, maxSplit)
-		-- Eliminate bad cases...
-		if string.find(str, delim) == nil then
-				return { str }
-		end
-		if maxSplit == nil or maxSplit < 1 then
-				maxSplit = 0    -- No limit
-		end
-		local result = {}
-		local pat = "(.-)" .. delim .. "()"
-		local ntok = 0
-		local lastPos
-		for part, pos in string.gfind(str, pat) do
-				ntok = ntok + 1
-				result[ntok] = part
-				lastPos = pos
-				if ntok == maxSplit then break end
-		end
-		-- Handle the last field
-		if ntok ~= maxSplit then
-				result[ntok + 1] = string.sub(str, lastPos)
-		end
-		return result
+  -- Eliminate bad cases...
+  if string.find(str, delim) == nil then
+    return { str }
+  end
+  if maxSplit == nil or maxSplit < 1 then
+    maxSplit = 0    -- No limit
+  end
+  local result = {}
+  local pat = "(.-)" .. delim .. "()"
+  local ntok = 0
+  local lastPos
+  for part, pos in string.gfind(str, pat) do
+    ntok = ntok + 1
+    result[ntok] = part
+    lastPos = pos
+    if ntok == maxSplit then break end
+  end
+  -- Handle the last field
+  if ntok ~= maxSplit then
+    result[ntok + 1] = string.sub(str, lastPos)
+  end
+  return result
 end
 
 M.join = function(toks, delim)
-	local s = ""
-	for i, tok in ipairs(toks) do
-		if i ~= 1 then
-			s = s .. delim
-		end
-		s = s .. tok
-	end
-	return s
+  local s = ""
+  for i, tok in ipairs(toks) do
+    if i ~= 1 then
+      s = s .. delim
+    end
+    s = s .. tok
+  end
+  return s
 end
 
 M.tokenize = function(s, delim_pat)
@@ -160,11 +160,11 @@ M.tolower = function(c)
 end
 
 M.readlines = function(fname)
-	local fh = io.open(fname)
-	local lines = {}
-	for ln in fh:lines() do
-		lines[#lines + 1] = ln
-	end
-	return lines
+  local fh = io.open(fname)
+  local lines = {}
+  for ln in fh:lines() do
+    lines[#lines + 1] = ln
+  end
+  return lines
 end
 
