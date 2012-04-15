@@ -329,6 +329,7 @@ function gen_func_wrapper(decl)
   end
 	local nRet = 0
 	if c_ret_type ~= "void" then
+    local ptr = ""
 		s = string.format("  %s ret_val = \n", c_ret_type)
     func_def = func_def .. s
 		nRet = 1
@@ -354,8 +355,15 @@ function gen_func_wrapper(decl)
 
   -- emit push cret to lua stack
   if nRet > 0 then
-    s = string.format("  lua_push%s(L, ret_val);\n", lua_ret_type)
-    func_def = func_def .. s
+    if lua_ret_type == "userdata" then
+      s = string.format("  %s* data_on_stack = lua_newuserdata(L, sizeof(%s*));\n", c_ret_type, c_ret_type)
+      func_def = func_def .. s
+      s = "  *data_on_stack = ret_val;\n"
+      func_def = func_def .. s
+    else
+      s = string.format("  lua_push%s(L, ret_val);\n", lua_ret_type)
+      func_def = func_def .. s
+    end
   end
 
   -- emit push ret param values if any

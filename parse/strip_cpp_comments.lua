@@ -1,7 +1,9 @@
 -- strip_cpp_comments.lua : reads from stdin, strips C++-style comments from a file, writes to stdout
 
 function strip()
-	local buf = io.read(math.huge)
+	--local buf = io.read(math.huge)
+  local math_reallybig = 1000000000
+	local buf = io.read(math_reallybig)
 	io.close()
 
 	local bufout = ""

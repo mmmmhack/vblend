@@ -67,7 +67,9 @@ end
 -- TODO: support quote mode
 function preproc_header_file(fname)
 	io.input(fname)
-	local buf = io.read(math.huge)
+--	local buf = io.read(math.huge)
+  local math_reallybig = 1000000000
+	local buf = io.read(math_reallybig)
 	io.close()
 
 	local bufout = ""

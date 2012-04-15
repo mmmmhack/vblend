@@ -12,7 +12,7 @@ require "util"
 
 -- editor modules
 require "keycodes"
-require "cursor"
+--require "cursor"
 require "win"
 require "buffer"
 require "normal_mode"

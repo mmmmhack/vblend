@@ -4,7 +4,9 @@ function get_decls(fname, verbose)
     print(string.format("get_decls(): opening input file [%s]", fname))
   end
   io.input(fname)
-  local buf = io.read(math.huge)
+--  local buf = io.read(math.huge)
+  local math_reallybig = 1000000000
+	local buf = io.read(math_reallybig)
   local brace_level = 0
   local decls = {}
   local cur_decl = ""

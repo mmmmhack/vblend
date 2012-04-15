@@ -1,0 +1,19 @@
+libglfw_dir=../../glfw/libglfw
+#libglfw_dir=$(HOME)/proj/git/vblend/glfw/libglfw
+
+CFLAGS += -g
+
+includes = -I$(libglfw_dir)/include
+libs = -L$(libglfw_dir) -lglfw -lGL -lX11
+
+all: howdy
+
+howdy: howdy.o
+	$(CC) -o $@ howdy.o $(libs) -Wl,-rpath='$$ORIGIN'/$(libglfw_dir)
+
+howdy.o: howdy.c
+	$(CC) -o $@ -c $(CFLAGS) $(includes) howdy.c
+
+clean:
+	rm howdy
+	rm -f *.o

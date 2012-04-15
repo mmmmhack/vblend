@@ -41,7 +41,8 @@ static int lw_newQuadric(lua_State* L) {
   GLUquadric* ret_val = 
   gluNewQuadric(
   );
-  lua_pushuserdata(L, ret_val);
+  GLUquadric** data_on_stack = lua_newuserdata(L, sizeof(GLUquadric**));
+  *data_on_stack = ret_val;
   return 1;
 }
 static int lw_perspective(lua_State* L) {

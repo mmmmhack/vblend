@@ -4,7 +4,9 @@ local preproc_fname = "preproc_gl.h"
 
 function preproc_header_file(fname)
 	io.input(fname)
-	local buf = io.read(math.huge)
+--	local buf = io.read(math.huge) -- doesn't work on linux
+  local math_reallybig = 1000000000
+	local buf = io.read(math_reallybig)
 	io.close()
 
 	print("beg preproc")
