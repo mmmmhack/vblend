@@ -6,12 +6,14 @@ package.loaded[modname] = M
 
 local app = vblend
 local grid_color = 0.3
-local cursor_alpha = 1.0
+local cursor_alpha = 0.5
 --[[
 	descrip:
 		Draws a wireframe grid in the x-z plane, centered at the origin.
 ]]
 M.draw_grid = function ()
+
+  gl.disable(gl.GL_LIGHTING)
 	local c = grid_color
 	gl.color3f(c, c, c)
 	gl.Begin(gl.GL_LINES)
@@ -36,6 +38,8 @@ M.draw_grid = function ()
 			gl.vertex3f(xe, y, z)
 		end
 	gl.End()
+  gl.enable(gl.GL_LIGHTING)
+
 end
 
 --[[
@@ -43,43 +47,12 @@ end
 		Draws a 3d cursor.
 ]]
 M.draw_cursor3d = function()
---[[
-	gl.pushMatrix()
-		gl.rotatef(90, 0, 1, 0)
-		gamelib.draw_circle_wireframe(0, 0, 1.0)
-	gl.popMatrix()
+  local cursor_pos = vector3.new(0, 0, 0)
+  gl.pushMatrix()
+  gl.translatef(cursor_pos.x, cursor_pos.y, cursor_pos.z)
 
-	gl.pushMatrix()
-		gl.rotatef(90, -1, 0, 0)
-		gamelib.draw_circle_wireframe(0, 0, 1.0)
-	gl.popMatrix()
-
-	gl.pushMatrix()
-		gamelib.draw_circle_wireframe(0, 0, 1.0)
-	gl.popMatrix()
-]]
-	local verts = {
-		-1, 0, 0,
-		0, -1, 0,
-		0, 0, -1,
-		1, 0, 0,
-		0, 1, 0,
-		0, 0, 1,
-	}
-	local tris = {
-		0, 2, 1,
-		0, 1, 5,
-		1, 3, 5,
-		1, 2, 3,
-		0, 4, 2,
-		0, 5, 4,
-		3, 4, 5,
-		3, 2, 4,
-	}
-	local c = grid_color
-	gl.color4f(c, c, c, cursor_alpha)
---	gl.color3f(1, 0, 0)
-	graphics.draw_tris(verts, tris)
+  gl.disable(gl.GL_LIGHTING)
+--  gl.disable(gl.GL_DEPTH_TEST)
 
 	-- draw axes
 	local draw_axes = false
@@ -101,6 +74,36 @@ M.draw_cursor3d = function()
 		end
 		gl.End()
 	end
+  gl.enable(gl.GL_LIGHTING)
+--  gl.enable(gl.GL_DEPTH_TEST)
+
+  -- draw octahedron
+	local verts = {
+		-1, 0, 0,
+		0, -1, 0,
+		0, 0, -1,
+		1, 0, 0,
+		0, 1, 0,
+		0, 0, 1,
+	}
+	local tris = {
+		0, 2, 1,
+		0, 1, 5,
+		1, 3, 5,
+		1, 2, 3,
+		0, 4, 2,
+		0, 5, 4,
+		3, 4, 5,
+		3, 2, 4,
+	}
+	local c = grid_color
+	gl.color4f(c, c, 0, cursor_alpha)
+	local draw_cursor = true
+  if draw_cursor then
+  	graphics.draw_tris(verts, tris)
+  end
+
+  gl.popMatrix()
 end
 
 M.tick = function()
@@ -110,6 +113,7 @@ end
 
 M.draw = function ()
 	M.draw_grid()
+
 	M.draw_cursor3d()
 end
 

@@ -12,6 +12,7 @@ return {
   ['glGetError']=true,
   ['glLoadIdentity']=true,
   ['glMatrixMode']=true,
+  ['glNormal3f']=true,
   ['glOrtho']=true,
   ['glPopMatrix']=true,
   ['glPushMatrix']=true,

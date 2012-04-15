@@ -1,3 +1,10 @@
+static int lw_deleteQuadric(lua_State* L) {
+  GLUquadric* quad = (GLUquadric*) lua_touserdata(L, -1);
+  gluDeleteQuadric(
+    quad
+  );
+  return 0;
+}
 static int lw_errorString(lua_State* L) {
   GLenum error = lua_tointeger(L, -1);
   const GLubyte * ret_val = 
@@ -30,6 +37,13 @@ static int lw_lookAt(lua_State* L) {
   );
   return 0;
 }
+static int lw_newQuadric(lua_State* L) {
+  GLUquadric* ret_val = 
+  gluNewQuadric(
+  );
+  lua_pushuserdata(L, ret_val);
+  return 1;
+}
 static int lw_perspective(lua_State* L) {
   GLdouble fovy = lua_tonumber(L, -4);
   GLdouble aspect = lua_tonumber(L, -3);
@@ -40,6 +54,19 @@ static int lw_perspective(lua_State* L) {
     aspect,
     zNear,
     zFar
+  );
+  return 0;
+}
+static int lw_sphere(lua_State* L) {
+  GLUquadric* quad = (GLUquadric*) lua_touserdata(L, -4);
+  GLdouble radius = lua_tonumber(L, -3);
+  GLint slices = lua_tointeger(L, -2);
+  GLint stacks = lua_tointeger(L, -1);
+  gluSphere(
+    quad,
+    radius,
+    slices,
+    stacks
   );
   return 0;
 }

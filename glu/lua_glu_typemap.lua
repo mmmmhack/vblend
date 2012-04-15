@@ -10,4 +10,5 @@ return {
   ['GLushort'] = 'integer',
   ['void'] = 'void',
   ['const GLubyte *'] = 'string',
+  ['GLUquadric*'] = 'userdata',
 }

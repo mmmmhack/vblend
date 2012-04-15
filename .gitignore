@@ -9,6 +9,7 @@
 .s4
 .s5
 e.bat
+commit-msg
 lua-path.bat
 mingw-path.bat
 Makefile.mingw.old
@@ -42,6 +43,7 @@ gl/old
 gl/lua_gl_func_skipped.txt
 gl/lua_gl.dll
 gl/Makefile.mingw.old
+glu/lua_glu_func_skipped.txt
 glfw/Makefile.mingw.old
 glfw/libglfw/Makefile.mingw.old
 glfw/libglfw/make.out

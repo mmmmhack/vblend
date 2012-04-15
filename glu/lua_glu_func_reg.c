@@ -1,3 +1,6 @@
+  {"deleteQuadric", lw_deleteQuadric},
   {"errorString", lw_errorString},
   {"lookAt", lw_lookAt},
+  {"newQuadric", lw_newQuadric},
   {"perspective", lw_perspective},
+  {"sphere", lw_sphere},

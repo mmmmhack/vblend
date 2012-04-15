@@ -61,18 +61,18 @@ M.get_boundary_intersects = function (r1, r2)
 end
 
 --[[
-Returns flags for intersection of edges of rect r1 with rect r2.
-Params:
-Params:
-	r1	type: table, descrip: rectangle with attributes x, y, w, h (left, bottom, width, height)
-	r2	type: table, descrip: rectangle with attributes x, y, w, h (left, bottom, width, height)
-Returns:
-	edge_intersects	
-			type: table
-			descrip: flags for r1 vertical edge intersects (edge_intersects[1][1] and edge_intersects[1][2]) and 
-			    horizontal edge interscts (edge_intersects[2][1] and edge_intersects[2][2]) 
-			    with r2
-				  flags: 0: no intersect, 1: intersect
+  descrip:
+    Returns flags for intersection of edges of rect r1 with rect r2.
+  params:
+    r1	type: table, descrip: rectangle with attributes x, y, w, h (left, bottom, width, height)
+    r2	type: table, descrip: rectangle with attributes x, y, w, h (left, bottom, width, height)
+  returns:
+    edge_intersects	
+        type: table
+        descrip: flags for r1 vertical edge intersects (edge_intersects[1][1] and edge_intersects[1][2]) and 
+            horizontal edge interscts (edge_intersects[2][1] and edge_intersects[2][2]) 
+            with r2
+            flags: 0: no intersect, 1: intersect
 ]]
 M.get_edge_intersects = function (r1, r2)
 	local intersects = {
@@ -106,11 +106,12 @@ M.get_edge_intersects = function (r1, r2)
 end
 
 --[[
-Returns counts of vertical and horizontal edge intersects in param edge intersects table.
-Params:
-	edge_intersects	type: table, descrip: table returned by get_edge_intersects() 
-Returns:
-	counts		type: table, descrip: x: count of vertical edge intersects, y: count of horizontal edge intersects
+  descrip:
+    Returns counts of vertical and horizontal edge intersects in param edge intersects table.
+  params:
+	  edge_intersects	type: table, descrip: table returned by get_edge_intersects() 
+  returns:
+	  counts		type: table, descrip: x: count of vertical edge intersects, y: count of horizontal edge intersects
 ]]
 M.get_edge_intersect_counts = function (edge_intersects)
 	local counts = {
@@ -140,7 +141,10 @@ M.rad2deg = function(rad)
 	return rad * 180 / math.pi
 end
 
--- returns a matrix with rotation about vector vrot by angle angle_deg
+--[[
+  descrip:
+    Returns a matrix with rotation about vector vrot by angle angle_deg
+]]
 M.create_rot_matrix = function(vrot, angle_deg)
 	-- implementation:
 	-- create M<sup>T</sup> * R<sub>x</sub> * M where: 
@@ -172,4 +176,20 @@ M.create_rot_matrix = function(vrot, angle_deg)
 	return Mr
 end
 
+--[[
+  descrip:
+    Returns normal calculated from param table of 3 vertices
+
+  params:
+    verts: type: table, descrip: table with 0-based array of 3 vector3d vertices
+
+  returns:
+    normal: type: table, descrip: vector3
+]]
+M.calc_normal = function(verts)
+  local v01 = vector3.sub(verts[1], verts[0])  
+  local v02 = vector3.sub(verts[2], verts[0])  
+  local vcross = vector3.cross(v01, v02)
+  return vector3.normalized(vcross)
+end
 

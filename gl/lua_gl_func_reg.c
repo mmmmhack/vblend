@@ -16,6 +16,7 @@
   {"End", lw_End},
   {"vertex2f", lw_vertex2f},
   {"vertex3f", lw_vertex3f},
+  {"normal3f", lw_normal3f},
   {"color3f", lw_color3f},
   {"color4f", lw_color4f},
   {"shadeModel", lw_shadeModel},

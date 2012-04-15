@@ -160,6 +160,17 @@ static int lw_vertex3f(lua_State* L) {
   );
   return 0;
 }
+static int lw_normal3f(lua_State* L) {
+  GLfloat nx = lua_tonumber(L, -3);
+  GLfloat ny = lua_tonumber(L, -2);
+  GLfloat nz = lua_tonumber(L, -1);
+  glNormal3f(
+    nx,
+    ny,
+    nz
+  );
+  return 0;
+}
 static int lw_color3f(lua_State* L) {
   GLfloat red = lua_tonumber(L, -3);
   GLfloat green = lua_tonumber(L, -2);

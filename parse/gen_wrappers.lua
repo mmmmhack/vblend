@@ -308,7 +308,11 @@ function gen_func_wrapper(decl)
     if param.is_ret then
       s = string.format("  %s %s = 0;\n", strip_pointer(param.ctype), param.cident)
     else
-      s = string.format("  %s %s = lua_to%s(L, %d);\n", param.ctype, param.cident, param.luatype, stack_index)
+      local cast = ""
+      if param.luatype=="userdata" then
+        cast = string.format("(%s) ", param.ctype)
+      end
+      s = string.format("  %s %s = %slua_to%s(L, %d);\n", param.ctype, param.cident, cast, param.luatype, stack_index)
       stack_index = stack_index + 1
     end
     func_def = func_def .. s
