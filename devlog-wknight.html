@@ -7008,8 +7008,26 @@ insancely sucks on linux for some reason, 2 fps!! wtf. pong still runs
 at 60 fps, so something weird in vblend opengl.
 </p>
 
+<p>
+It's the 2d drawing in the editor. Must not be using graphics card for
+texture-mapping, I'm thinking.
 </p>
 
+<p>
+Huh, look at this reported error on running:
+</p>
+<pre>
+knight@johnny:~/proj/git/vblend/dist$ r
+Error: API mismatch: the NVIDIA kernel module has version 195.36.15,
+but this NVIDIA driver component has version 195.36.24.  Please make
+sure that the kernel module and all NVIDIA driver components
+have the same version.
+</pre>
+
+<p>
+So, at the very least, I should try building and running on another linux
+box.
+</p>
 </body>
 
 </html>
