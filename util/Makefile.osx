@@ -1,5 +1,8 @@
 # Makefile.osx	:	 Mac OSX makefile for util shared libs
 
+# l ocal_sub ['%$%(CC%) %-o %$@ %-dynamiclib %-undefined dynamic_lookup sys.o'] = '$(CC) -o $@ -fPIC -shared -Wl,-soname,$(PREFIX)/$(notdir $@)'
+# l ocal_sub ['CFLAGS %+= %-g %-Wall'] = 'CFLAGS += -g -Wall -fPIC'
+
 ifndef PREFIX
 $(error "PREFIX env var not defined")
 endif

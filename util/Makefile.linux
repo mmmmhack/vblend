@@ -1,6 +1,9 @@
-### auto-generated from ../util/Makefile.osx by gen_linux_from_osx_makefile.lua
+### auto-generated from Makefile.osx by gen_linux_from_osx_makefile.lua
 
-# Makefile.linux	:	 linux makefile for util shared libs
+# Makefile.osx	:	 Mac OSX makefile for util shared libs
+
+# l ocal_sub ['%$%(CC%) %-o %$@ %-dynamiclib %-undefined dynamic_lookup sys.o'] = '$(CC) -o $@ -fPIC -shared -Wl,-soname,$(PREFIX)/$(notdir $@)'
+# local_sub ['CFLAGS %+= %-g %-Wall'] = 'CFLAGS += -g -Wall -fPIC'
 
 ifndef PREFIX
 $(error "PREFIX env var not defined")
@@ -13,7 +16,7 @@ lua_includes=-I$(lua_dir)/include
 lua_libs=
 
 CC = gcc
-CFLAGS += -g -Wall
+CFLAGS += -g -Wall -fPIC
 
 all: sys.$(SO) lua_sys.$(SO)
 
@@ -31,5 +34,4 @@ lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c
 
 clean:
 	-rm *.o *.$(SO)
-
 

@@ -7028,6 +7028,70 @@ have the same version.
 So, at the very least, I should try building and running on another linux
 box.
 </p>
+
+<h2>2012-04-23</h2>
+
+<p>
+Building on wrk02, need -fPIC for util/Makefile.linux, updating 
+util/gen_linux_from_osx_makefile.lua to apply local macro substitutions
+(defined in the Makefile.osx) in addition to the global ones,
+to fix this build error:
+</p>
+<pre>
+make[1]: Entering directory `/home/wknight/proj/vblend/util'
+gcc -o sys.o -g -Wall -c sys.c
+gcc -o sys.so -shared -Wl,-soname,/home/wknight/proj/vblend/dist/sys.so sys.o
+/usr/bin/ld: sys.o: relocation R_X86_64_32 against `.bss' can not be used when making a shared object; recompile with -fPIC
+sys.o: could not read symbols: Bad value
+collect2: ld returned 1 exit status
+make[1]: *** [sys.so] Error 1
+make[1]: Leaving directory `/home/wknight/proj/vblend/util'
+make: *** [subdirs] Error 2
+~/proj/vblend$ 
+</pre>
+
+<p>
+While adding support for 'Makefile-local' substitutions, I realize that the existing approach for 
+global substitutions needs to be changed, to avoid making susbstitutions in the commented-lines
+which will serve to define the local subsitutions. I will change the algorithm to function
+line-by-line, which is less efficient than the current call of gsub() on the whole buffer,
+but am not worried by efficiency. At some point in near future, I intend to replace the
+current lua script implementation anyway, as I want to do it using m4 instead, because
+m4 is so obscure and powerful and this is an ideal opportunity to become more familiar with
+it.
+</p>
+
+<p>
+Added support, appears to work, but looks like -fPIC needs to be global anyhow, so won't
+use it in local defs. Duh, and the -fPIC needs to be in CFLAGS, not the link line, anyhow.
+</p>
+
+<p>
+For now, building on wrk02, I'm just passing CFLAGS=-fPIC on cmd-line, which works. But 
+next error is in glfw x11 build:
+</p>
+<pre>
+cd libglfw &amp;&amp; make -f Makefile.linux
+make[2]: Entering directory `/home/wknight/proj/vblend/glfw/libglfw'
+cc -fPIC -g -Wall -O2 -D_GLFW_HAS_XRANDR -D_GLFW_USE_LINUX_JOYSTICKS -D_GLFW_HAS_XRANDR -D_GLFW_HAS_PTHREAD -D_GLFW_HAS_SCHED_YIELD -D_GLFW_HAS_GLXGETPROCADDRESS -D_GLFW_HAS_SYSCONF -pthread -O2 -g -Wall -c -I. -Iinclude -Ix11 -Wall -fno-common -g -DPLATFORM_X11 -fPIC -o enable.o enable.c
+In file included from internal.h:98,
+                 from enable.c:31:
+ x11/platform_x11.h:71:36: error: X11/extensions/Xrandr.h: No such file or directory
+ In file included from internal.h:98,
+                  from enable.c:31:
+x11/platform_x11.h:319: error: expected specifier-qualifier-list before ‘SizeID’
+make[2]: *** [enable.o] Error 1
+make[2]: Leaving directory `/home/wknight/proj/vblend/glfw/libglfw'
+make[1]: *** [subdirs] Error 2
+make[1]: Leaving directory `/home/wknight/proj/vblend/glfw'
+make: *** [subdirs] Error 2
+~/proj/vblend$ 
+</pre>
+
+<p>
+Maybe just need xorg-dev package? Or have to take another look at the glfw Makefile?
+</p>
+
 </body>
 
 </html>
