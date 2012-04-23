@@ -3,11 +3,11 @@ ifndef PREFIX
 $(error "PREFIX env var not defined")
 endif
 
+# -D_GLFW_HAS_XRANDR 
+# -D_GLFW_HAS_XRANDR 
 # extra flags gleaned from compile.sh
 CFLAGS += \
- -D_GLFW_HAS_XRANDR \
  -D_GLFW_USE_LINUX_JOYSTICKS \
- -D_GLFW_HAS_XRANDR \
  -D_GLFW_HAS_PTHREAD \
  -D_GLFW_HAS_SCHED_YIELD \
  -D_GLFW_HAS_GLXGETPROCADDRESS \
@@ -21,10 +21,10 @@ CFLAGS += -O2
 endif
 CFLAGS += -g -Wall
 
+# -lXrandr 
+# -lXrandr 
 # extra flags gleaned from compile.sh
 LFLAGS += \
- -lXrandr \
- -lXrandr \
  -lX11 \
  -lGL \
  -pthread \
