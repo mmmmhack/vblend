@@ -42,6 +42,7 @@ install : $(PREFIX)
 	$(CP) debugger/debugger.lua $(PREFIX)/
 	$(CP) -v gamelib/*.lua $(PREFIX)/
 	$(CP) -r demo/* $(PREFIX)/
+	$(CP) -v *.lua $(PREFIX)/
 
 # clean demo
 clean: subdirs
