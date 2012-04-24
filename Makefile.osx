@@ -11,18 +11,23 @@ SO=so
 EXE=
 CP=cp
 lua_libs=
+# local_sub ['^# Linux CFLAGS '] = 'CFLAGS '
+# Linux CFLAGS := -fPIC
+
+# local_sub ['^# Linux export CFLAGS'] = 'export CFLAGS'
+# Linux export CFLAGS
 
 all : subdirs
 
 subdirs:
-	cd lua && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd util && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd gl && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd glu && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd glfw && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd img && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd font && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
-	cd edit && $(MAKE) -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C lua -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C util -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C gl -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C glu -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C glfw -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C img -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C font -f Makefile.osx $(MAKECMDGOALS)
+	$(MAKE) -C edit -f Makefile.osx $(MAKECMDGOALS)
 
 $(PREFIX):
 	mkdir $(PREFIX)
@@ -41,7 +46,7 @@ install : $(PREFIX)
 	$(CP) edit/*.$(SO) $(PREFIX)/
 	$(CP) debugger/debugger.lua $(PREFIX)/
 	$(CP) -v gamelib/*.lua $(PREFIX)/
-	$(CP) -r demo/* $(PREFIX)/
+	$(MAKE) -C demo -f Makefile.osx install PREFIX=$(PREFIX)
 	$(CP) -v *.lua $(PREFIX)/
 
 # clean demo

@@ -1,1 +1,5 @@
-./lua hello.lua
+#!/bin/bash
+export LUA_PATH="$PREFIX/?.lua"
+export LUA_CPATH="$PREFIX/?.so"
+$PREFIX/lua $PREFIX/hello.lua
+

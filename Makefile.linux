@@ -1,4 +1,4 @@
-### auto-generated from ../Makefile.osx by gen_linux_from_osx_makefile.lua
+### auto-generated from Makefile.osx by gen_linux_from_osx_makefile.lua
 
 # Makefile.linux  : top-level linux makefile for gamelib project
 
@@ -13,18 +13,23 @@ SO=so
 EXE=
 CP=cp
 lua_libs=
+# local_sub ['^# Linux CFLAGS '] = 'CFLAGS '
+CFLAGS := -fPIC
+
+# local_sub ['^# Linux export CFLAGS'] = 'export CFLAGS'
+export CFLAGS
 
 all : subdirs
 
 subdirs:
-	cd lua && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
-	cd util && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
-	cd gl && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
-	cd glu && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
-	cd glfw && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
-	cd img && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
-	cd font && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
-	cd edit && $(MAKE) -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C lua -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C util -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C gl -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C glu -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C glfw -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C img -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C font -f Makefile.linux $(MAKECMDGOALS)
+	$(MAKE) -C edit -f Makefile.linux $(MAKECMDGOALS)
 
 $(PREFIX):
 	mkdir $(PREFIX)
@@ -43,7 +48,7 @@ install : $(PREFIX)
 	$(CP) edit/*.$(SO) $(PREFIX)/
 	$(CP) debugger/debugger.lua $(PREFIX)/
 	$(CP) -v gamelib/*.lua $(PREFIX)/
-	$(CP) -r demo/* $(PREFIX)/
+	$(MAKE) -C demo -f Makefile.linux install PREFIX=$(PREFIX)
 	$(CP) -v *.lua $(PREFIX)/
 
 # clean demo
