@@ -7092,6 +7092,151 @@ make: *** [subdirs] Error 2
 Maybe just need xorg-dev package? Or have to take another look at the glfw Makefile?
 </p>
 
+<h2>2012-04-24</h2>
+
+<p>
+Today, I want to get the vblend apps to be able to run from any directory
+on mac and linux. Need to add abs path into to the mac shared libs.
+</p>
+
+<p>
+Here is the current error:
+</p>
+<pre>
+mhackslab:vblend $ export LUA_CPATH=/Users/williamknight/proj/git/vblend/dist/?.so
+mhackslab:vblend $ dist/lua dist/pong.lua
+dist/lua: error loading module 'lua_glfw' from file '/Users/williamknight/proj/git/vblend/dist/lua_glfw.so':
+dlopen(/Users/williamknight/proj/git/vblend/dist/lua_glfw.so, 2): Library not loaded: sys.so
+  Referenced from: /Users/williamknight/proj/git/vblend/dist/lua_glfw.so
+  Reason: image not found
+stack traceback:
+[C]: ?
+[C]: in function 'require'
+...Users/williamknight/proj/git/vblend/dist/gamelib.lua:10: in main chunk
+[C]: in function 'require'
+dist/pong.lua:2: in main chunk
+[C]: ?
+mhackslab:vblend $
+</pre>
+
+<p>
+Hmmm, this is interesting:
+</p>
+<pre>
+mhackslab:dist $ ./lua
+Lua 5.1.4  Copyright (C) 1994-2008 Lua.org, PUC-Rio
+&gt; require('lua_glfw')
+&gt; require('gamelib')
+&gt; require('sys')
+&gt; 
+mhackslab:dist $ ./lua
+Lua 5.1.4  Copyright (C) 1994-2008 Lua.org, PUC-Rio
+&gt; require('sys')
+error loading module 'sys' from file '/Users/williamknight/proj/git/vblend/dist/sys.so':
+dlsym(0x107860, luaopen_sys): symbol not found
+stack traceback:
+[C]: ?
+[C]: in function 'require'
+stdin:1: in main chunk
+[C]: ?
+&gt; 
+</pre>
+
+<p>
+Duh, that's just because it can't open the C shared libs directly, need the
+lua wrapper libs loaded first:
+</p>
+<pre>
+Lua 5.1.4  Copyright (C) 1994-2008 Lua.org, PUC-Rio
+&gt; require('lua_sys')
+&gt; require('sys')
+&gt; 
+</pre>
+
+<p>
+So, back to the original error, maybe just need to ensure that lua_sys is loaded before
+sys and lua_glfw
+</p>
+
+<p>
+No, more to it than that:
+</p>
+<pre>
+mhackslab:vblend $ dist/lua
+Lua 5.1.4  Copyright (C) 1994-2008 Lua.org, PUC-Rio
+&gt; require('lua_sys')
+error loading module 'lua_sys' from file '/Users/williamknight/proj/git/vblend/dist/lua_sys.so':
+dlopen(/Users/williamknight/proj/git/vblend/dist/lua_sys.so, 2): Library not loaded: sys.so
+  Referenced from: /Users/williamknight/proj/git/vblend/dist/lua_sys.so
+  Reason: image not found
+stack traceback:
+[C]: ?
+[C]: in function 'require'
+stdin:1: in main chunk
+[C]: ?
+&gt; 
+</pre>
+
+<p>
+lua_sys.so currently references sys.o without any path info:
+</p>
+<pre>
+mhackslab:vblend $ otool -L dist/lua_sys.so
+dist/lua_sys.so:
+lua_sys.so (compatibility version 0.0.0, current version 0.0.0)
+sys.so (compatibility version 0.0.0, current version 0.0.0)
+/usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+mhackslab:vblend $ 
+</pre>
+
+<p>
+I will try using install_name_tool to add the path info.
+</p>
+<pre>
+mhackslab:vblend $ install_name_tool -change sys.so @executable_path/sys.so dist/lua_sys.so
+mhackslab:vblend $ otool -L dist/lua_sys.so
+dist/lua_sys.so:
+lua_sys.so (compatibility version 0.0.0, current version 0.0.0)
+@executable_path/sys.so (compatibility version 0.0.0, current version 0.0.0)
+/usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+mhackslab:vblend $ 
+</pre>
+
+<p>
+Progress:
+</p>
+<pre>
+mhackslab:vblend $ dist/lua
+Lua 5.1.4  Copyright (C) 1994-2008 Lua.org, PUC-Rio
+&gt; require('lua_sys')
+&gt; 
+</pre>
+
+<p>
+A couple of more changes and pong runs outside of dist:
+</p>
+<pre>
+mhackslab:vblend $ install_name_tool -change libglfw.so @executable_path/libglfw.so dist/lua_glfw.so
+mhackslab:vblend $ install_name_tool -change sys.so @executable_path/sys.so dist/lua_glfw.so
+mhackslab:vblend $ otool -L dist/lua_glfw.so
+dist/lua_glfw.so:
+lua_glfw.so (compatibility version 0.0.0, current version 0.0.0)
+@executable_path/sys.so (compatibility version 0.0.0, current version 0.0.0)
+@executable_path/libglfw.so (compatibility version 1.0.0, current version 1.0.0)
+/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa (compatibility version 1.0.0, current version 12.0.0)
+/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.7)
+mhackslab:vblend $ dist/lua dist/pong.lua
+mhackslab:vblend $ 
+</pre>
+
+<p>
+So will just add the install_name_tool changes to the Makefile.osx files.
+</p>
+
 </body>
 
 </html>

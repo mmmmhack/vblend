@@ -10,6 +10,7 @@ local global_subs = {
   ['%-dynamiclib %-undefined dynamic_lookup'] = '-shared -Wl,-soname,$(PREFIX)/$(notdir $@)',
   ['%-framework Cocoa'] = '',
   ['%-framework OpenGL'] = '-lGL -lGLU',
+	['install_name_tool.*'] = '',
   ['SO=so'] = 'SO=so',
   ['EXE='] = 'EXE=',
 }
@@ -35,7 +36,7 @@ function apply_subs(buf_lines, subs)
 	for i = 1, #buf_lines do
 		local ln = buf_lines[i]
 		local skip_line = false
-		if string.match(ln, "^#") then
+		if string.match(ln, "^# local_sub") then
 			skip_line = true
 		end
 		if not skip_line then

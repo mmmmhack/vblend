@@ -41,10 +41,11 @@ install : $(PREFIX)
 	$(CP) img/libpng/*.$(SO) $(PREFIX)/
 	$(CP) font/*.$(SO) $(PREFIX)/
 	$(CP) edit/*.$(SO) $(PREFIX)/
-	$(CP) gamelib/*.lua $(PREFIX)/
+	$(CP) debugger/debugger.lua $(PREFIX)/
+	$(CP) -v gamelib/*.lua $(PREFIX)/
 	$(CP) -r demo/* $(PREFIX)/
+	$(CP) -v *.lua $(PREFIX)/
 
 # clean demo
 clean: subdirs
-
 

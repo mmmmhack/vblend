@@ -37,4 +37,3 @@ lua_tfont.o: lua_tfont_func_def.c lua_tfont_func_reg.c lua_tfont.c
 clean:
 	-rm *.o *.$(SO)
 
-

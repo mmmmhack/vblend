@@ -32,4 +32,3 @@ lua_edit.o: lua_edit_func_def.c lua_edit_func_reg.c lua_edit.c
 clean:
 	-rm *.o *.$(SO)
 
-

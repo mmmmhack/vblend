@@ -26,6 +26,8 @@ subdirs:
 
 lua_glfw.$(SO): lua_glfw.o
 	$(CC) -o $@ -shared -Wl,-soname,$(PREFIX)/$(notdir $@) $< ../util/sys.$(SO) $(lua_libs) libglfw/libglfw.$(SO)  -lGL -lGLU
+	
+	
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c
@@ -35,4 +37,3 @@ lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glf
 
 clean: subdirs
 	-rm *.$(SO) *.o
-

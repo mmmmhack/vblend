@@ -26,6 +26,7 @@ sys.o: sys.c
 
 lua_sys.$(SO): sys.$(SO) lua_sys.o
 	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup lua_sys.o sys.$(SO) $(lua_libs)
+	install_name_tool -change sys.$(SO) @executable_path/sys.$(SO) $@
 
 lua_sys.o: lua_sys_func_def.c lua_sys_func_reg.c lua_sys.c 
 	$(CC) -o $@ $(CFLAGS) $(lua_includes) -c lua_sys.c

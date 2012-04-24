@@ -31,4 +31,3 @@ lua_glu.o: constant_defs.c lua_glu_func_def.c lua_glu_func_reg.c lua_glu.c
 clean:
 	rm -f *.o *.$(SO)
 
-

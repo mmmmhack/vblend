@@ -20,4 +20,3 @@ clean: subdirs
 subdirs:
 	cd zlib && make -f Makefile.linux $(MAKECMDGOALS)
 	cd libpng && make -f Makefile.linux $(MAKECMDGOALS)
-
