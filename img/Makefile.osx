@@ -8,6 +8,7 @@ all: subdirs img.$(SO)
 
 img.$(SO): img.o
 	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup img.o libpng/libpng.$(SO)
+	install_name_tool -change libpng.$(SO) @executable_path/libpng.$(SO) $@
 
 img.o: img.c
 	$(CC) -o $@ $(CFLAGS) -c $<

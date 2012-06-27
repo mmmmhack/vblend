@@ -34,6 +34,7 @@ all : libpng.so
 
 libpng.so : $(objs)
 	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $(objs) ../zlib/libz.so
+	install_name_tool -change libz.so @executable_path/libz.so $@
 
 %.o : %.c
 	$(CC) -o $@ $(CFLAGS) $<

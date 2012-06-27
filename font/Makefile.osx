@@ -19,6 +19,8 @@ all: tfont.$(SO) lua_tfont.$(SO)
 
 tfont.$(SO): $(objs)
 	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup $(objs) ../img/img.$(SO) ../util/sys.$(SO) -framework Cocoa -framework OpenGL
+	install_name_tool -change img.$(SO) @executable_path/img.$(SO) $@
+	install_name_tool -change sys.$(SO) @executable_path/sys.$(SO) $@
 
 font-9x15.o: font-9x15.c
 	$(CC) -o $@ $(CFLAGS) $(tfont_includes) -c $<
@@ -28,6 +30,7 @@ tfont.o: tfont.c
 
 lua_tfont.$(SO): tfont.$(SO) lua_tfont.o
 	$(CC) -o $@ -dynamiclib -undefined dynamic_lookup lua_tfont.o tfont.$(SO) $(lua_libs)
+	install_name_tool -change tfont.$(SO) @executable_path/tfont.$(SO) $@
 
 lua_tfont.o: lua_tfont_func_def.c lua_tfont_func_reg.c lua_tfont.c 
 	$(CC) -o $@ $(CFLAGS) $(lua_tfont_includes) -c lua_tfont.c
