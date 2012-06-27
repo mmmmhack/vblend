@@ -8,7 +8,7 @@ lua_dir=../lua
 CC= gcc
 CFLAGS+= -g -Wall
 SO=so
-lua_libs=
+lua_libs=-L$(lua_dir) -llua
 
 edit_includes=-I$(libglfw_dir)/include -I../font
 lua_edit_includes=-I$(libglfw_dir)/include -I$(lua_dir)

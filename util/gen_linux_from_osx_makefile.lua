@@ -12,6 +12,7 @@ local global_subs = {
   ['%-framework OpenGL'] = '-lGL -lGLU',
 	['install_name_tool.*'] = '',
   ['SO=so'] = 'SO=so',
+  ['lua_libs='] = 'lua_libs=-L$(lua_dir) -llua',
   ['EXE='] = 'EXE=',
 }
 

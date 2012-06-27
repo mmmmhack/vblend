@@ -12,7 +12,7 @@ else
 CFLAGS += -O2
 endif
 SO=so
-lua_libs=
+lua_libs=-L$(lua_dir) -llua
 
 includes= \
  -I libglfw/include \

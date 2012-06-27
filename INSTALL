@@ -6,6 +6,7 @@ Build tool requirements:
 
 Library dependencies:
 	OpenGL
+	readline, ncurses (for building lua, can disable in lua Makefile if desired)
 
 vblend aims to have minimal external dependencies and a simple build process. Consequently,
 it currently provides explicit Makefiles for mingw, osx and unix platforms. So, to build

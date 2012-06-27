@@ -1,6 +1,10 @@
 # gen_linux_makefiles.sh	:	shell script to generate most of the project linux makefiles from the osx ones
 
-LUA=$HOME/swtools/lua/bin/lua
+# note: run from util subdir
+# note: add:  export LUA_PATH='../debugger/?.lua;../gamelib/?.lua'
+
+#LUA=$HOME/swtools/lua/bin/lua
+LUA=../lua/lua
 
 infiles=(\
  "Makefile" \
