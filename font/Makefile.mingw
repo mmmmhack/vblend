@@ -3,7 +3,14 @@
 libglfw_dir=../glfw/libglfw
 lua_dir=../lua
 
-CC= gcc
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+endif
+
 CFLAGS+= -g -Wall
 SO=dll
 lua_libs=$(lua_dir)/lua51.dll
@@ -18,7 +25,7 @@ objs = \
 all: tfont.$(SO) lua_tfont.$(SO)
 
 tfont.$(SO): $(objs)
-	$(CC) -o $@ -shared $(objs) ../img/img.$(SO) ../util/sys.$(SO) -lopengl32 -glu32
+	$(CC) -o $@ -shared $(objs) ../img/img.$(SO) ../util/sys.$(SO) -lopengl32 -lglu32
 
 font-9x15.o: font-9x15.c
 	$(CC) -o $@ $(CFLAGS) $(tfont_includes) -c $<

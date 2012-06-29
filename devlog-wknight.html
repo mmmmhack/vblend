@@ -7251,6 +7251,20 @@ Made changes to linux install to get demo scripts to run outside of dist install
 will need to support runtime path to 'dist/res' subdir for hello app.
 </p>
 
+<h2>2012-06-30</h2>
+
+<p>
+Finally getting around to building on Windows platform again, using cygwin. I discovered that
+glfw doesn't build under native cygwin. Got it to build by doing the recommended cross-mingw
+compile. While this works, I find it annoying and thnk I'm going to have to make glfw
+a separate dependency, which defeats one of the main goals of the vblend library. But until
+I find a better way to automtically integrate it, that's what I'm going to do.
+</p>
+
+<p>
+Hmm, first I will just try building with mingw, which already works.
+</p>
+
 </body>
 
 </html>

@@ -7,7 +7,14 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-CC= gcc
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+endif
+
 CFLAGS= -g -Wall $(MYCFLAGS)
 CFLAGS += -DLUA_USE_APICHECK
 

@@ -2,14 +2,22 @@
 
 lua_dir = ../lua
 
-CC=gcc
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+endif
+
 CFLAGS += -O0 -g -Wall
 SO=dll
 lua_libs=$(lua_dir)/lua51.dll
 
 includes= \
  -I libglfw/include \
- -I $(lua_dir)/include
+ -I $(lua_dir)/include \
+ -I ../util
  
 all: subdirs lua_glfw.$(SO)
 
@@ -17,7 +25,7 @@ subdirs:
 	cd libglfw && make -f Makefile.mingw $(MAKECMDGOALS)
 
 lua_glfw.$(SO): lua_glfw.o
-	$(CC) -o $@ -shared $< $(lua_libs) libglfw/libglfw.$(SO) -lopengl32 -glu32
+	$(CC) -o $@ -shared $< ../util/sys.$(SO) $(lua_libs) libglfw/libglfw.$(SO) -lopengl32 -lglu32
 
 lua_glfw.o: lua_glfw_const_def.c lua_glfw_func_def.c lua_glfw_func_reg.c lua_glfw.c 
 	$(CC) -o $@ $(CFLAGS) $(includes) -c lua_glfw.c

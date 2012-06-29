@@ -36,7 +36,15 @@ IMPLIB    = libzdll.a
 #LOC = -DDEBUG -g
 
 #PREFIX =
-CC = $(PREFIX)gcc
+#CC = $(PREFIX)gcc
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+endif
+
 CFLAGS = $(LOC) -O3 -Wall
 EXTRA_CFLAGS = -DNO_VIZ
 
@@ -46,10 +54,13 @@ ASFLAGS = $(LOC) -Wall
 LD = $(CC)
 LDFLAGS = $(LOC)
 
-AR = $(PREFIX)ar
+#AR = $(PREFIX)ar
+AR = ar
 ARFLAGS = rcs
 
-RC = $(PREFIX)windres
+#RC = $(PREFIX)windres
+RC = windres
+
 RCFLAGS = --define GCC_WINDRES
 
 #STRIP = $(PREFIX)strip

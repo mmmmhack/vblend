@@ -2,29 +2,35 @@
 
 lua_dir=lua
 
-PREFIX=dist
-SO=dll
-EXE=.exe
-CP=cp
-lua_libs=$(lua_dir)/lua51.dll
+ifndef $(PREFIX)
+PREFIX=$(CURDIR)/dist
+endif
+export PREFIX
+
+SO = dll
+EXE = .exe
+CP = cp
+lua_libs = $(lua_dir)/lua51.dll
 
 all : subdirs
 
 subdirs:
-	cd lua && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
-	cd gl && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
-	cd glfw && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
-	cd util && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
-	cd img && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
-	cd font && $(MAKE) -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C lua -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C util -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C gl -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C glu -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C glfw -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C img -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C font -f Makefile.mingw $(MAKECMDGOALS)
+	$(MAKE) -C edit -f Makefile.mingw $(MAKECMDGOALS)
 
 $(PREFIX):
 	mkdir $(PREFIX)
 
 install : $(PREFIX)
-	$(CP) $(lua_dir)/lua$(EXE) $(PREFIX)/
-	$(CP) $(lua_libs) $(PREFIX)/
+	$(CP) $(lua_dir)/lua$(EXE) $(lua_libs) $(PREFIX)/
 	$(CP) gl/*.$(SO) $(PREFIX)/
+	$(CP) glu/*.$(SO) $(PREFIX)/
 	$(CP) glfw/*.$(SO) $(PREFIX)/
 	$(CP) glfw/libglfw/*.$(SO) $(PREFIX)/
 	$(CP) util/*.$(SO) $(PREFIX)/
@@ -32,8 +38,11 @@ install : $(PREFIX)
 	$(CP) img/zlib/*.$(SO) $(PREFIX)/
 	$(CP) img/libpng/*.$(SO) $(PREFIX)/
 	$(CP) font/*.$(SO) $(PREFIX)/
-	$(CP) gamelib/*.lua $(PREFIX)/
-	$(CP) -r demo/* $(PREFIX)/
+	$(CP) edit/*.$(SO) $(PREFIX)/
+	$(CP) debugger/debugger.lua $(PREFIX)/
+	$(CP) -v gamelib/*.lua $(PREFIX)/
+	$(MAKE) -C demo -f Makefile.mingw install PREFIX=$(PREFIX)
+	$(CP) -v *.lua $(PREFIX)/
 
 # clean demo
 clean: subdirs

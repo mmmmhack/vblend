@@ -6,7 +6,14 @@ lua_dir=../lua
 lua_includes=-I$(lua_dir)/include
 lua_libs=$(lua_dir)/lua51.dll
 
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
 CC = gcc
+endif
+
 CFLAGS += -g -Wall
 
 all: sys.$(SO) lua_sys.$(SO)

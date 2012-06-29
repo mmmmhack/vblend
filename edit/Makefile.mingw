@@ -1,0 +1,39 @@
+# Makefile.mingw  : mingw makefile for edit module (routines to support editing text in graphics window)
+
+libglfw_dir=../glfw/libglfw
+lua_dir=../lua
+
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+endif
+
+CFLAGS+= -g -Wall
+SO=dll
+lua_libs=$(lua_dir)/lua51.dll
+
+edit_includes=-I$(libglfw_dir)/include -I../font
+lua_edit_includes=-I$(libglfw_dir)/include -I$(lua_dir)
+
+objs = \
+ edit.o 
+
+all: edit.$(SO) lua_edit.$(SO)
+edit.$(SO): $(objs)
+	$(CC) -o $@ -shared $(objs) ../font/tfont.$(SO) -lopengl32 -lglu32
+
+edit.o: edit.c
+	$(CC) -o $@ $(CFLAGS) $(edit_includes) -c $<
+
+lua_edit.$(SO): edit.$(SO) lua_edit.o
+	$(CC) -o $@ -shared lua_edit.o edit.$(SO) $(lua_libs)
+
+lua_edit.o: lua_edit_func_def.c lua_edit_func_reg.c lua_edit.c 
+	$(CC) -o $@ $(CFLAGS) $(lua_edit_includes) -c lua_edit.c
+
+clean:
+	-rm *.o *.$(SO)
+

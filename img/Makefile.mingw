@@ -1,7 +1,14 @@
 # Makefile.mingw: mingw makefile for img lib
 
-CC=gcc
-CFLAGS+=-g -Wall -Izlib -Ilibpng/include 
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+endif
+
+CFLAGS += -g -Wall -Izlib -Ilibpng/include 
 SO=dll
 
 all: subdirs img.$(SO)

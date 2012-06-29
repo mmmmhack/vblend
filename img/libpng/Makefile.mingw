@@ -2,7 +2,14 @@
 
 zlib_dir=../zlib
 
-CC=gcc
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+endif
+
 SO=dll
 
 #CFLAGS= -DHAVE_CONFIG_H -DPNG_CONFIGURE_LIBPNG -g -O2 -I. -I include -fno-common -DPIC -c

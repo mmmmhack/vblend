@@ -13,7 +13,14 @@ all: libglfw.dll
 ##########################################################################
 # Compiler settings
 ##########################################################################
-CC         = gcc
+OS=$(shell uname -o)
+ifeq "$(OS)" "Cygwin"
+CC = i686-pc-mingw32-gcc 
+DLLWRAP = i686-pc-mingw32-dllwrap 
+else
+CC = gcc
+DLLWRAP = dllwrap
+endif
 CFLAGS     = -c -I. -Iinclude -Wall -DPLATFORM_MINGW
 CFLAGS_DLL = $(CFLAGS) -mdll -DGLFW_BUILD_DLL -D_GLFW_NO_DLOAD_GDI32 -D_GLFW_NO_DLOAD_WINMM
 ifdef NO_OPTIMIZE
@@ -27,7 +34,7 @@ endif
 ##########################################################################
 
 # DLL
-LINK      = dllwrap
+LINK      = $(DLLWRAP)
 LINKFLAGS = -s
 LINKLIBS  = -lopengl32 -lwinmm -lgdi32
 

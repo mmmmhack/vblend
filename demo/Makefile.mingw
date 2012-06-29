@@ -1,0 +1,31 @@
+# mingw makefile for vblend demo files
+ifndef PREFIX
+$(error PREFIX env var not defined)
+endif
+
+CP=cp
+
+lua_files = $(wildcard *.lua)
+shell_scripts = \
+ pong \
+ hello \
+
+target_lua_files = $(patsubst %.lua,$(PREFIX)/%.lua,$(lua_files))
+target_shell_scripts = $(patsubst %,$(PREFIX)/%,$(shell_scripts))
+
+install: resources $(target_lua_files) $(target_shell_scripts)
+
+resources:
+	-mkdir $(PREFIX)/res
+	$(CP) -r res/* $(PREFIX)/res/
+
+$(PREFIX)/pong: pong
+	sed 's@$$PREFIX@$(PREFIX)@g' $< > $@
+	chmod +x $@
+
+$(PREFIX)/hello: hello
+	sed 's@$$PREFIX@$(PREFIX)@g' $< > $@
+	chmod +x $@
+
+$(PREFIX)/%.lua : %.lua
+	$(CP) $< $@

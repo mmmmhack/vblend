@@ -1,5 +1,10 @@
 #!/bin/bash
+OS=`uname -o`
 export LUA_PATH="$PREFIX/?.lua"
+if [ -e lua_gl.dll ]; then
+export LUA_CPATH="$PREFIX/?.dll"
+else
 export LUA_CPATH="$PREFIX/?.so"
+fi
 $PREFIX/lua $PREFIX/pong.lua
 
